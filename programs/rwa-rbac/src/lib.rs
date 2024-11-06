@@ -96,4 +96,32 @@ pub mod rwa_rbac {
     ) -> Result<()> {
         instructions::detach_from_policy_account::handler(ctx, cpi_data)
     }
+
+    pub fn create_identity_account(
+        ctx: Context<CreateIdentityAccount>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::create_identity_account::handler(ctx, cpi_data)
+    }
+
+    pub fn add_level_to_identity_account(
+        ctx: Context<AddLevelToIdentityAccount>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::add_level_to_identity_account::handler(ctx, cpi_data)
+    }
+
+    pub fn remove_level_from_identity_account(
+        ctx: Context<RemoveLevelFromIdentityAccount>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::remove_level_from_identity_account::handler(ctx, cpi_data)
+    }
+
+    pub fn revoke_identity_account(
+        ctx: Context<RevokeIdentityAccount>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::revoke_identity_account::handler(ctx, cpi_data)
+    }
 }
