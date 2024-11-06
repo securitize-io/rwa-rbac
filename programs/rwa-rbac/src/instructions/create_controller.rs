@@ -27,6 +27,7 @@ pub fn handler(ctx: Context<CreateAssetAccessController>, unique_seed: u64) -> R
     let controller = &mut ctx.accounts.asset_access_controller;
     controller.controller_pda = controller_pda;
     controller.admin = ctx.accounts.admin.key();
+    controller.bump = ctx.bumps.asset_access_controller;
     controller.unique_seed = unique_seed;
     controller.user_roles_count = 0;
 

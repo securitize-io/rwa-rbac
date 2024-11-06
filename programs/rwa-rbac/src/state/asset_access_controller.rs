@@ -11,6 +11,9 @@ pub struct AssetAccessController {
     /// Unique seed used for creating this account.
     pub unique_seed: u64,
 
+    /// Bump seed for PDA.
+    pub bump: u8,
+
     /// Number of UserRoles created. Used for deriving all created UserRole PDAs.
     pub user_roles_count: u64,
 }

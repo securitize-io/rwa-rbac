@@ -1,6 +1,8 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::program::invoke;
 use anchor_lang::solana_program::system_instruction::transfer;
+use hex::FromHex;
+use sha256::digest;
 
 use crate::{AdminFlags, AssetAccessController, MediciFlags, UserRole};
 
@@ -58,4 +60,11 @@ pub fn transfer_lamports_for_realloc<'info>(
         invoke(&ix, &[payer, target])?;
     }
     Ok(())
+}
+
+/// Generates anchor instruction discriminator for function name.
+pub fn get_discriminator(function_name: &str) -> Vec<u8> {
+    let full_function_name = String::from("global:") + function_name;
+    let function_discriminator = String::from(&digest(full_function_name)[0..16]);
+    Vec::<u8>::from_hex(function_discriminator).unwrap()
 }

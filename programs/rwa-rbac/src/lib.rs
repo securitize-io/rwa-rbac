@@ -1,8 +1,10 @@
 #![allow(ambiguous_glob_reexports)]
 
+pub mod constants;
 pub mod error;
 pub mod helper;
 pub mod instructions;
+pub mod macros;
 pub mod state;
 
 pub use helper::*;
@@ -38,5 +40,12 @@ pub mod rwa_rbac {
         users_to_assign: Vec<Pubkey>,
     ) -> Result<()> {
         instructions::assign_user_role::handler(ctx, users_to_assign)
+    }
+
+    pub fn create_policy_account(
+        ctx: Context<CreatePolicyAccount>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::create_policy_account::handler(ctx, cpi_data)
     }
 }
