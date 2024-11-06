@@ -15,18 +15,21 @@ pub struct CreatePolicyAccount<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub user: Signer<'info>,
+    /// CHECK: Verified to match field in asset_access_controller.
+    pub controller_authority: UncheckedAccount<'info>,
+    #[account(has_one = controller_authority)]
     pub asset_access_controller: Account<'info, AssetAccessController>,
     #[account(has_one = asset_access_controller)]
     pub authorized_user_role: Option<Account<'info, UserRole>>,
+    /// CHECK: Checked against known program address.
+    #[account(address = Pubkey::from_str(POLICY_ENGINE_ID).unwrap())]
+    pub policy_engine_program: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub policy_engine: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub policy_account: UncheckedAccount<'info>,
-    /// CHECK: Checked against known program address.
-    #[account(address = Pubkey::from_str(POLICY_ENGINE_ID).unwrap())]
-    pub policy_engine_program: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 }
 
@@ -56,7 +59,7 @@ pub fn handler(ctx: Context<CreatePolicyAccount>, cpi_data: Vec<u8>) -> Result<(
             program_id: ctx.accounts.policy_engine_program.key(),
             accounts: vec![
                 AccountMeta::new(ctx.accounts.payer.key(), true),
-                AccountMeta::new_readonly(ctx.accounts.asset_access_controller.key(), true),
+                AccountMeta::new_readonly(ctx.accounts.controller_authority.key(), true),
                 AccountMeta::new(ctx.accounts.policy_engine.key(), false),
                 AccountMeta::new(ctx.accounts.policy_account.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
@@ -65,7 +68,7 @@ pub fn handler(ctx: Context<CreatePolicyAccount>, cpi_data: Vec<u8>) -> Result<(
         },
         &vec![
             ctx.accounts.payer.to_account_info(),
-            ctx.accounts.asset_access_controller.to_account_info(),
+            ctx.accounts.controller_authority.to_account_info(),
             ctx.accounts.policy_engine.to_account_info(),
             ctx.accounts.policy_account.to_account_info(),
             ctx.accounts.system_program.to_account_info(),

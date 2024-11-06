@@ -23,11 +23,14 @@ pub struct CreateAssetAccessController<'info> {
 }
 
 pub fn handler(ctx: Context<CreateAssetAccessController>, unique_seed: u64) -> Result<()> {
-    let controller_pda = ctx.accounts.asset_access_controller.key();
+    let key = ctx.accounts.asset_access_controller.key();
+    let (controller_authority, controller_authority_bump) =
+        Pubkey::find_program_address(&[key.as_ref()], ctx.program_id);
+
     let controller = &mut ctx.accounts.asset_access_controller;
-    controller.controller_pda = controller_pda;
+    controller.controller_authority = controller_authority;
+    controller.controller_authority_bump = controller_authority_bump;
     controller.admin = ctx.accounts.admin.key();
-    controller.bump = ctx.bumps.asset_access_controller;
     controller.unique_seed = unique_seed;
     controller.user_roles_count = 0;
 

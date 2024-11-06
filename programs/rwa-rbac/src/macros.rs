@@ -2,9 +2,8 @@
 macro_rules! controller_seeds {
     ($controller:expr) => {
         &[
-            &$controller.unique_seed.to_le_bytes(),
-            b"AssetAccessController".as_ref(),
-            &[$controller.bump],
+            &$controller.key().to_bytes()[..],
+            &[$controller.controller_authority_bump][..],
         ]
     };
 }
