@@ -75,4 +75,11 @@ pub mod rwa_rbac {
     pub fn close_mint_account(ctx: Context<CloseMintAccount>, cpi_data: Vec<u8>) -> Result<()> {
         instructions::close_mint_account::handler(ctx, cpi_data)
     }
+
+    pub fn update_interest_bearing_mint_rate(
+        ctx: Context<UpdateInterestBearingMintRate>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::update_interest_bearing_mint_rate::handler(ctx, cpi_data)
+    }
 }
