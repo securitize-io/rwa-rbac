@@ -71,4 +71,8 @@ pub mod rwa_rbac {
     pub fn revoke_tokens(ctx: Context<RevokeTokens>, cpi_data: Vec<u8>) -> Result<()> {
         instructions::revoke_tokens::handler(ctx, cpi_data)
     }
+
+    pub fn close_mint_account(ctx: Context<CloseMintAccount>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::close_mint_account::handler(ctx, cpi_data)
+    }
 }
