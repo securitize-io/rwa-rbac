@@ -5,7 +5,10 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 
-use crate::{constants::POLICY_ENGINE_ID, controller_seeds, get_discriminator, state::*, verify_medici_signer, error::ErrorCode};
+use crate::{
+    constants::POLICY_ENGINE_ID, controller_seeds, error::ErrorCode, get_discriminator, state::*,
+    verify_medici_signer,
+};
 
 #[derive(Accounts)]
 pub struct CreatePolicyAccount<'info> {
@@ -45,13 +48,6 @@ pub fn handler(ctx: Context<CreatePolicyAccount>, cpi_data: Vec<u8>) -> Result<(
     );
 
     // Perform CPI to PolicyEngine Program.
-    let account_infos: Vec<AccountInfo> = vec![
-        ctx.accounts.payer.to_account_info(),
-        ctx.accounts.asset_access_controller.to_account_info(),
-        ctx.accounts.policy_engine.to_account_info(),
-        ctx.accounts.policy_account.to_account_info(),
-        ctx.accounts.system_program.to_account_info(),
-    ];
     let seeds = controller_seeds!(controller);
     let signers_seeds = &[&seeds[..]];
 
@@ -67,7 +63,13 @@ pub fn handler(ctx: Context<CreatePolicyAccount>, cpi_data: Vec<u8>) -> Result<(
             ],
             data: cpi_data,
         },
-        &account_infos,
+        &vec![
+            ctx.accounts.payer.to_account_info(),
+            ctx.accounts.asset_access_controller.to_account_info(),
+            ctx.accounts.policy_engine.to_account_info(),
+            ctx.accounts.policy_account.to_account_info(),
+            ctx.accounts.system_program.to_account_info(),
+        ],
         signers_seeds,
     )?;
 
