@@ -59,4 +59,8 @@ pub mod rwa_rbac {
     ) -> Result<()> {
         instructions::update_asset_metadata::handler(ctx, cpi_data)
     }
+
+    pub fn thaw_token_account(ctx: Context<ThawTokenAccount>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::thaw_token_account::handler(ctx, cpi_data)
+    }
 }
