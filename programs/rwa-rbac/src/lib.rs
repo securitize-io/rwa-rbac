@@ -49,10 +49,10 @@ pub mod rwa_rbac {
         instructions::create_policy_account::handler(ctx, cpi_data)
     }
 
-    // pub fn issue_tokens(ctx: Context<IssueTokens>, cpi_data: Vec<u8>) -> Result<()> {
-    //     instructions::issue_tokens::handler(ctx, cpi_data)
-    // }
-    
+    pub fn issue_tokens(ctx: Context<IssueTokens>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::issue_tokens::handler(ctx, cpi_data)
+    }
+
     pub fn update_asset_metadata(
         ctx: Context<UpdateAssetMetadata>,
         cpi_data: Vec<u8>,
