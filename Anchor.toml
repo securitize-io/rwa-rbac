@@ -7,6 +7,22 @@ skip-lint = false
 [programs.localnet]
 rwa_rbac = "9gUXb1jJ4wmwht3G6mMaHdWbo2gf7faHYyM6ryVGy4ae"
 
+[[test.genesis]]
+address = "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+program = "./deps/asset_controller.so"
+
+[[test.genesis]]
+address = "dataeP5X1e7XsWN1ovDSEDP5cqaEUnKBmHE5iZhXPVw"
+program = "./deps/data_registry.so"
+
+[[test.genesis]]
+address = "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+program = "./deps/identity_registry.so"
+
+[[test.genesis]]
+address = "po1cPf1eyUJJPqULw4so3T4JU9pdFn83CDyuLEKFAau"
+program = "./deps/policy_engine.so"
+
 [registry]
 url = "https://api.apr.dev"
 
