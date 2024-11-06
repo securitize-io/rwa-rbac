@@ -42,13 +42,6 @@ pub mod rwa_rbac {
         instructions::assign_user_role::handler(ctx, users_to_assign)
     }
 
-    pub fn create_policy_account(
-        ctx: Context<CreatePolicyAccount>,
-        cpi_data: Vec<u8>,
-    ) -> Result<()> {
-        instructions::create_policy_account::handler(ctx, cpi_data)
-    }
-
     pub fn issue_tokens(ctx: Context<IssueTokens>, cpi_data: Vec<u8>) -> Result<()> {
         instructions::issue_tokens::handler(ctx, cpi_data)
     }
@@ -81,5 +74,26 @@ pub mod rwa_rbac {
         cpi_data: Vec<u8>,
     ) -> Result<()> {
         instructions::update_interest_bearing_mint_rate::handler(ctx, cpi_data)
+    }
+
+    pub fn create_policy_account(
+        ctx: Context<CreatePolicyAccount>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::create_policy_account::handler(ctx, cpi_data)
+    }
+
+    pub fn attach_to_policy_account(
+        ctx: Context<AttachToPolicyAccount>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::attach_to_policy_account::handler(ctx, cpi_data)
+    }
+
+    pub fn detach_from_policy_account(
+        ctx: Context<DetachFromPolicyAccount>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::detach_from_policy_account::handler(ctx, cpi_data)
     }
 }
