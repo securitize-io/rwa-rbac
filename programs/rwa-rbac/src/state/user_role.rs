@@ -25,12 +25,16 @@ impl UserRole {
     /// Assume name has max size of 64 bytes and includes 8 byte discriminator.
     pub const BASE_SIZE: usize = 152;
 
-    fn admin_flags(&self) -> AdminFlags {
-        AdminFlags::from_bits(self.allowed_admin_ixs).unwrap()
+    pub fn has_admin_flag(&self, flag: AdminFlags) -> bool {
+        AdminFlags::from_bits(self.allowed_admin_ixs)
+            .unwrap()
+            .contains(flag)
     }
 
-    pub fn has_admin_flag(&self, flag: AdminFlags) -> bool {
-        self.admin_flags().contains(flag)
+    pub fn has_medici_flag(&self, flag: MediciFlags) -> bool {
+        MediciFlags::from_bits(self.allowed_medici_ixs)
+            .unwrap()
+            .contains(flag)
     }
 
     pub fn update_fields(

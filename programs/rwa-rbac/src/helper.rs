@@ -2,10 +2,10 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::program::invoke;
 use anchor_lang::solana_program::system_instruction::transfer;
 
-use crate::{AdminFlags, AssetAccessController, UserRole};
+use crate::{AdminFlags, AssetAccessController, MediciFlags, UserRole};
 
-/// Check if user matches controller admin or has role with matching flag.
-pub fn verify_signer(
+/// Check if user matches controller admin or has role with matching admin flag.
+pub fn verify_admin_signer(
     user: Pubkey,
     asset_access_controller: &AssetAccessController,
     user_role: Option<Account<UserRole>>,
@@ -15,6 +15,24 @@ pub fn verify_signer(
         let user_role = user_role.unwrap();
         let is_authorized =
             user_role.has_admin_flag(matching_flag) && user_role.users.contains(&user);
+        if !is_authorized {
+            panic!("Invalid signer")
+        }
+    }
+    Ok(())
+}
+
+/// Check if user matches controller admin or has role with matching medici flag.
+pub fn verify_medici_signer(
+    user: Pubkey,
+    asset_access_controller: &AssetAccessController,
+    user_role: Option<Account<UserRole>>,
+    matching_flag: MediciFlags,
+) -> Result<()> {
+    if user != asset_access_controller.admin {
+        let user_role = user_role.unwrap();
+        let is_authorized =
+            user_role.has_medici_flag(matching_flag) && user_role.users.contains(&user);
         if !is_authorized {
             panic!("Invalid signer")
         }

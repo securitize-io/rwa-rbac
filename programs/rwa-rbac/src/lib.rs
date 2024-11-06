@@ -30,12 +30,7 @@ pub mod rwa_rbac {
         allowed_admin_ixs: u64,
         allowed_medici_ixs: u64,
     ) -> Result<()> {
-        instructions::create_user_role::handler(
-            ctx,
-            name,
-            allowed_admin_ixs,
-            allowed_medici_ixs,
-        )
+        instructions::create_user_role::handler(ctx, name, allowed_admin_ixs, allowed_medici_ixs)
     }
 
     pub fn assign_user_role(

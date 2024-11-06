@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{state::*, transfer_lamports_for_realloc, verify_signer};
+use crate::{state::*, transfer_lamports_for_realloc, verify_admin_signer};
 
 #[derive(Accounts)]
 pub struct AssignUserRole<'info> {
@@ -22,7 +22,7 @@ pub fn handler(ctx: Context<AssignUserRole>, users_to_assign: Vec<Pubkey>) -> Re
     let controller = &ctx.accounts.asset_access_controller;
 
     // Verify that signer is either a controller admin or has authorized user role.
-    verify_signer(
+    verify_admin_signer(
         ctx.accounts.user.key(),
         controller,
         ctx.accounts.authorized_user_role.clone(),
