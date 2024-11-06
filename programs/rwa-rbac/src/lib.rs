@@ -63,4 +63,8 @@ pub mod rwa_rbac {
     pub fn thaw_token_account(ctx: Context<ThawTokenAccount>, cpi_data: Vec<u8>) -> Result<()> {
         instructions::thaw_token_account::handler(ctx, cpi_data)
     }
+
+    pub fn freeze_token_account(ctx: Context<FreezeTokenAccount>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::freeze_token_account::handler(ctx, cpi_data)
+    }
 }
