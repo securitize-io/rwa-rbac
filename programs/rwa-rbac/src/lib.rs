@@ -61,7 +61,10 @@ pub mod rwa_rbac {
         instructions::freeze_token_account::handler(ctx, cpi_data)
     }
 
-    pub fn revoke_tokens(ctx: Context<RevokeTokens>, cpi_data: Vec<u8>) -> Result<()> {
+    pub fn revoke_tokens<'info>(
+        ctx: Context<'_, '_, '_, 'info, RevokeTokens<'info>>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
         instructions::revoke_tokens::handler(ctx, cpi_data)
     }
 

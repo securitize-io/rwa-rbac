@@ -30,6 +30,7 @@ pub struct RevokeTokens<'info> {
     /// CHECK: Verified in CPI.
     pub asset_controller: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
+    #[account(mut)]
     pub authority_token_account: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     #[account(mut)]
@@ -39,7 +40,11 @@ pub struct RevokeTokens<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<RevokeTokens>, cpi_data: Vec<u8>) -> Result<()> {
+// pub fn handler(ctx: Context<RevokeTokens>, cpi_data: Vec<u8>) -> Result<()> {
+pub fn handler<'info>(
+    ctx: Context<'_, '_, '_, 'info, RevokeTokens<'info>>,
+    cpi_data: Vec<u8>,
+) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
     // Verify that signer is either a controller admin or has authorized user role.
@@ -56,35 +61,49 @@ pub fn handler(ctx: Context<RevokeTokens>, cpi_data: Vec<u8>) -> Result<()> {
         ErrorCode::UnknownInstruction
     );
 
-    // Perform CPI to AssetController Program.
     let seeds = controller_seeds!(controller);
     let signers_seeds = &[&seeds[..]];
 
+    // Prepare account meta and info vec.
+    let mut account_metas = vec![
+        AccountMeta::new(ctx.accounts.controller_authority.key(), true),
+        AccountMeta::new(ctx.accounts.asset_mint.key(), false),
+        AccountMeta::new_readonly(ctx.accounts.asset_controller.key(), false),
+        AccountMeta::new(ctx.accounts.authority_token_account.key(), false),
+        AccountMeta::new(ctx.accounts.revoke_token_account.key(), false),
+        AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
+        AccountMeta::new_readonly(ctx.accounts.associated_token_program.key(), false),
+        AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
+    ];
+    let mut account_infos = vec![
+        ctx.accounts.controller_authority.to_account_info(),
+        ctx.accounts.asset_mint.to_account_info(),
+        ctx.accounts.asset_controller.to_account_info(),
+        ctx.accounts.authority_token_account.to_account_info(),
+        ctx.accounts.revoke_token_account.to_account_info(),
+        ctx.accounts.token_program.to_account_info(),
+        ctx.accounts.associated_token_program.to_account_info(),
+        ctx.accounts.system_program.to_account_info(),
+    ];
+
+    // Add remaining accounts to vecs.
+    for x in ctx.remaining_accounts {
+        let meta = match x.is_writable {
+            true => AccountMeta::new(x.key(), x.is_signer),
+            false => AccountMeta::new_readonly(x.key(), x.is_signer),
+        };
+        account_metas.push(meta);
+        account_infos.push(x.clone());
+    }
+
+    // Perform CPI to AssetController Program.
     invoke_signed(
         &Instruction {
             program_id: ctx.accounts.asset_controller_program.key(),
-            accounts: vec![
-                AccountMeta::new(ctx.accounts.controller_authority.key(), true),
-                AccountMeta::new(ctx.accounts.asset_mint.key(), false),
-                AccountMeta::new_readonly(ctx.accounts.asset_controller.key(), false),
-                AccountMeta::new(ctx.accounts.authority_token_account.key(), false),
-                AccountMeta::new(ctx.accounts.revoke_token_account.key(), false),
-                AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
-                AccountMeta::new_readonly(ctx.accounts.associated_token_program.key(), false),
-                AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
-            ],
+            accounts: account_metas,
             data: cpi_data,
         },
-        &vec![
-            ctx.accounts.controller_authority.to_account_info(),
-            ctx.accounts.asset_mint.to_account_info(),
-            ctx.accounts.asset_controller.to_account_info(),
-            ctx.accounts.authority_token_account.to_account_info(),
-            ctx.accounts.revoke_token_account.to_account_info(),
-            ctx.accounts.token_program.to_account_info(),
-            ctx.accounts.associated_token_program.to_account_info(),
-            ctx.accounts.system_program.to_account_info(),
-        ],
+        &account_infos,
         signers_seeds,
     )?;
 
