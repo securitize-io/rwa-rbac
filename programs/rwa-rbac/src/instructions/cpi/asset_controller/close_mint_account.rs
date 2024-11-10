@@ -15,6 +15,7 @@ use crate::{
 pub struct CloseMintAccount<'info> {
     pub user: Signer<'info>,
     /// CHECK: Verified to match field in asset_access_controller.
+    #[account(mut)]
     pub controller_authority: UncheckedAccount<'info>,
     #[account(has_one = controller_authority)]
     pub asset_access_controller: Account<'info, AssetAccessController>,
@@ -56,7 +57,8 @@ pub fn handler(ctx: Context<CloseMintAccount>, cpi_data: Vec<u8>) -> Result<()> 
         &Instruction {
             program_id: ctx.accounts.asset_controller_program.key(),
             accounts: vec![
-                AccountMeta::new_readonly(ctx.accounts.controller_authority.key(), true),
+                // Mutable as authority is used as rent receiver on account closure.
+                AccountMeta::new(ctx.accounts.controller_authority.key(), true),
                 AccountMeta::new(ctx.accounts.asset_mint.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.asset_controller.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
