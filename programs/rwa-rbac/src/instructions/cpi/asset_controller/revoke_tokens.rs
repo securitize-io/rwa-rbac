@@ -40,7 +40,6 @@ pub struct RevokeTokens<'info> {
     pub system_program: Program<'info, System>,
 }
 
-// pub fn handler(ctx: Context<RevokeTokens>, cpi_data: Vec<u8>) -> Result<()> {
 pub fn handler<'info>(
     ctx: Context<'_, '_, '_, 'info, RevokeTokens<'info>>,
     cpi_data: Vec<u8>,
