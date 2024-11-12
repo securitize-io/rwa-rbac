@@ -4,10 +4,7 @@ import {
 } from "@bridgesplit/rwa-token-sdk";
 import { BN, getProvider } from "@coral-xyz/anchor";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-
-export const RBAC_PROGRAM = new PublicKey(
-  "9gUXb1jJ4wmwht3G6mMaHdWbo2gf7faHYyM6ryVGy4ae"
-);
+import { pdas, RBAC_PROGRAM } from "../client/src";
 
 export const getIdentityMetadataPda = (assetMint: string, level: number) =>
   PublicKey.findProgramAddressSync(
@@ -17,44 +14,6 @@ export const getIdentityMetadataPda = (assetMint: string, level: number) =>
     ],
     identityRegistryProgramId
   )[0];
-
-export const deriveAssetAccessControllerPda = (
-  uniqueSeed: BN,
-  programId = RBAC_PROGRAM
-) => {
-  return PublicKey.findProgramAddressSync(
-    [
-      uniqueSeed.toArrayLike(Buffer, "le", 8),
-      Buffer.from("AssetAccessController"),
-    ],
-    programId
-  )[0];
-};
-
-export const deriveControllerAuthorityPda = (
-  assetAccessController: PublicKey,
-  programId = RBAC_PROGRAM
-) => {
-  return PublicKey.findProgramAddressSync(
-    [assetAccessController.toBuffer()],
-    programId
-  )[0];
-};
-
-export const deriveUserRolePda = (
-  id: BN,
-  assetAccessController: PublicKey,
-  programId = RBAC_PROGRAM
-) => {
-  return PublicKey.findProgramAddressSync(
-    [
-      id.toArrayLike(Buffer, "le", 8),
-      assetAccessController.toBuffer(),
-      Buffer.from("UserRole"),
-    ],
-    programId
-  )[0];
-};
 
 export async function setupTests(uniqueSeed: number) {
   const payerKp = new Keypair();
@@ -79,11 +38,11 @@ export async function setupTests(uniqueSeed: number) {
     txns.map((txn) => provider.connection.confirmTransaction(txn, "finalized"))
   );
 
-  const controller = deriveAssetAccessControllerPda(new BN(uniqueSeed));
+  const controller = pdas.deriveAssetAccessControllerPda(new BN(uniqueSeed));
   const roleId1 = new BN(1);
   const roleId2 = new BN(2);
-  const userRole1 = deriveUserRolePda(roleId1, controller);
-  const userRole2 = deriveUserRolePda(roleId2, controller);
+  const userRole1 = pdas.deriveUserRolePda(roleId1, controller);
+  const userRole2 = pdas.deriveUserRolePda(roleId2, controller);
 
   const [controllerAuthority, controllerAuthorityBump] =
     PublicKey.findProgramAddressSync([controller.toBuffer()], RBAC_PROGRAM);

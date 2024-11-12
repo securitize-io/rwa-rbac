@@ -52,6 +52,7 @@ import {
   getAssetControllerPda,
   getRemoveLevelFromIdentityAccount,
 } from "../deps/rwa-token/clients/rwa-token-sdk/src";
+import { RwaRbacClient } from "../client/src/index";
 
 describe("rwa-rbac", () => {
   // Configure the client to use the local cluster.
@@ -62,7 +63,8 @@ describe("rwa-rbac", () => {
   const connectionUrl = process.env.RPC_URL ?? "http://localhost:8899";
   const connection = new Connection(connectionUrl, "processed");
 
-  let rwaClient;
+  let rwaRbacClient: RwaRbacClient;
+  let rwaClient: RwaClient;
   let setup;
   let mint: string;
   let user1Ata: PublicKey;
@@ -98,6 +100,7 @@ describe("rwa-rbac", () => {
       confirmationOptions,
     };
     rwaClient = new RwaClient(config, new Wallet(setup.payerKp));
+    rwaRbacClient = new RwaRbacClient(config, new Wallet(setup.payerKp));
   });
 
   it("Create AssetAccessController successfully", async () => {
@@ -136,11 +139,11 @@ describe("rwa-rbac", () => {
       uri: "https://test.com",
       symbol: "TFT",
     };
-    const setupIx = await rwaClient.assetController.setupNewRegistry(
+    const setupIx = await rwaRbacClient.assetController.setupNewRegistry(
       setupAssetControllerArgs
     );
     await sendAndConfirmTransaction(
-      rwaClient.provider.connection,
+      rwaRbacClient.provider.connection,
       new Transaction().add(...setupIx.ixs),
       [setup.payerKp, ...setupIx.signers]
     );
@@ -229,7 +232,7 @@ describe("rwa-rbac", () => {
 
   it("Assign users to UserRole 1 successfully", async () => {
     const userRoleDataLenPre = (
-      await connection.getAccountInfo(setup.userRole1)
+      await connection.getAccountInfo(setup.userRole1, "processed")
     ).data.length;
     await program.methods
       .assignUserRole([signer2.publicKey, signer3.publicKey])
@@ -258,34 +261,20 @@ describe("rwa-rbac", () => {
 
   it("CPI: Update Asset Metadata", async () => {
     const updateAssetMetadataArgs = {
-      authority: setup.authority.toString(),
       name: "Test Class Asset - Updated",
       assetMint: mint,
-      payer: setup.payer.toString(),
+      authority: setup.controllerAuthority.toString(), // ControllerAuthority
+      payer: setup.payer.toString(), // Payer Account
+      signer: signer1.publicKey.toString(), // User Account
     };
-    const updateIx = await rwaClient.assetController.updateAssetMetadata(
-      updateAssetMetadataArgs
+    const updateIx = await rwaRbacClient.assetController.updateAssetMetadata(
+      updateAssetMetadataArgs,
+      setup.assetAccessController,
+      setup.userRole1
     );
-    const data = updateIx.data;
-    const wrappedIx = await program.methods
-      .updateAssetMetadata(data)
-      .accountsStrict({
-        payer: setup.payer,
-        user: signer1.publicKey,
-        controllerAuthority: setup.controllerAuthority,
-        assetAccessController: setup.assetAccessController,
-        authorizedUserRole: setup.userRole1,
-        assetMint: mint,
-        assetController,
-        assetControllerProgram: assetControllerProgramId,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
-        eventAuthority,
-        systemProgram: SystemProgram.programId,
-      })
-      .instruction();
     await sendAndConfirmTransaction(
-      rwaClient.provider.connection,
-      new Transaction().add(wrappedIx),
+      rwaRbacClient.provider.connection,
+      new Transaction().add(updateIx),
       [setup.payerKp, signer1]
     );
   });
@@ -298,19 +287,9 @@ describe("rwa-rbac", () => {
         assetMint: mint,
         payer: setup.payer.toString(),
       },
-      rwaClient.provider
+      rwaRbacClient.provider
     );
     const data = closeIx.data;
-    console.log({
-      user: signer1.publicKey,
-      controllerAuthority: setup.controllerAuthority,
-      assetAccessController: setup.assetAccessController,
-      authorizedUserRole: setup.userRole1,
-      assetControllerProgram: assetControllerProgramId,
-      assetMint: mint,
-      assetController,
-      tokenProgram: TOKEN_2022_PROGRAM_ID,
-    });
     const wrappedIx = await program.methods
       .closeMintAccount(data)
       .accountsStrict({
@@ -325,7 +304,7 @@ describe("rwa-rbac", () => {
       })
       .instruction();
     await sendAndConfirmTransaction(
-      rwaClient.provider.connection,
+      rwaRbacClient.provider.connection,
       new Transaction().add(wrappedIx),
       [setup.payerKp, signer1]
     );
@@ -334,41 +313,21 @@ describe("rwa-rbac", () => {
   it("CPI: Issue Tokens", async () => {
     const issueArgs: IssueTokenArgs = {
       authority: setup.controllerAuthority,
-      payer: setup.payer.toString(),
-      owner: setup.user1.toString(),
+      payer: setup.payer.toString(), // Payer Account
+      signer: signer1.publicKey.toString(), // User Account
+      owner: setup.user1.toString(), // Target Account
       assetMint: mint,
       amount: 1000000,
     };
-    const rawIx = await rwaClient.assetController.issueTokenIxns(issueArgs);
-    const data = rawIx[0].data;
-    const wrappedIx = await program.methods
-      .issueTokens(data)
-      .accountsStrict({
-        user: signer1.publicKey,
-        controllerAuthority: setup.controllerAuthority,
-        assetAccessController: setup.assetAccessController,
-        authorizedUserRole: setup.userRole1,
-        assetControllerProgram: assetControllerProgramId,
-        assetMint: mint,
-        assetController,
-        to: setup.user1,
-        tokenAccount: user1Ata,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-        systemProgram: SystemProgram.programId,
-      })
-      .instruction();
-    // ATA needs to be created separately as controller_pda cannot be payer.
-    const createAtaIx = createAssociatedTokenAccountInstruction(
-      setup.payer,
-      user1Ata,
-      setup.user1,
-      new PublicKey(mint),
-      TOKEN_2022_PROGRAM_ID
+    const acc = await rwaRbacClient.provider.connection.getBalance(setup.payer);
+    const issueTokenIxns = await rwaRbacClient.assetController.issueTokenIxns(
+      issueArgs,
+      setup.assetAccessController,
+      setup.userRole1
     );
     await sendAndConfirmTransaction(
-      rwaClient.provider.connection,
-      new Transaction().add(...[createAtaIx, wrappedIx]),
+      rwaRbacClient.provider.connection,
+      new Transaction().add(...issueTokenIxns),
       [setup.payerKp, signer1]
     );
   });
@@ -381,7 +340,7 @@ describe("rwa-rbac", () => {
         owner: setup.user1.toString(),
         assetMint: mint,
       },
-      rwaClient.provider
+      rwaRbacClient.provider
     );
     const data = freezeIx.data;
     const wrappedIx = await program.methods
@@ -399,7 +358,7 @@ describe("rwa-rbac", () => {
       })
       .instruction();
     await sendAndConfirmTransaction(
-      rwaClient.provider.connection,
+      rwaRbacClient.provider.connection,
       new Transaction().add(wrappedIx),
       [setup.payerKp, signer1]
     );
@@ -413,7 +372,7 @@ describe("rwa-rbac", () => {
         owner: setup.user1.toString(),
         assetMint: mint,
       },
-      rwaClient.provider
+      rwaRbacClient.provider
     );
     const data = thawIx.data;
     const wrappedIx = await program.methods
@@ -431,7 +390,7 @@ describe("rwa-rbac", () => {
       })
       .instruction();
     await sendAndConfirmTransaction(
-      rwaClient.provider.connection,
+      rwaRbacClient.provider.connection,
       new Transaction().add(wrappedIx),
       [setup.payerKp, signer1]
     );
@@ -445,7 +404,7 @@ describe("rwa-rbac", () => {
         amount: 100,
         authority: setup.controllerAuthority.toString(),
       },
-      rwaClient.provider
+      rwaRbacClient.provider
     );
     const data = revokeIx[0].data;
     const remainingAccounts = [
@@ -522,7 +481,7 @@ describe("rwa-rbac", () => {
       TOKEN_2022_PROGRAM_ID
     );
     await sendAndConfirmTransaction(
-      rwaClient.provider.connection,
+      rwaRbacClient.provider.connection,
       new Transaction().add(...[createAtaIx, wrappedIx]),
       [setup.payerKp, signer1]
     );
@@ -536,7 +495,7 @@ describe("rwa-rbac", () => {
         payer: setup.payer.toString(),
         rate: 200,
       },
-      rwaClient.provider
+      rwaRbacClient.provider
     );
     const data = updateIx.data;
     const wrappedIx = await program.methods
@@ -554,7 +513,7 @@ describe("rwa-rbac", () => {
       })
       .instruction();
     await sendAndConfirmTransaction(
-      rwaClient.provider.connection,
+      rwaRbacClient.provider.connection,
       new Transaction().add(wrappedIx),
       [setup.payerKp, signer1]
     );
@@ -574,7 +533,7 @@ describe("rwa-rbac", () => {
           identityApproval: {},
         },
       },
-      rwaClient.provider
+      rwaRbacClient.provider
     );
     const data = ixs[0].data;
     const ix = await program.methods
@@ -592,7 +551,7 @@ describe("rwa-rbac", () => {
       })
       .instruction();
     await sendAndConfirmTransaction(
-      rwaClient.provider.connection,
+      rwaRbacClient.provider.connection,
       new Transaction().add(ix),
       [setup.payerKp, signer1]
     );
@@ -631,16 +590,22 @@ describe("rwa-rbac", () => {
       })
       .instruction();
     await sendAndConfirmTransaction(
-      rwaClient.provider.connection,
+      rwaRbacClient.provider.connection,
       new Transaction().add(wrappedIx),
       [setup.payerKp, signer1]
     );
-    const policyAccountData = await getPolicyAccount(mint, rwaClient.provider);
+    const policyAccountData = await getPolicyAccount(
+      mint,
+      rwaRbacClient.provider
+    );
     assert.equal(policyAccountData.policies.length, 2);
   });
 
   it("CPI: Detach from Policy Account", async () => {
-    let policyAccountData = await getPolicyAccount(mint, rwaClient.provider);
+    let policyAccountData = await getPolicyAccount(
+      mint,
+      rwaRbacClient.provider
+    );
 
     for (const policy of policyAccountData?.policies ?? []) {
       const policyIx = await rwaClient.policyEngine.detachPolicy({
@@ -666,12 +631,12 @@ describe("rwa-rbac", () => {
         })
         .instruction();
       await sendAndConfirmTransaction(
-        rwaClient.provider.connection,
+        rwaRbacClient.provider.connection,
         new Transaction().add(wrappedIx),
         [setup.payerKp, signer1]
       );
     }
-    policyAccountData = await getPolicyAccount(mint, rwaClient.provider);
+    policyAccountData = await getPolicyAccount(mint, rwaRbacClient.provider);
     assert.equal(policyAccountData.policies.length, 0);
   });
 
@@ -684,7 +649,7 @@ describe("rwa-rbac", () => {
         level: 1,
         signer: setup.controllerAuthority.toString(),
       },
-      rwaClient.provider
+      rwaRbacClient.provider
     );
     const data = identityAccountIx.data;
     const wrappedIx = await program.methods
@@ -702,7 +667,7 @@ describe("rwa-rbac", () => {
       })
       .instruction();
     await sendAndConfirmTransaction(
-      rwaClient.provider.connection,
+      rwaRbacClient.provider.connection,
       new Transaction().add(wrappedIx),
       [setup.payerKp, signer1]
     );
@@ -717,7 +682,7 @@ describe("rwa-rbac", () => {
         level: 2,
         signer: setup.controllerAuthority.toString(),
       },
-      rwaClient.provider
+      rwaRbacClient.provider
     );
     const data = addLevelIx.data;
     const wrappedIx = await program.methods
@@ -735,7 +700,7 @@ describe("rwa-rbac", () => {
       })
       .instruction();
     await sendAndConfirmTransaction(
-      rwaClient.provider.connection,
+      rwaRbacClient.provider.connection,
       new Transaction().add(wrappedIx),
       [setup.payerKp, signer1]
     );
@@ -750,7 +715,7 @@ describe("rwa-rbac", () => {
         level: 2,
         signer: setup.controllerAuthority.toString(),
       },
-      rwaClient.provider
+      rwaRbacClient.provider
     );
     const data = removeLevelIx.data;
     const wrappedIx = await program.methods
@@ -768,14 +733,14 @@ describe("rwa-rbac", () => {
       })
       .instruction();
     await sendAndConfirmTransaction(
-      rwaClient.provider.connection,
+      rwaRbacClient.provider.connection,
       new Transaction().add(wrappedIx),
       [setup.payerKp, signer1]
     );
   });
 
   it("CPI: Revoke Identity Account", async () => {
-    const identityProgram = getIdentityRegistryProgram(rwaClient.provider);
+    const identityProgram = getIdentityRegistryProgram(rwaRbacClient.provider);
     const revokeIx = await identityProgram.methods
       .revokeIdentityAccount(setup.user1)
       .accountsStrict({
@@ -800,7 +765,7 @@ describe("rwa-rbac", () => {
       })
       .instruction();
     await sendAndConfirmTransaction(
-      rwaClient.provider.connection,
+      rwaRbacClient.provider.connection,
       new Transaction().add(wrappedIx),
       [setup.payerKp, signer1]
     );
