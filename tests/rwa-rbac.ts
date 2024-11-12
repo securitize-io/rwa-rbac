@@ -78,7 +78,7 @@ describe("rwa-rbac", () => {
   const decimals = 2;
   const roleId1 = new BN(1);
   const roleId2 = new BN(2);
-  const uniqueSeed = new BN(77);
+  const uniqueSeed = 77;
   const payer = program.provider.publicKey;
 
   const signer1 = Keypair.generate();
@@ -86,7 +86,7 @@ describe("rwa-rbac", () => {
   const signer3 = Keypair.generate();
 
   before(async () => {
-    setup = await setupTests(uniqueSeed.toNumber());
+    setup = await setupTests(uniqueSeed);
 
     const confirmationOptions: ConfirmOptions = {
       skipPreflight: false,
@@ -104,17 +104,16 @@ describe("rwa-rbac", () => {
   });
 
   it("Create AssetAccessController successfully", async () => {
-    await program.methods
-      .createController(uniqueSeed)
-      .accountsStrict({
-        payer,
-        admin: signer1.publicKey,
-        assetAccessController: setup.assetAccessController,
-        systemProgram: SystemProgram.programId,
-      })
-      .signers([signer1])
-      .rpc();
-
+    const ix = await rwaRbacClient.createAssetAccessControllerIxn({
+      payer: setup.payer,
+      admin: signer1.publicKey,
+      uniqueSeed,
+    });
+    await sendAndConfirmTransaction(
+      rwaRbacClient.provider.connection,
+      new Transaction().add(ix),
+      [setup.payerKp, signer1]
+    );
     const controllerAccount = await program.account.assetAccessController.fetch(
       setup.assetAccessController
     );
@@ -126,7 +125,7 @@ describe("rwa-rbac", () => {
       setup.controllerAuthorityBump
     );
     assert(controllerAccount.admin.equals(signer1.publicKey));
-    assert(controllerAccount.uniqueSeed.eq(uniqueSeed));
+    assert(controllerAccount.uniqueSeed.eqn(uniqueSeed));
     assert(controllerAccount.userRolesCount.eqn(0));
   });
 
@@ -170,21 +169,22 @@ describe("rwa-rbac", () => {
 
   it("Create UserRole 1 successfully", async () => {
     const name = "Role1";
-    const allowedAdminIxs = new BN(1);
-    const allowedMediciIxs = new BN(2);
+    const allowedAdminIxs = 1;
+    const allowedMediciIxs = 2;
 
-    await program.methods
-      .createUserRole(name, allowedAdminIxs, allowedMediciIxs)
-      .accountsStrict({
-        payer,
-        user: signer1.publicKey,
-        newUserRole: setup.userRole1,
-        authorizedUserRole: null,
-        assetAccessController: setup.assetAccessController,
-        systemProgram: SystemProgram.programId,
-      })
-      .signers([signer1])
-      .rpc();
+    const ix = await rwaRbacClient.createUserRoleIxn({
+      name,
+      allowedAdminIxs,
+      allowedMediciIxs,
+      payer: setup.payer,
+      user: signer1.publicKey,
+      assetAccessController: setup.assetAccessController,
+    });
+    await sendAndConfirmTransaction(
+      rwaRbacClient.provider.connection,
+      new Transaction().add(ix),
+      [setup.payerKp, signer1]
+    );
 
     const userRoleAccount = await program.account.userRole.fetch(
       setup.userRole1
@@ -194,8 +194,8 @@ describe("rwa-rbac", () => {
     );
     assert(userRoleAccount.id.eq(roleId1));
     assert.equal(userRoleAccount.name, name);
-    assert(userRoleAccount.allowedAdminIxs.eq(allowedAdminIxs));
-    assert(userRoleAccount.allowedMediciIxs.eq(allowedMediciIxs));
+    assert(userRoleAccount.allowedAdminIxs.eqn(allowedAdminIxs));
+    assert(userRoleAccount.allowedMediciIxs.eqn(allowedMediciIxs));
     assert.equal(userRoleAccount.users.length, 0);
 
     const controllerAccount = await program.account.assetAccessController.fetch(
@@ -234,18 +234,18 @@ describe("rwa-rbac", () => {
     const userRoleDataLenPre = (
       await connection.getAccountInfo(setup.userRole1, "processed")
     ).data.length;
-    await program.methods
-      .assignUserRole([signer2.publicKey, signer3.publicKey])
-      .accountsStrict({
-        payer,
-        user: signer1.publicKey,
-        userRole: setup.userRole1,
-        authorizedUserRole: null,
-        assetAccessController: setup.assetAccessController,
-        systemProgram: SystemProgram.programId,
-      })
-      .signers([signer1])
-      .rpc();
+    const ix = await rwaRbacClient.assignUserRoleIxn({
+      usersToAssign: [signer2.publicKey, signer3.publicKey],
+      userRole: setup.userRole1,
+      payer: setup.payer,
+      user: signer1.publicKey,
+      assetAccessController: setup.assetAccessController,
+    });
+    await sendAndConfirmTransaction(
+      rwaRbacClient.provider.connection,
+      new Transaction().add(ix),
+      [setup.payerKp, signer1]
+    );
 
     const userRoleAccount = await program.account.userRole.fetch(
       setup.userRole1

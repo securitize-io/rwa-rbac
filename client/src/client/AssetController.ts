@@ -3,6 +3,7 @@ import { RwaRbac } from "../types/generated/rwa_rbac";
 import {
   assetControllerProgramId,
   CloseMintArgs,
+  CommonArgs,
   FreezeTokenArgs,
   getAssetControllerEventAuthority,
   getAssetControllerPda,
@@ -53,6 +54,8 @@ export class AssetController {
   /**
    * Update the asset controller's metadata.
    * @param - {@link UpdateAssetMetadataArgs}
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
    * @returns A Promise that resolves to the instructions to update the asset controller's metadata.
    * */
   async updateAssetMetadata(
@@ -85,6 +88,8 @@ export class AssetController {
   /**
    * Asynchronously generates instructions to issue tokens.
    * @param - {@link IssueTokenArgs}
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
    * @returns A Promise that resolves to the instructions to issue tokens.
    */
   async issueTokenIxns(
@@ -167,19 +172,31 @@ export class AssetController {
   /**
    * Asynchronously generates instruction to freeze a token account.
    * @param args - {@link FreezeTokenArgs}
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
    * @returns A Promise that resolves to the instruction to freeze.
    */
-  async freezeTokenIxn(args: FreezeTokenArgs): Promise<TransactionInstruction> {
-    // TODO
+  async freezeTokenIxn(
+    args: FreezeTokenArgs,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
+    // TODO: Complete this.
     return;
   }
 
   /**
    * Asynchronously generates instruction to thaw a token account.
    * @param args - {@link FreezeTokenArgs}
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
    * @returns A Promise that resolves to the instruction to thaw.
    */
-  async thawTokenIxn(args: FreezeTokenArgs): Promise<TransactionInstruction> {
+  async thawTokenIxn(
+    args: FreezeTokenArgs,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
     // TODO: Complete this
     return;
   }
@@ -187,10 +204,14 @@ export class AssetController {
   /**
    * Asynchronously generates instructions to revoke tokens from a user.
    * @param args - {@link RevokeTokensArgs}
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
    * @returns A Promise that resolves to the instructions to revoke.
    */
   async revokeTokenIxn(
-    args: RevokeTokensArgs
+    args: RevokeTokensArgs,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
   ): Promise<TransactionInstruction[]> {
     // TODO: Complete this
     return;
@@ -199,9 +220,31 @@ export class AssetController {
   /**
    * Asynchronously generates instruction to close mint.
    * @param args - {@link CloseMintArgs}
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
    * @returns A Promise that resolves to the instruction to close mint.
    */
-  async closeMintIxn(args: CloseMintArgs): Promise<TransactionInstruction> {
+  async closeMintIxn(
+    args: CloseMintArgs,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
+    // TODO: Complete this
+    return;
+  }
+
+  /**
+   * Asynchronously generates instruction to update mint interest rate.
+   * @param args - {@link CommonArgs}
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @returns A Promise that resolves to the instruction to update mint interest rate.
+   */
+  async updateInterestBearingMintRateIxn(
+    args: CommonArgs,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
     // TODO: Complete this
     return;
   }
