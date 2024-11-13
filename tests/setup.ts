@@ -3,8 +3,15 @@ import {
   identityRegistryProgramId,
 } from "@bridgesplit/rwa-token-sdk";
 import { BN, getProvider } from "@coral-xyz/anchor";
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import {
+  ConfirmOptions,
+  Connection,
+  Keypair,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+} from "@solana/web3.js";
 import { pdas, RBAC_PROGRAM } from "../client/src";
+import { Config } from "@bridgesplit/rwa-token-sdk/dist/classes/types";
 
 export const getIdentityMetadataPda = (assetMint: string, level: number) =>
   PublicKey.findProgramAddressSync(
@@ -48,7 +55,21 @@ export async function setupTests(uniqueSeed: number) {
 
   const [controllerAuthority, controllerAuthorityBump] =
     PublicKey.findProgramAddressSync([controller.toBuffer()], RBAC_PROGRAM);
+
+  const connectionUrl = process.env.RPC_URL ?? "http://localhost:8899";
+  const connection = new Connection(connectionUrl, "processed");
+  const config: Config = {
+    connection,
+    rpcUrl: connectionUrl,
+    confirmationOptions: {
+      skipPreflight: false,
+      maxRetries: 3,
+      commitment: "processed",
+    },
+  };
+
   return {
+    config,
     payerKp,
     payer: payerKp.publicKey,
     signer1Kp,

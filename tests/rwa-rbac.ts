@@ -1,13 +1,10 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Program, BN, Wallet } from "@coral-xyz/anchor";
+import { BN, Wallet } from "@coral-xyz/anchor";
 import {
-  ConfirmOptions,
-  Connection,
   PublicKey,
   sendAndConfirmTransaction,
   Transaction,
 } from "@solana/web3.js";
-import { RwaRbac } from "../target/types/rwa_rbac";
 import { assert } from "chai";
 import {
   getPolicyAccount,
@@ -16,7 +13,6 @@ import {
   IssueTokenArgs,
 } from "@bridgesplit/rwa-token-sdk";
 import { setupTests } from "./setup";
-import { Config } from "@bridgesplit/rwa-token-sdk/dist/classes/types";
 import {
   getAssociatedTokenAddressSync,
   TOKEN_2022_PROGRAM_ID,
@@ -28,11 +24,6 @@ describe("End to End Tests", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
 
-  const program = anchor.workspace.RwaRbac as Program<RwaRbac>;
-
-  const connectionUrl = process.env.RPC_URL ?? "http://localhost:8899";
-  const connection = new Connection(connectionUrl, "processed");
-
   let rwaRbacClient: RwaRbacClient;
   let setup;
   let mint: string;
@@ -43,19 +34,7 @@ describe("End to End Tests", () => {
 
   before(async () => {
     setup = await setupTests(generateUniqueSeed());
-
-    const confirmationOptions: ConfirmOptions = {
-      skipPreflight: false,
-      maxRetries: 3,
-      commitment: "processed",
-    };
-
-    const config: Config = {
-      connection,
-      rpcUrl: connectionUrl,
-      confirmationOptions,
-    };
-    rwaRbacClient = new RwaRbacClient(config, new Wallet(setup.payerKp));
+    rwaRbacClient = new RwaRbacClient(setup.config, new Wallet(setup.payerKp));
   });
 
   it("Create AssetAccessController successfully", async () => {
@@ -69,9 +48,10 @@ describe("End to End Tests", () => {
       new Transaction().add(ix),
       [setup.payerKp, setup.signer1Kp]
     );
-    const controllerAccount = await program.account.assetAccessController.fetch(
-      setup.assetAccessController
-    );
+    const controllerAccount =
+      await rwaRbacClient.rbacProgram.account.assetAccessController.fetch(
+        setup.assetAccessController
+      );
     assert(
       controllerAccount.controllerAuthority.equals(setup.controllerAuthority)
     );
@@ -134,9 +114,8 @@ describe("End to End Tests", () => {
       [setup.payerKp, setup.signer1Kp]
     );
 
-    const userRoleAccount = await program.account.userRole.fetch(
-      setup.userRole1
-    );
+    const userRoleAccount =
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
     assert(
       userRoleAccount.assetAccessController.equals(setup.assetAccessController)
     );
@@ -146,9 +125,10 @@ describe("End to End Tests", () => {
     assert(userRoleAccount.allowedMediciIxs.eqn(allowedMediciIxs));
     assert.equal(userRoleAccount.users.length, 0);
 
-    const controllerAccount = await program.account.assetAccessController.fetch(
-      setup.assetAccessController
-    );
+    const controllerAccount =
+      await rwaRbacClient.rbacProgram.account.assetAccessController.fetch(
+        setup.assetAccessController
+      );
     assert(controllerAccount.userRolesCount.eqn(1));
   });
 
@@ -187,7 +167,10 @@ describe("End to End Tests", () => {
 
   it("Assign users to UserRole 1 successfully", async () => {
     const userRoleDataLenPre = (
-      await connection.getAccountInfo(setup.userRole1, "processed")
+      await rwaRbacClient.provider.connection.getAccountInfo(
+        setup.userRole1,
+        "processed"
+      )
     ).data.length;
     const ix = await rwaRbacClient.assignUserRoleIxn({
       usersToAssign: [setup.signer2, setup.signer3],
@@ -202,11 +185,10 @@ describe("End to End Tests", () => {
       [setup.payerKp, setup.signer1Kp]
     );
 
-    const userRoleAccount = await program.account.userRole.fetch(
-      setup.userRole1
-    );
+    const userRoleAccount =
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
     const userRoleDataLenPost = (
-      await connection.getAccountInfo(setup.userRole1)
+      await rwaRbacClient.provider.connection.getAccountInfo(setup.userRole1)
     ).data.length;
     assert.equal(userRoleDataLenPost - userRoleDataLenPre, 64);
     assert.equal(userRoleAccount.users.length, 2);
@@ -540,9 +522,8 @@ describe("End to End Tests", () => {
       [setup.payerKp, setup.signer2Kp]
     );
 
-    const userRoleAccount = await program.account.userRole.fetch(
-      setup.userRole2
-    );
+    const userRoleAccount =
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole2);
     assert(
       userRoleAccount.assetAccessController.equals(setup.assetAccessController)
     );
@@ -552,9 +533,10 @@ describe("End to End Tests", () => {
     assert(userRoleAccount.allowedMediciIxs.eqn(allowedMediciIxs));
     assert.equal(userRoleAccount.users.length, 0);
 
-    const controllerAccount = await program.account.assetAccessController.fetch(
-      setup.assetAccessController
-    );
+    const controllerAccount =
+      await rwaRbacClient.rbacProgram.account.assetAccessController.fetch(
+        setup.assetAccessController
+      );
     assert(controllerAccount.userRolesCount.eqn(2));
   });
 });
