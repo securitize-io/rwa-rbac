@@ -7,51 +7,23 @@ import {
   PublicKey,
   sendAndConfirmTransaction,
   SystemProgram,
-  SYSVAR_INSTRUCTIONS_PUBKEY,
   Transaction,
 } from "@solana/web3.js";
 import { RwaRbac } from "../target/types/rwa_rbac";
-import { assert, config } from "chai";
+import { assert } from "chai";
 import {
-  assetControllerProgramId,
-  AttachPolicyArgs,
-  getAddLevelToIdentityAccount,
-  getAssetControllerEventAuthority,
-  getCloseMintIx,
-  getCreateIdentityAccountIx,
-  getCreatePolicyAccountIx,
-  getExtraMetasListPda,
-  getFreezeTokenIx,
-  getIdentityAccountPda,
-  getIdentityRegistryPda,
-  getIdentityRegistryProgram,
   getPolicyAccount,
   getPolicyAccountPda,
   getPolicyEnginePda,
-  getPolicyEngineProgram,
-  getRevokeTokensIx,
-  getSetupUserIxs,
-  getThawTokenIx,
-  getTrackerAccountPda,
-  getUpdateInterestBearingMintRateIx,
-  identityRegistryProgramId,
   IssueTokenArgs,
-  policyEngineProgramId,
-  RwaClient,
-  SetupUserArgs,
 } from "@bridgesplit/rwa-token-sdk";
-import { getIdentityMetadataPda, setupTests } from "./setup";
+import { setupTests } from "./setup";
 import { Config } from "@bridgesplit/rwa-token-sdk/dist/classes/types";
 import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccountInstruction,
   getAssociatedTokenAddressSync,
   TOKEN_2022_PROGRAM_ID,
 } from "@solana/spl-token";
-import {
-  getAssetControllerPda,
-  getRemoveLevelFromIdentityAccount,
-} from "../deps/rwa-token/clients/rwa-token-sdk/src";
+import { getAssetControllerPda } from "../deps/rwa-token/clients/rwa-token-sdk/src";
 import { RwaRbacClient } from "../client/src/index";
 
 describe("rwa-rbac", () => {
@@ -64,13 +36,10 @@ describe("rwa-rbac", () => {
   const connection = new Connection(connectionUrl, "processed");
 
   let rwaRbacClient: RwaRbacClient;
-  let rwaClient: RwaClient;
   let setup;
   let mint: string;
   let user1Ata: PublicKey;
   let assetController: PublicKey;
-  let authorityAta: PublicKey;
-  let eventAuthority: PublicKey;
   let policyAccount: PublicKey;
   let policyEngine: PublicKey;
 
@@ -99,7 +68,6 @@ describe("rwa-rbac", () => {
       rpcUrl: connectionUrl,
       confirmationOptions,
     };
-    rwaClient = new RwaClient(config, new Wallet(setup.payerKp));
     rwaRbacClient = new RwaRbacClient(config, new Wallet(setup.payerKp));
   });
 
@@ -156,13 +124,6 @@ describe("rwa-rbac", () => {
       TOKEN_2022_PROGRAM_ID
     );
     assetController = getAssetControllerPda(mint);
-    authorityAta = getAssociatedTokenAddressSync(
-      new PublicKey(mint),
-      assetController,
-      true,
-      TOKEN_2022_PROGRAM_ID
-    );
-    eventAuthority = getAssetControllerEventAuthority();
     policyEngine = getPolicyEnginePda(mint);
     policyAccount = getPolicyAccountPda(mint);
   });
@@ -207,22 +168,29 @@ describe("rwa-rbac", () => {
   it("Fails to create UserRole if unauthorized", async () => {
     try {
       const name = "Role2";
-      const allowedAdminIxs = new BN(0);
-      const allowedMediciIxs = new BN(0);
+      const allowedAdminIxs = 0;
+      const allowedMediciIxs = 0;
 
       // Signer 2 is not a controller admin and has not been added to a valid role.
-      await program.methods
-        .createUserRole(name, allowedAdminIxs, allowedMediciIxs)
-        .accountsStrict({
-          payer,
-          user: signer2.publicKey,
-          newUserRole: setup.userRole2,
-          authorizedUserRole: setup.userRole1,
-          assetAccessController: setup.assetAccessController,
-          systemProgram: SystemProgram.programId,
-        })
-        .signers([signer2])
-        .rpc();
+      const ix = await rwaRbacClient.createUserRoleIxn({
+        name,
+        allowedAdminIxs,
+        allowedMediciIxs,
+        payer: setup.payer,
+        user: signer2.publicKey,
+        assetAccessController: setup.assetAccessController,
+        authorizedUserRole: setup.userRole1,
+      });
+      await sendAndConfirmTransaction(
+        rwaRbacClient.provider.connection,
+        new Transaction().add(ix),
+        [setup.payerKp, signer2]
+      );
+      await sendAndConfirmTransaction(
+        rwaRbacClient.provider.connection,
+        new Transaction().add(ix),
+        [setup.payerKp, signer2]
+      );
       assert(false);
     } catch (err) {
       // TODO: Match for error
@@ -281,45 +249,32 @@ describe("rwa-rbac", () => {
 
   // Callable only when mint supply is 0. Following tests would fail.
   it.skip("CPI: Close Mint Account", async () => {
-    const closeIx = await getCloseMintIx(
+    const closeMintIx = await rwaRbacClient.assetController.closeMintIxn(
       {
-        authority: setup.controllerAuthority.toString(),
+        authority: setup.controllerAuthority.toString(), // ControllerAuthority
+        payer: setup.payer.toString(), // Payer Account
+        signer: signer1.publicKey.toString(), // User Account
         assetMint: mint,
-        payer: setup.payer.toString(),
       },
-      rwaRbacClient.provider
+      setup.assetAccessController,
+      setup.userRole1
     );
-    const data = closeIx.data;
-    const wrappedIx = await program.methods
-      .closeMintAccount(data)
-      .accountsStrict({
-        user: signer1.publicKey,
-        controllerAuthority: setup.controllerAuthority,
-        assetAccessController: setup.assetAccessController,
-        authorizedUserRole: setup.userRole1,
-        assetControllerProgram: assetControllerProgramId,
-        assetMint: mint,
-        assetController,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
-      })
-      .instruction();
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
-      new Transaction().add(wrappedIx),
+      new Transaction().add(closeMintIx),
       [setup.payerKp, signer1]
     );
   });
 
   it("CPI: Issue Tokens", async () => {
     const issueArgs: IssueTokenArgs = {
-      authority: setup.controllerAuthority,
+      authority: setup.controllerAuthority.toString(), // ControllerAuthority
       payer: setup.payer.toString(), // Payer Account
       signer: signer1.publicKey.toString(), // User Account
       owner: setup.user1.toString(), // Target Account
       assetMint: mint,
       amount: 1000000,
     };
-    const acc = await rwaRbacClient.provider.connection.getBalance(setup.payer);
     const issueTokenIxns = await rwaRbacClient.assetController.issueTokenIxns(
       issueArgs,
       setup.assetAccessController,
@@ -333,194 +288,85 @@ describe("rwa-rbac", () => {
   });
 
   it("CPI: Freeze Token Account", async () => {
-    const freezeIx = await getFreezeTokenIx(
+    const freezeIx = await rwaRbacClient.assetController.freezeTokenIxn(
       {
-        authority: setup.controllerAuthority.toString(),
-        payer: setup.payer.toString(),
-        owner: setup.user1.toString(),
+        authority: setup.controllerAuthority.toString(), // ControllerAuthority
+        payer: setup.payer.toString(), // Payer Account
+        signer: signer1.publicKey.toString(), // User Account
+        owner: setup.user1.toString(), // Target Account
         assetMint: mint,
       },
-      rwaRbacClient.provider
+      setup.assetAccessController,
+      setup.userRole1
     );
-    const data = freezeIx.data;
-    const wrappedIx = await program.methods
-      .freezeTokenAccount(data)
-      .accountsStrict({
-        user: signer1.publicKey,
-        controllerAuthority: setup.controllerAuthority,
-        assetAccessController: setup.assetAccessController,
-        authorizedUserRole: setup.userRole1,
-        assetControllerProgram: assetControllerProgramId,
-        assetMint: mint,
-        assetController,
-        tokenAccount: user1Ata,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
-      })
-      .instruction();
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
-      new Transaction().add(wrappedIx),
+      new Transaction().add(freezeIx),
       [setup.payerKp, signer1]
     );
   });
 
   it("CPI: Thaw Token Account", async () => {
-    const thawIx = await getThawTokenIx(
+    const thawIx = await rwaRbacClient.assetController.thawTokenIxn(
       {
-        authority: setup.controllerAuthority.toString(),
-        payer: setup.payer.toString(),
-        owner: setup.user1.toString(),
+        authority: setup.controllerAuthority.toString(), // ControllerAuthority
+        payer: setup.payer.toString(), // Payer Account
+        signer: signer1.publicKey.toString(), // User Account
+        owner: setup.user1.toString(), // Target Account
         assetMint: mint,
       },
-      rwaRbacClient.provider
+      setup.assetAccessController,
+      setup.userRole1
     );
-    const data = thawIx.data;
-    const wrappedIx = await program.methods
-      .thawTokenAccount(data)
-      .accountsStrict({
-        user: signer1.publicKey,
-        controllerAuthority: setup.controllerAuthority,
-        assetAccessController: setup.assetAccessController,
-        authorizedUserRole: setup.userRole1,
-        assetControllerProgram: assetControllerProgramId,
-        assetMint: mint,
-        assetController,
-        tokenAccount: user1Ata,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
-      })
-      .instruction();
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
-      new Transaction().add(wrappedIx),
+      new Transaction().add(thawIx),
       [setup.payerKp, signer1]
     );
   });
 
   it("CPI: Revoke Tokens", async () => {
-    const revokeIx = await getRevokeTokensIx(
+    const revokeIxs = await rwaRbacClient.assetController.revokeTokenIxn(
       {
-        owner: setup.user1.toString(),
+        owner: setup.user1.toString(), // Target Account
         assetMint: mint,
         amount: 100,
-        authority: setup.controllerAuthority.toString(),
+        authority: setup.controllerAuthority.toString(), // ControllerAuthority
       },
-      rwaRbacClient.provider
-    );
-    const data = revokeIx[0].data;
-    const remainingAccounts = [
-      {
-        pubkey: getPolicyEnginePda(mint),
-        isWritable: false,
-        isSigner: false,
-      },
-      {
-        pubkey: identityRegistryProgramId,
-        isWritable: false,
-        isSigner: false,
-      },
-      {
-        pubkey: getIdentityRegistryPda(mint),
-        isWritable: false,
-        isSigner: false,
-      },
-      {
-        pubkey: getIdentityAccountPda(mint, assetController.toString()),
-        isWritable: false,
-        isSigner: false,
-      },
-      {
-        pubkey: getTrackerAccountPda(mint, assetController.toString()),
-        isWritable: true,
-        isSigner: false,
-      },
-      {
-        pubkey: getPolicyAccountPda(mint),
-        isWritable: true,
-        isSigner: false,
-      },
-      {
-        pubkey: SYSVAR_INSTRUCTIONS_PUBKEY,
-        isWritable: false,
-        isSigner: false,
-      },
-      {
-        pubkey: policyEngineProgramId,
-        isWritable: false,
-        isSigner: false,
-      },
-      {
-        pubkey: getExtraMetasListPda(mint),
-        isWritable: false,
-        isSigner: false,
-      },
-    ];
-    const wrappedIx = await program.methods
-      .revokeTokens(data)
-      .accountsStrict({
-        user: signer1.publicKey,
-        controllerAuthority: setup.controllerAuthority,
-        assetAccessController: setup.assetAccessController,
-        authorizedUserRole: setup.userRole1,
-        assetControllerProgram: assetControllerProgramId,
-        assetMint: mint,
-        assetController,
-        authorityTokenAccount: authorityAta,
-        revokeTokenAccount: user1Ata,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-        systemProgram: SystemProgram.programId,
-      })
-      .remainingAccounts(remainingAccounts)
-      .instruction();
-    // ATA needs to be created separately as controller_pda cannot be payer.
-    const createAtaIx = createAssociatedTokenAccountInstruction(
-      setup.payer,
-      authorityAta,
-      assetController,
-      new PublicKey(mint),
-      TOKEN_2022_PROGRAM_ID
+      setup.payer, // Payer Account
+      signer1.publicKey, // User Account
+      setup.assetAccessController,
+      setup.userRole1
     );
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
-      new Transaction().add(...[createAtaIx, wrappedIx]),
+      new Transaction().add(...revokeIxs),
       [setup.payerKp, signer1]
     );
   });
 
   it("CPI: Update Interest Bearing Mint Rate", async () => {
-    const updateIx = await getUpdateInterestBearingMintRateIx(
-      {
-        authority: setup.controllerAuthority.toString(),
-        assetMint: mint,
-        payer: setup.payer.toString(),
-        rate: 200,
-      },
-      rwaRbacClient.provider
-    );
-    const data = updateIx.data;
-    const wrappedIx = await program.methods
-      .updateInterestBearingMintRate(data)
-      .accountsStrict({
-        user: signer1.publicKey,
-        controllerAuthority: setup.controllerAuthority,
-        assetAccessController: setup.assetAccessController,
-        authorizedUserRole: setup.userRole1,
-        assetControllerProgram: assetControllerProgramId,
-        assetMint: mint,
-        assetController,
-        eventAuthority,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
-      })
-      .instruction();
+    const updateIx =
+      await rwaRbacClient.assetController.updateInterestBearingMintRateIxn(
+        {
+          authority: setup.controllerAuthority.toString(), // ControllerAuthority
+          payer: setup.payer.toString(), // Payer Account
+          signer: signer1.publicKey.toString(), // User Account
+          assetMint: mint,
+          rate: 200,
+        },
+        setup.assetAccessController,
+        setup.userRole1
+      );
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
-      new Transaction().add(wrappedIx),
+      new Transaction().add(updateIx),
       [setup.payerKp, signer1]
     );
   });
 
   it("CPI: Create Policy Account", async () => {
-    const { ixs } = await getCreatePolicyAccountIx(
+    const ix = await rwaRbacClient.policyEngine.createPolicy(
       {
         authority: setup.controllerAuthority.toString(),
         assetMint: mint,
@@ -533,23 +379,10 @@ describe("rwa-rbac", () => {
           identityApproval: {},
         },
       },
-      rwaRbacClient.provider
+      signer1.publicKey,
+      setup.assetAccessController,
+      setup.userRole1
     );
-    const data = ixs[0].data;
-    const ix = await program.methods
-      .createPolicyAccount(data)
-      .accountsStrict({
-        payer: setup.payer,
-        user: signer1.publicKey,
-        controllerAuthority: setup.controllerAuthority,
-        assetAccessController: setup.assetAccessController,
-        authorizedUserRole: setup.userRole1,
-        policyEngine,
-        policyAccount,
-        policyEngineProgram: policyEngineProgramId,
-        systemProgram: SystemProgram.programId,
-      })
-      .instruction();
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(ix),
@@ -558,40 +391,28 @@ describe("rwa-rbac", () => {
   });
 
   it("CPI: Attach to Policy Account", async () => {
-    const policyArgs: AttachPolicyArgs = {
-      payer: setup.controllerAuthority.toString(),
-      assetMint: mint,
-      authority: setup.authority.toString(),
-      identityFilter: {
-        identityLevels: [1],
-        comparisionType: { or: {} },
-      },
-      policyType: {
-        transactionAmountLimit: {
-          limit: new BN(10000),
+    const ix = await rwaRbacClient.policyEngine.attachPolicy(
+      {
+        authority: setup.controllerAuthority.toString(), // ControllerAuthority
+        payer: setup.payer.toString(), // Payer Account
+        assetMint: mint,
+        identityFilter: {
+          identityLevels: [1],
+          comparisionType: { or: {} },
+        },
+        policyType: {
+          transactionAmountLimit: {
+            limit: new BN(10000),
+          },
         },
       },
-    };
-
-    const policyIx = await rwaClient.policyEngine.attachPolicy(policyArgs);
-    const data = policyIx.ixs[0].data;
-    const wrappedIx = await program.methods
-      .attachToPolicyAccount(data)
-      .accountsStrict({
-        payer: setup.payer,
-        user: signer1.publicKey,
-        controllerAuthority: setup.controllerAuthority,
-        assetAccessController: setup.assetAccessController,
-        authorizedUserRole: setup.userRole1,
-        policyEngineProgram: policyEngineProgramId,
-        policyEngine,
-        policyAccount,
-        systemProgram: SystemProgram.programId,
-      })
-      .instruction();
+      signer1.publicKey, // User Account
+      setup.assetAccessController,
+      setup.userRole1
+    );
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
-      new Transaction().add(wrappedIx),
+      new Transaction().add(ix),
       [setup.payerKp, signer1]
     );
     const policyAccountData = await getPolicyAccount(
@@ -608,31 +429,21 @@ describe("rwa-rbac", () => {
     );
 
     for (const policy of policyAccountData?.policies ?? []) {
-      const policyIx = await rwaClient.policyEngine.detachPolicy({
-        authority: setup.controllerAuthority.toString(),
-        owner: setup.user1.toString(),
-        assetMint: mint,
-        payer: setup.payer.toString(),
-        hash: policy.hash,
-      });
-      const data = policyIx.ixs[0].data;
-      const wrappedIx = await program.methods
-        .detachFromPolicyAccount(data)
-        .accountsStrict({
-          payer: setup.payer,
-          user: signer1.publicKey,
-          controllerAuthority: setup.controllerAuthority,
-          assetAccessController: setup.assetAccessController,
-          authorizedUserRole: setup.userRole1,
-          policyEngineProgram: policyEngineProgramId,
-          policyEngine,
-          policyAccount,
-          systemProgram: SystemProgram.programId,
-        })
-        .instruction();
+      const ix = await rwaRbacClient.policyEngine.detachPolicy(
+        {
+          authority: setup.controllerAuthority.toString(), // ControllerAuthority
+          payer: setup.payer.toString(), // Payer Account
+          owner: setup.user1.toString(), // Target Account
+          assetMint: mint,
+          hash: policy.hash,
+        },
+        signer1.publicKey, // User Account
+        setup.assetAccessController,
+        setup.userRole1
+      );
       await sendAndConfirmTransaction(
         rwaRbacClient.provider.connection,
-        new Transaction().add(wrappedIx),
+        new Transaction().add(ix),
         [setup.payerKp, signer1]
       );
     }
@@ -641,153 +452,106 @@ describe("rwa-rbac", () => {
   });
 
   it("CPI: Create Identity Account", async () => {
-    const identityAccountIx = await getCreateIdentityAccountIx(
+    const { ixs } = await rwaRbacClient.identityRegistry.setupUserIxns(
       {
-        payer: setup.payer.toString(),
-        owner: setup.user1.toString(),
+        payer: setup.payer.toString(), // Payer Account
+        signer: signer1.publicKey.toString(), // User Account
+        owner: setup.user1.toString(), // Target Account
         assetMint: mint,
-        level: 1,
-        signer: setup.controllerAuthority.toString(),
+        levels: [1],
       },
-      rwaRbacClient.provider
+      setup.controllerAuthority,
+      setup.assetAccessController,
+      setup.userRole1
     );
-    const data = identityAccountIx.data;
-    const wrappedIx = await program.methods
-      .createIdentityAccount(data)
-      .accountsStrict({
-        payer: setup.payer,
-        user: signer1.publicKey,
-        controllerAuthority: setup.controllerAuthority,
-        assetAccessController: setup.assetAccessController,
-        authorizedUserRole: setup.userRole1,
-        identityRegistryProgram: identityRegistryProgramId,
-        identityRegistry: getIdentityRegistryPda(mint),
-        identityAccount: getIdentityAccountPda(mint, setup.user1),
-        systemProgram: SystemProgram.programId,
-      })
-      .instruction();
+    const [identityAccountIx] = ixs;
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
-      new Transaction().add(wrappedIx),
+      new Transaction().add(identityAccountIx),
       [setup.payerKp, signer1]
     );
   });
 
   it("CPI: Add Level to Identity Account", async () => {
-    const addLevelIx = await getAddLevelToIdentityAccount(
-      {
-        payer: setup.payer.toString(),
-        owner: setup.user1.toString(),
-        assetMint: mint,
-        level: 2,
-        signer: setup.controllerAuthority.toString(),
-      },
-      rwaRbacClient.provider
-    );
-    const data = addLevelIx.data;
-    const wrappedIx = await program.methods
-      .addLevelToIdentityAccount(data)
-      .accountsStrict({
-        payer: setup.payer,
-        user: signer1.publicKey,
-        controllerAuthority: setup.controllerAuthority,
-        assetAccessController: setup.assetAccessController,
-        authorizedUserRole: setup.userRole1,
-        identityRegistryProgram: identityRegistryProgramId,
-        identityRegistry: getIdentityRegistryPda(mint),
-        identityAccount: getIdentityAccountPda(mint, setup.user1),
-        systemProgram: SystemProgram.programId,
-      })
-      .instruction();
+    const addLevelIx =
+      await rwaRbacClient.identityRegistry.addIdentityLevelToUserAccount(
+        {
+          authority: setup.controllerAuthority.toString(), // ControllerAuthority
+          payer: setup.payer.toString(), // Payer Account
+          signer: signer1.publicKey.toString(), // User Account
+          owner: setup.user1.toString(), // Target Account
+          assetMint: mint,
+          level: 2,
+        },
+        setup.assetAccessController,
+        setup.userRole1
+      );
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
-      new Transaction().add(wrappedIx),
+      new Transaction().add(addLevelIx),
       [setup.payerKp, signer1]
     );
   });
 
   it("CPI: Remove Level from Identity Account", async () => {
-    const removeLevelIx = await getRemoveLevelFromIdentityAccount(
-      {
-        payer: setup.payer.toString(),
-        owner: setup.user1.toString(),
-        assetMint: mint,
-        level: 2,
-        signer: setup.controllerAuthority.toString(),
-      },
-      rwaRbacClient.provider
-    );
-    const data = removeLevelIx.data;
-    const wrappedIx = await program.methods
-      .removeLevelFromIdentityAccount(data)
-      .accountsStrict({
-        payer: setup.payer,
-        user: signer1.publicKey,
-        controllerAuthority: setup.controllerAuthority,
-        assetAccessController: setup.assetAccessController,
-        authorizedUserRole: setup.userRole1,
-        identityRegistryProgram: identityRegistryProgramId,
-        identityRegistry: getIdentityRegistryPda(mint),
-        identityAccount: getIdentityAccountPda(mint, setup.user1),
-        systemProgram: SystemProgram.programId,
-      })
-      .instruction();
+    const removeLevelIx =
+      await rwaRbacClient.identityRegistry.removeIdentityLevelFromUserAccount(
+        {
+          payer: setup.payer.toString(), // Payer Account
+          signer: signer1.publicKey.toString(), // User Account
+          owner: setup.user1.toString(), // Target Account
+          authority: setup.controllerAuthority.toString(), // ControllerAuthority
+          assetMint: mint,
+          level: 2,
+        },
+        setup.assetAccessController,
+        setup.userRole1
+      );
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
-      new Transaction().add(wrappedIx),
+      new Transaction().add(removeLevelIx),
       [setup.payerKp, signer1]
     );
   });
 
   it("CPI: Revoke Identity Account", async () => {
-    const identityProgram = getIdentityRegistryProgram(rwaRbacClient.provider);
-    const revokeIx = await identityProgram.methods
-      .revokeIdentityAccount(setup.user1)
-      .accountsStrict({
-        payer: setup.payer.toString(),
-        signer: setup.controllerAuthority.toString(),
-        identityRegistry: getIdentityRegistryPda(mint),
-        identityAccount: getIdentityAccountPda(mint, setup.user1),
-      })
-      .instruction();
-    const data = revokeIx.data;
-    const wrappedIx = await program.methods
-      .revokeIdentityAccount(data)
-      .accountsStrict({
-        payer: setup.payer,
-        user: signer1.publicKey,
-        controllerAuthority: setup.controllerAuthority,
-        assetAccessController: setup.assetAccessController,
-        authorizedUserRole: setup.userRole1,
-        identityRegistryProgram: identityRegistryProgramId,
-        identityRegistry: getIdentityRegistryPda(mint),
-        identityAccount: getIdentityAccountPda(mint, setup.user1),
-      })
-      .instruction();
+    const revokeIx = await rwaRbacClient.identityRegistry.revokeIdentityIxn(
+      {
+        payer: setup.payer.toString(), // Payer Account
+        signer: signer1.publicKey.toString(), // User Account
+        owner: setup.user1.toString(), // Target Account
+        authority: setup.controllerAuthority.toString(), // ControllerAuthority
+        assetMint: mint,
+      },
+      setup.assetAccessController,
+      setup.userRole1
+    );
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
-      new Transaction().add(wrappedIx),
+      new Transaction().add(revokeIx),
       [setup.payerKp, signer1]
     );
   });
 
   it("Create UserRole 2 successfully with authorized UserRole", async () => {
     const name = "Role2";
-    const allowedAdminIxs = new BN(0);
-    const allowedMediciIxs = new BN(0);
+    const allowedAdminIxs = 0;
+    const allowedMediciIxs = 0;
 
-    await program.methods
-      .createUserRole(name, allowedAdminIxs, allowedMediciIxs)
-      .accountsStrict({
-        payer,
-        user: signer2.publicKey,
-        newUserRole: setup.userRole2,
-        authorizedUserRole: setup.userRole1,
-        assetAccessController: setup.assetAccessController,
-        systemProgram: SystemProgram.programId,
-      })
-      .signers([signer2])
-      .rpc();
+    const ix = await rwaRbacClient.createUserRoleIxn({
+      payer: setup.payer,
+      user: signer2.publicKey,
+      assetAccessController: setup.assetAccessController,
+      name,
+      allowedAdminIxs,
+      allowedMediciIxs,
+      authorizedUserRole: setup.userRole1,
+    });
+    await sendAndConfirmTransaction(
+      rwaRbacClient.provider.connection,
+      new Transaction().add(ix),
+      [setup.payerKp, signer2]
+    );
 
     const userRoleAccount = await program.account.userRole.fetch(
       setup.userRole2
@@ -797,8 +561,8 @@ describe("rwa-rbac", () => {
     );
     assert(userRoleAccount.id.eq(roleId2));
     assert.equal(userRoleAccount.name, name);
-    assert(userRoleAccount.allowedAdminIxs.eq(allowedAdminIxs));
-    assert(userRoleAccount.allowedMediciIxs.eq(allowedMediciIxs));
+    assert(userRoleAccount.allowedAdminIxs.eqn(allowedAdminIxs));
+    assert(userRoleAccount.allowedMediciIxs.eqn(allowedMediciIxs));
     assert.equal(userRoleAccount.users.length, 0);
 
     const controllerAccount = await program.account.assetAccessController.fetch(

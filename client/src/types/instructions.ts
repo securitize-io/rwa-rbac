@@ -1,3 +1,4 @@
+import { CommonArgs } from "@bridgesplit/rwa-token-sdk/dist";
 import { PublicKey } from "@solana/web3.js";
 
 /** Args used to setup a AssetAccessController  */
@@ -26,4 +27,19 @@ export type AssignUserRoleArgs = {
   usersToAssign: PublicKey[];
   assetAccessController: PublicKey;
   authorizedUserRole?: PublicKey;
+};
+
+/** Args used to update asset mitn interest rate  */
+export type UpdateInterestBearingMintRateArgs = {
+  rate: number;
+  authority: string;
+} & CommonArgs;
+
+/** Args used to revoke identity from registry  */
+export type RevokeIdentityArgs = {
+  assetMint: string;
+  payer: string;
+  signer: string;
+  owner: string;
+  authority: string;
 };
