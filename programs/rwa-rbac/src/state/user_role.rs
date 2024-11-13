@@ -55,12 +55,17 @@ impl UserRole {
     }
 
     /// Add users to users vector if user is not already assigned.
-    pub fn assign_user_roles(&mut self, users_to_assign: Vec<Pubkey>) {
+    pub fn assign_users(&mut self, users_to_assign: Vec<Pubkey>) {
         users_to_assign.iter().for_each(|user| {
             if !self.users.contains(user) {
                 self.users.push(*user);
             }
         });
+    }
+
+    /// Remove users from users vector if the user is currently assigned.
+    pub fn remove_users(&mut self, users_to_remove: Vec<Pubkey>) {
+        self.users.retain(|user| !users_to_remove.contains(user));
     }
 
     /// Returns true if there is sufficient space allocated to account to store

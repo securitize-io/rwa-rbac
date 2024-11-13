@@ -23,7 +23,14 @@ pub mod rwa_rbac {
         ctx: Context<CreateAssetAccessController>,
         unique_seed: u64,
     ) -> Result<()> {
-        create_controller::handler(ctx, unique_seed)
+        instructions::create_controller::handler(ctx, unique_seed)
+    }
+
+    pub fn update_controller_admin(
+        ctx: Context<UpdateControllerAdmin>,
+        new_admin: Pubkey,
+    ) -> Result<()> {
+        instructions::update_controller_admin::handler(ctx, new_admin)
     }
 
     pub fn create_user_role(
@@ -35,11 +42,31 @@ pub mod rwa_rbac {
         instructions::create_user_role::handler(ctx, name, allowed_admin_ixs, allowed_medici_ixs)
     }
 
+    pub fn modify_user_role(
+        ctx: Context<ModifyUserRole>,
+        name: String,
+        allowed_admin_ixs: u64,
+        allowed_medici_ixs: u64,
+    ) -> Result<()> {
+        instructions::modify_user_role::handler(ctx, name, allowed_admin_ixs, allowed_medici_ixs)
+    }
+
+    pub fn delete_user_role(ctx: Context<DeleteUserRole>) -> Result<()> {
+        instructions::delete_user_role::handler(ctx)
+    }
+
     pub fn assign_user_role(
         ctx: Context<AssignUserRole>,
         users_to_assign: Vec<Pubkey>,
     ) -> Result<()> {
         instructions::assign_user_role::handler(ctx, users_to_assign)
+    }
+
+    pub fn remove_user_role(
+        ctx: Context<RemoveUserRole>,
+        users_to_remove: Vec<Pubkey>,
+    ) -> Result<()> {
+        instructions::remove_user_role::handler(ctx, users_to_remove)
     }
 
     pub fn issue_tokens(ctx: Context<IssueTokens>, cpi_data: Vec<u8>) -> Result<()> {

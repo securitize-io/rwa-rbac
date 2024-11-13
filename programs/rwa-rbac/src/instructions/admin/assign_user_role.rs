@@ -49,7 +49,7 @@ pub fn handler(ctx: Context<AssignUserRole>, users_to_assign: Vec<Pubkey>) -> Re
 
     // Assign users to role.
     let user_role = &mut ctx.accounts.user_role;
-    user_role.assign_user_roles(users_to_assign);
+    user_role.assign_users(users_to_assign);
 
     Ok(())
 }
