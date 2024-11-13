@@ -17,8 +17,9 @@ export const getIdentityMetadataPda = (assetMint: string, level: number) =>
 
 export async function setupTests(uniqueSeed: number) {
   const payerKp = new Keypair();
-  const authorityKp = new Keypair();
-  const delegateKp = new Keypair();
+  const signer1Kp = new Keypair();
+  const signer2Kp = new Keypair();
+  const signer3Kp = new Keypair();
   const user1Kp = new Keypair();
   const user2Kp = new Keypair();
   const user3Kp = new Keypair();
@@ -27,8 +28,9 @@ export async function setupTests(uniqueSeed: number) {
   // airdrop to all users
   const txns = await Promise.all([
     provider.connection.requestAirdrop(payerKp.publicKey, LAMPORTS_PER_SOL),
-    provider.connection.requestAirdrop(authorityKp.publicKey, LAMPORTS_PER_SOL),
-    provider.connection.requestAirdrop(delegateKp.publicKey, LAMPORTS_PER_SOL),
+    provider.connection.requestAirdrop(signer1Kp.publicKey, LAMPORTS_PER_SOL),
+    provider.connection.requestAirdrop(signer2Kp.publicKey, LAMPORTS_PER_SOL),
+    provider.connection.requestAirdrop(signer3Kp.publicKey, LAMPORTS_PER_SOL),
     provider.connection.requestAirdrop(user1Kp.publicKey, LAMPORTS_PER_SOL),
     provider.connection.requestAirdrop(user2Kp.publicKey, LAMPORTS_PER_SOL),
     provider.connection.requestAirdrop(user3Kp.publicKey, LAMPORTS_PER_SOL),
@@ -49,10 +51,12 @@ export async function setupTests(uniqueSeed: number) {
   return {
     payerKp,
     payer: payerKp.publicKey,
-    authorityKp,
-    authority: authorityKp.publicKey,
-    delegateKp,
-    delegate: delegateKp.publicKey,
+    signer1Kp,
+    signer1: signer1Kp.publicKey,
+    signer2Kp,
+    signer2: signer2Kp.publicKey,
+    signer3Kp,
+    signer3: signer3Kp.publicKey,
     provider,
     user1Kp,
     user1: user1Kp.publicKey,
@@ -60,9 +64,12 @@ export async function setupTests(uniqueSeed: number) {
     user2: user2Kp.publicKey,
     user3Kp,
     user3: user3Kp.publicKey,
+    uniqueSeed,
     assetAccessController: controller,
     controllerAuthority,
     controllerAuthorityBump,
+    roleId1,
+    roleId2,
     userRole1,
     userRole2,
   };

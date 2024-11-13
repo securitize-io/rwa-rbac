@@ -3,10 +3,8 @@ import { Program, BN, Wallet } from "@coral-xyz/anchor";
 import {
   ConfirmOptions,
   Connection,
-  Keypair,
   PublicKey,
   sendAndConfirmTransaction,
-  SystemProgram,
   Transaction,
 } from "@solana/web3.js";
 import { RwaRbac } from "../target/types/rwa_rbac";
@@ -24,9 +22,9 @@ import {
   TOKEN_2022_PROGRAM_ID,
 } from "@solana/spl-token";
 import { getAssetControllerPda } from "../deps/rwa-token/clients/rwa-token-sdk/src";
-import { RwaRbacClient } from "../client/src/index";
+import { generateUniqueSeed, RwaRbacClient } from "../client/src/index";
 
-describe("rwa-rbac", () => {
+describe("End to End Tests", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
 
@@ -43,19 +41,8 @@ describe("rwa-rbac", () => {
   let policyAccount: PublicKey;
   let policyEngine: PublicKey;
 
-  // Test setup
-  const decimals = 2;
-  const roleId1 = new BN(1);
-  const roleId2 = new BN(2);
-  const uniqueSeed = 77;
-  const payer = program.provider.publicKey;
-
-  const signer1 = Keypair.generate();
-  const signer2 = Keypair.generate();
-  const signer3 = Keypair.generate();
-
   before(async () => {
-    setup = await setupTests(uniqueSeed);
+    setup = await setupTests(generateUniqueSeed());
 
     const confirmationOptions: ConfirmOptions = {
       skipPreflight: false,
@@ -74,13 +61,13 @@ describe("rwa-rbac", () => {
   it("Create AssetAccessController successfully", async () => {
     const ix = await rwaRbacClient.createAssetAccessControllerIxn({
       payer: setup.payer,
-      admin: signer1.publicKey,
-      uniqueSeed,
+      admin: setup.signer1,
+      uniqueSeed: setup.uniqueSeed,
     });
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(ix),
-      [setup.payerKp, signer1]
+      [setup.payerKp, setup.signer1Kp]
     );
     const controllerAccount = await program.account.assetAccessController.fetch(
       setup.assetAccessController
@@ -92,14 +79,14 @@ describe("rwa-rbac", () => {
       controllerAccount.controllerAuthorityBump,
       setup.controllerAuthorityBump
     );
-    assert(controllerAccount.admin.equals(signer1.publicKey));
-    assert(controllerAccount.uniqueSeed.eqn(uniqueSeed));
+    assert(controllerAccount.admin.equals(setup.signer1));
+    assert(controllerAccount.uniqueSeed.eq(new BN(setup.uniqueSeed)));
     assert(controllerAccount.userRolesCount.eqn(0));
   });
 
   it("Initialize Asset Controller", async () => {
     const setupAssetControllerArgs = {
-      decimals,
+      decimals: 2,
       payer: setup.payer.toString(),
       authority: setup.controllerAuthority.toString(),
       name: "Test Class Asset",
@@ -138,13 +125,13 @@ describe("rwa-rbac", () => {
       allowedAdminIxs,
       allowedMediciIxs,
       payer: setup.payer,
-      user: signer1.publicKey,
+      user: setup.signer1,
       assetAccessController: setup.assetAccessController,
     });
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(ix),
-      [setup.payerKp, signer1]
+      [setup.payerKp, setup.signer1Kp]
     );
 
     const userRoleAccount = await program.account.userRole.fetch(
@@ -153,7 +140,7 @@ describe("rwa-rbac", () => {
     assert(
       userRoleAccount.assetAccessController.equals(setup.assetAccessController)
     );
-    assert(userRoleAccount.id.eq(roleId1));
+    assert(userRoleAccount.id.eq(setup.roleId1));
     assert.equal(userRoleAccount.name, name);
     assert(userRoleAccount.allowedAdminIxs.eqn(allowedAdminIxs));
     assert(userRoleAccount.allowedMediciIxs.eqn(allowedMediciIxs));
@@ -177,19 +164,19 @@ describe("rwa-rbac", () => {
         allowedAdminIxs,
         allowedMediciIxs,
         payer: setup.payer,
-        user: signer2.publicKey,
+        user: setup.signer2,
         assetAccessController: setup.assetAccessController,
         authorizedUserRole: setup.userRole1,
       });
       await sendAndConfirmTransaction(
         rwaRbacClient.provider.connection,
         new Transaction().add(ix),
-        [setup.payerKp, signer2]
+        [setup.payerKp, setup.signer2Kp]
       );
       await sendAndConfirmTransaction(
         rwaRbacClient.provider.connection,
         new Transaction().add(ix),
-        [setup.payerKp, signer2]
+        [setup.payerKp, setup.signer2Kp]
       );
       assert(false);
     } catch (err) {
@@ -203,16 +190,16 @@ describe("rwa-rbac", () => {
       await connection.getAccountInfo(setup.userRole1, "processed")
     ).data.length;
     const ix = await rwaRbacClient.assignUserRoleIxn({
-      usersToAssign: [signer2.publicKey, signer3.publicKey],
+      usersToAssign: [setup.signer2, setup.signer3],
       userRole: setup.userRole1,
       payer: setup.payer,
-      user: signer1.publicKey,
+      user: setup.signer1,
       assetAccessController: setup.assetAccessController,
     });
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(ix),
-      [setup.payerKp, signer1]
+      [setup.payerKp, setup.signer1Kp]
     );
 
     const userRoleAccount = await program.account.userRole.fetch(
@@ -223,8 +210,8 @@ describe("rwa-rbac", () => {
     ).data.length;
     assert.equal(userRoleDataLenPost - userRoleDataLenPre, 64);
     assert.equal(userRoleAccount.users.length, 2);
-    assert(userRoleAccount.users[0].equals(signer2.publicKey));
-    assert(userRoleAccount.users[1].equals(signer3.publicKey));
+    assert(userRoleAccount.users[0].equals(setup.signer2));
+    assert(userRoleAccount.users[1].equals(setup.signer3));
   });
 
   it("CPI: Update Asset Metadata", async () => {
@@ -233,7 +220,7 @@ describe("rwa-rbac", () => {
       assetMint: mint,
       authority: setup.controllerAuthority.toString(), // ControllerAuthority
       payer: setup.payer.toString(), // Payer Account
-      signer: signer1.publicKey.toString(), // User Account
+      signer: setup.signer1.toString(), // User Account
     };
     const updateIx = await rwaRbacClient.assetController.updateAssetMetadata(
       updateAssetMetadataArgs,
@@ -243,7 +230,7 @@ describe("rwa-rbac", () => {
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(updateIx),
-      [setup.payerKp, signer1]
+      [setup.payerKp, setup.signer1Kp]
     );
   });
 
@@ -253,7 +240,7 @@ describe("rwa-rbac", () => {
       {
         authority: setup.controllerAuthority.toString(), // ControllerAuthority
         payer: setup.payer.toString(), // Payer Account
-        signer: signer1.publicKey.toString(), // User Account
+        signer: setup.signer1.toString(), // User Account
         assetMint: mint,
       },
       setup.assetAccessController,
@@ -262,7 +249,7 @@ describe("rwa-rbac", () => {
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(closeMintIx),
-      [setup.payerKp, signer1]
+      [setup.payerKp, setup.signer1Kp]
     );
   });
 
@@ -270,7 +257,7 @@ describe("rwa-rbac", () => {
     const issueArgs: IssueTokenArgs = {
       authority: setup.controllerAuthority.toString(), // ControllerAuthority
       payer: setup.payer.toString(), // Payer Account
-      signer: signer1.publicKey.toString(), // User Account
+      signer: setup.signer1.toString(), // User Account
       owner: setup.user1.toString(), // Target Account
       assetMint: mint,
       amount: 1000000,
@@ -283,7 +270,7 @@ describe("rwa-rbac", () => {
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(...issueTokenIxns),
-      [setup.payerKp, signer1]
+      [setup.payerKp, setup.signer1Kp]
     );
   });
 
@@ -292,7 +279,7 @@ describe("rwa-rbac", () => {
       {
         authority: setup.controllerAuthority.toString(), // ControllerAuthority
         payer: setup.payer.toString(), // Payer Account
-        signer: signer1.publicKey.toString(), // User Account
+        signer: setup.signer1.toString(), // User Account
         owner: setup.user1.toString(), // Target Account
         assetMint: mint,
       },
@@ -302,7 +289,7 @@ describe("rwa-rbac", () => {
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(freezeIx),
-      [setup.payerKp, signer1]
+      [setup.payerKp, setup.signer1Kp]
     );
   });
 
@@ -311,7 +298,7 @@ describe("rwa-rbac", () => {
       {
         authority: setup.controllerAuthority.toString(), // ControllerAuthority
         payer: setup.payer.toString(), // Payer Account
-        signer: signer1.publicKey.toString(), // User Account
+        signer: setup.signer1.toString(), // User Account
         owner: setup.user1.toString(), // Target Account
         assetMint: mint,
       },
@@ -321,7 +308,7 @@ describe("rwa-rbac", () => {
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(thawIx),
-      [setup.payerKp, signer1]
+      [setup.payerKp, setup.signer1Kp]
     );
   });
 
@@ -334,14 +321,14 @@ describe("rwa-rbac", () => {
         authority: setup.controllerAuthority.toString(), // ControllerAuthority
       },
       setup.payer, // Payer Account
-      signer1.publicKey, // User Account
+      setup.signer1, // User Account
       setup.assetAccessController,
       setup.userRole1
     );
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(...revokeIxs),
-      [setup.payerKp, signer1]
+      [setup.payerKp, setup.signer1Kp]
     );
   });
 
@@ -351,7 +338,7 @@ describe("rwa-rbac", () => {
         {
           authority: setup.controllerAuthority.toString(), // ControllerAuthority
           payer: setup.payer.toString(), // Payer Account
-          signer: signer1.publicKey.toString(), // User Account
+          signer: setup.signer1.toString(), // User Account
           assetMint: mint,
           rate: 200,
         },
@@ -361,7 +348,7 @@ describe("rwa-rbac", () => {
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(updateIx),
-      [setup.payerKp, signer1]
+      [setup.payerKp, setup.signer1Kp]
     );
   });
 
@@ -379,14 +366,14 @@ describe("rwa-rbac", () => {
           identityApproval: {},
         },
       },
-      signer1.publicKey,
+      setup.signer1,
       setup.assetAccessController,
       setup.userRole1
     );
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(ix),
-      [setup.payerKp, signer1]
+      [setup.payerKp, setup.signer1Kp]
     );
   });
 
@@ -406,14 +393,14 @@ describe("rwa-rbac", () => {
           },
         },
       },
-      signer1.publicKey, // User Account
+      setup.signer1, // User Account
       setup.assetAccessController,
       setup.userRole1
     );
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(ix),
-      [setup.payerKp, signer1]
+      [setup.payerKp, setup.signer1Kp]
     );
     const policyAccountData = await getPolicyAccount(
       mint,
@@ -437,14 +424,14 @@ describe("rwa-rbac", () => {
           assetMint: mint,
           hash: policy.hash,
         },
-        signer1.publicKey, // User Account
+        setup.signer1, // User Account
         setup.assetAccessController,
         setup.userRole1
       );
       await sendAndConfirmTransaction(
         rwaRbacClient.provider.connection,
         new Transaction().add(ix),
-        [setup.payerKp, signer1]
+        [setup.payerKp, setup.signer1Kp]
       );
     }
     policyAccountData = await getPolicyAccount(mint, rwaRbacClient.provider);
@@ -455,7 +442,7 @@ describe("rwa-rbac", () => {
     const { ixs } = await rwaRbacClient.identityRegistry.setupUserIxns(
       {
         payer: setup.payer.toString(), // Payer Account
-        signer: signer1.publicKey.toString(), // User Account
+        signer: setup.signer1.toString(), // User Account
         owner: setup.user1.toString(), // Target Account
         assetMint: mint,
         levels: [1],
@@ -468,7 +455,7 @@ describe("rwa-rbac", () => {
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(identityAccountIx),
-      [setup.payerKp, signer1]
+      [setup.payerKp, setup.signer1Kp]
     );
   });
 
@@ -478,7 +465,7 @@ describe("rwa-rbac", () => {
         {
           authority: setup.controllerAuthority.toString(), // ControllerAuthority
           payer: setup.payer.toString(), // Payer Account
-          signer: signer1.publicKey.toString(), // User Account
+          signer: setup.signer1.toString(), // User Account
           owner: setup.user1.toString(), // Target Account
           assetMint: mint,
           level: 2,
@@ -489,7 +476,7 @@ describe("rwa-rbac", () => {
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(addLevelIx),
-      [setup.payerKp, signer1]
+      [setup.payerKp, setup.signer1Kp]
     );
   });
 
@@ -498,7 +485,7 @@ describe("rwa-rbac", () => {
       await rwaRbacClient.identityRegistry.removeIdentityLevelFromUserAccount(
         {
           payer: setup.payer.toString(), // Payer Account
-          signer: signer1.publicKey.toString(), // User Account
+          signer: setup.signer1.toString(), // User Account
           owner: setup.user1.toString(), // Target Account
           authority: setup.controllerAuthority.toString(), // ControllerAuthority
           assetMint: mint,
@@ -510,7 +497,7 @@ describe("rwa-rbac", () => {
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(removeLevelIx),
-      [setup.payerKp, signer1]
+      [setup.payerKp, setup.signer1Kp]
     );
   });
 
@@ -518,7 +505,7 @@ describe("rwa-rbac", () => {
     const revokeIx = await rwaRbacClient.identityRegistry.revokeIdentityIxn(
       {
         payer: setup.payer.toString(), // Payer Account
-        signer: signer1.publicKey.toString(), // User Account
+        signer: setup.signer1.toString(), // User Account
         owner: setup.user1.toString(), // Target Account
         authority: setup.controllerAuthority.toString(), // ControllerAuthority
         assetMint: mint,
@@ -529,7 +516,7 @@ describe("rwa-rbac", () => {
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(revokeIx),
-      [setup.payerKp, signer1]
+      [setup.payerKp, setup.signer1Kp]
     );
   });
 
@@ -540,7 +527,7 @@ describe("rwa-rbac", () => {
 
     const ix = await rwaRbacClient.createUserRoleIxn({
       payer: setup.payer,
-      user: signer2.publicKey,
+      user: setup.signer2,
       assetAccessController: setup.assetAccessController,
       name,
       allowedAdminIxs,
@@ -550,7 +537,7 @@ describe("rwa-rbac", () => {
     await sendAndConfirmTransaction(
       rwaRbacClient.provider.connection,
       new Transaction().add(ix),
-      [setup.payerKp, signer2]
+      [setup.payerKp, setup.signer2Kp]
     );
 
     const userRoleAccount = await program.account.userRole.fetch(
@@ -559,7 +546,7 @@ describe("rwa-rbac", () => {
     assert(
       userRoleAccount.assetAccessController.equals(setup.assetAccessController)
     );
-    assert(userRoleAccount.id.eq(roleId2));
+    assert(userRoleAccount.id.eq(setup.roleId2));
     assert.equal(userRoleAccount.name, name);
     assert(userRoleAccount.allowedAdminIxs.eqn(allowedAdminIxs));
     assert(userRoleAccount.allowedMediciIxs.eqn(allowedMediciIxs));
