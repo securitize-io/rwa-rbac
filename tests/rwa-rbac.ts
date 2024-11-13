@@ -1,6 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { BN, Wallet } from "@coral-xyz/anchor";
 import {
+  Connection,
   PublicKey,
   sendAndConfirmTransaction,
   Transaction,
@@ -27,6 +28,7 @@ describe("End to End Tests", () => {
   let rwaRbacClient: RwaRbacClient;
   let setup;
   let mint: string;
+  let connection: Connection;
   let user1Ata: PublicKey;
   let assetController: PublicKey;
   let policyAccount: PublicKey;
@@ -34,6 +36,7 @@ describe("End to End Tests", () => {
 
   before(async () => {
     setup = await setupTests(generateUniqueSeed());
+    connection = setup.config.connection;
     rwaRbacClient = new RwaRbacClient(setup.config, new Wallet(setup.payerKp));
   });
 
@@ -43,11 +46,10 @@ describe("End to End Tests", () => {
       admin: setup.signer1,
       uniqueSeed: setup.uniqueSeed,
     });
-    await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
-      new Transaction().add(ix),
-      [setup.payerKp, setup.signer1Kp]
-    );
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
     const controllerAccount =
       await rwaRbacClient.rbacProgram.account.assetAccessController.fetch(
         setup.assetAccessController
@@ -77,7 +79,7 @@ describe("End to End Tests", () => {
       setupAssetControllerArgs
     );
     await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
+      connection,
       new Transaction().add(...setupIx.ixs),
       [setup.payerKp, ...setupIx.signers]
     );
@@ -108,11 +110,10 @@ describe("End to End Tests", () => {
       user: setup.signer1,
       assetAccessController: setup.assetAccessController,
     });
-    await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
-      new Transaction().add(ix),
-      [setup.payerKp, setup.signer1Kp]
-    );
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
 
     const userRoleAccount =
       await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
@@ -148,16 +149,14 @@ describe("End to End Tests", () => {
         assetAccessController: setup.assetAccessController,
         authorizedUserRole: setup.userRole1,
       });
-      await sendAndConfirmTransaction(
-        rwaRbacClient.provider.connection,
-        new Transaction().add(ix),
-        [setup.payerKp, setup.signer2Kp]
-      );
-      await sendAndConfirmTransaction(
-        rwaRbacClient.provider.connection,
-        new Transaction().add(ix),
-        [setup.payerKp, setup.signer2Kp]
-      );
+      await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+        setup.payerKp,
+        setup.signer2Kp,
+      ]);
+      await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+        setup.payerKp,
+        setup.signer2Kp,
+      ]);
       assert(false);
     } catch (err) {
       // TODO: Match for error
@@ -167,10 +166,7 @@ describe("End to End Tests", () => {
 
   it("Assign users to UserRole 1 successfully", async () => {
     const userRoleDataLenPre = (
-      await rwaRbacClient.provider.connection.getAccountInfo(
-        setup.userRole1,
-        "processed"
-      )
+      await connection.getAccountInfo(setup.userRole1, "processed")
     ).data.length;
     const ix = await rwaRbacClient.assignUserRoleIxn({
       usersToAssign: [setup.signer2, setup.signer3],
@@ -179,16 +175,15 @@ describe("End to End Tests", () => {
       user: setup.signer1,
       assetAccessController: setup.assetAccessController,
     });
-    await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
-      new Transaction().add(ix),
-      [setup.payerKp, setup.signer1Kp]
-    );
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
 
     const userRoleAccount =
       await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
     const userRoleDataLenPost = (
-      await rwaRbacClient.provider.connection.getAccountInfo(setup.userRole1)
+      await connection.getAccountInfo(setup.userRole1)
     ).data.length;
     assert.equal(userRoleDataLenPost - userRoleDataLenPre, 64);
     assert.equal(userRoleAccount.users.length, 2);
@@ -210,27 +205,8 @@ describe("End to End Tests", () => {
       setup.userRole1
     );
     await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
+      connection,
       new Transaction().add(updateIx),
-      [setup.payerKp, setup.signer1Kp]
-    );
-  });
-
-  // Callable only when mint supply is 0. Following tests would fail.
-  it.skip("CPI: Close Mint Account", async () => {
-    const closeMintIx = await rwaRbacClient.assetController.closeMintIxn(
-      {
-        authority: setup.controllerAuthority.toString(), // ControllerAuthority
-        payer: setup.payer.toString(), // Payer Account
-        signer: setup.signer1.toString(), // User Account
-        assetMint: mint,
-      },
-      setup.assetAccessController,
-      setup.userRole1
-    );
-    await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
-      new Transaction().add(closeMintIx),
       [setup.payerKp, setup.signer1Kp]
     );
   });
@@ -250,7 +226,7 @@ describe("End to End Tests", () => {
       setup.userRole1
     );
     await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
+      connection,
       new Transaction().add(...issueTokenIxns),
       [setup.payerKp, setup.signer1Kp]
     );
@@ -269,7 +245,7 @@ describe("End to End Tests", () => {
       setup.userRole1
     );
     await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
+      connection,
       new Transaction().add(freezeIx),
       [setup.payerKp, setup.signer1Kp]
     );
@@ -287,11 +263,10 @@ describe("End to End Tests", () => {
       setup.assetAccessController,
       setup.userRole1
     );
-    await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
-      new Transaction().add(thawIx),
-      [setup.payerKp, setup.signer1Kp]
-    );
+    await sendAndConfirmTransaction(connection, new Transaction().add(thawIx), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
   });
 
   it("CPI: Revoke Tokens", async () => {
@@ -308,7 +283,7 @@ describe("End to End Tests", () => {
       setup.userRole1
     );
     await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
+      connection,
       new Transaction().add(...revokeIxs),
       [setup.payerKp, setup.signer1Kp]
     );
@@ -328,7 +303,7 @@ describe("End to End Tests", () => {
         setup.userRole1
       );
     await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
+      connection,
       new Transaction().add(updateIx),
       [setup.payerKp, setup.signer1Kp]
     );
@@ -352,11 +327,10 @@ describe("End to End Tests", () => {
       setup.assetAccessController,
       setup.userRole1
     );
-    await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
-      new Transaction().add(ix),
-      [setup.payerKp, setup.signer1Kp]
-    );
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
   });
 
   it("CPI: Attach to Policy Account", async () => {
@@ -379,11 +353,10 @@ describe("End to End Tests", () => {
       setup.assetAccessController,
       setup.userRole1
     );
-    await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
-      new Transaction().add(ix),
-      [setup.payerKp, setup.signer1Kp]
-    );
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
     const policyAccountData = await getPolicyAccount(
       mint,
       rwaRbacClient.provider
@@ -410,11 +383,10 @@ describe("End to End Tests", () => {
         setup.assetAccessController,
         setup.userRole1
       );
-      await sendAndConfirmTransaction(
-        rwaRbacClient.provider.connection,
-        new Transaction().add(ix),
-        [setup.payerKp, setup.signer1Kp]
-      );
+      await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+        setup.payerKp,
+        setup.signer1Kp,
+      ]);
     }
     policyAccountData = await getPolicyAccount(mint, rwaRbacClient.provider);
     assert.equal(policyAccountData.policies.length, 0);
@@ -435,7 +407,7 @@ describe("End to End Tests", () => {
     );
     const [identityAccountIx] = ixs;
     await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
+      connection,
       new Transaction().add(identityAccountIx),
       [setup.payerKp, setup.signer1Kp]
     );
@@ -456,7 +428,7 @@ describe("End to End Tests", () => {
         setup.userRole1
       );
     await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
+      connection,
       new Transaction().add(addLevelIx),
       [setup.payerKp, setup.signer1Kp]
     );
@@ -477,7 +449,7 @@ describe("End to End Tests", () => {
         setup.userRole1
       );
     await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
+      connection,
       new Transaction().add(removeLevelIx),
       [setup.payerKp, setup.signer1Kp]
     );
@@ -496,7 +468,7 @@ describe("End to End Tests", () => {
       setup.userRole1
     );
     await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
+      connection,
       new Transaction().add(revokeIx),
       [setup.payerKp, setup.signer1Kp]
     );
@@ -516,11 +488,10 @@ describe("End to End Tests", () => {
       allowedMediciIxs,
       authorizedUserRole: setup.userRole1,
     });
-    await sendAndConfirmTransaction(
-      rwaRbacClient.provider.connection,
-      new Transaction().add(ix),
-      [setup.payerKp, setup.signer2Kp]
-    );
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer2Kp,
+    ]);
 
     const userRoleAccount =
       await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole2);
