@@ -491,6 +491,45 @@
       ]
     },
     {
+      "name": "delete_user_role",
+      "discriminator": [
+        177,
+        139,
+        27,
+        46,
+        113,
+        250,
+        139,
+        225
+      ],
+      "accounts": [
+        {
+          "name": "receiver",
+          "writable": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "user_role",
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "user_role",
+          "writable": true
+        },
+        {
+          "name": "authorized_user_role",
+          "optional": true
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "detach_from_policy_account",
       "discriminator": [
         81,
@@ -685,6 +724,54 @@
       ]
     },
     {
+      "name": "modify_user_role",
+      "discriminator": [
+        108,
+        235,
+        68,
+        252,
+        229,
+        247,
+        71,
+        185
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "user_role",
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "user_role",
+          "writable": true
+        },
+        {
+          "name": "authorized_user_role",
+          "optional": true
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "allowed_admin_ixs",
+          "type": "u64"
+        },
+        {
+          "name": "allowed_medici_ixs",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "remove_level_from_identity_account",
       "discriminator": [
         194,
@@ -742,6 +829,48 @@
         {
           "name": "cpi_data",
           "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "remove_user_role",
+      "discriminator": [
+        43,
+        242,
+        133,
+        94,
+        48,
+        124,
+        214,
+        153
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "user_role",
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "user_role",
+          "writable": true
+        },
+        {
+          "name": "authorized_user_role",
+          "optional": true
+        }
+      ],
+      "args": [
+        {
+          "name": "users_to_remove",
+          "type": {
+            "vec": "pubkey"
+          }
         }
       ]
     },
@@ -1005,6 +1134,38 @@
       ]
     },
     {
+      "name": "update_controller_admin",
+      "discriminator": [
+        94,
+        188,
+        33,
+        18,
+        191,
+        119,
+        128,
+        209
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "asset_access_controller",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
       "name": "update_interest_bearing_mint_rate",
       "discriminator": [
         29,
@@ -1062,6 +1223,47 @@
           "type": "bytes"
         }
       ]
+    },
+    {
+      "name": "withdraw_excess_rent",
+      "discriminator": [
+        20,
+        25,
+        71,
+        58,
+        107,
+        60,
+        159,
+        75
+      ],
+      "accounts": [
+        {
+          "name": "receiver",
+          "writable": true
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "controller_authority",
+          "writable": true,
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "asset_access_controller"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -1136,7 +1338,7 @@
           {
             "name": "user_roles_count",
             "docs": [
-              "Number of UserRoles created. Used for deriving all created UserRole PDAs."
+              "Number of UserRoles created since initialization. Used for deriving all created UserRole PDAs."
             ],
             "type": "u64"
           }

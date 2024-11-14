@@ -21,7 +21,7 @@ import {
 import { getAssetControllerPda } from "../deps/rwa-token/clients/rwa-token-sdk/src";
 import { generateUniqueSeed, RwaRbacClient } from "../client/src/index";
 
-describe("End to End Tests", () => {
+describe("CPI End to End Tests", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
 
@@ -131,64 +131,6 @@ describe("End to End Tests", () => {
         setup.assetAccessController
       );
     assert(controllerAccount.userRolesCount.eqn(1));
-  });
-
-  it("Fails to create UserRole if unauthorized", async () => {
-    try {
-      const name = "Role2";
-      const allowedAdminIxs = 0;
-      const allowedMediciIxs = 0;
-
-      // Signer 2 is not a controller admin and has not been added to a valid role.
-      const ix = await rwaRbacClient.createUserRoleIxn({
-        name,
-        allowedAdminIxs,
-        allowedMediciIxs,
-        payer: setup.payer,
-        user: setup.signer2,
-        assetAccessController: setup.assetAccessController,
-        authorizedUserRole: setup.userRole1,
-      });
-      await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
-        setup.payerKp,
-        setup.signer2Kp,
-      ]);
-      await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
-        setup.payerKp,
-        setup.signer2Kp,
-      ]);
-      assert(false);
-    } catch (err) {
-      // TODO: Match for error
-      // console.error(err);
-    }
-  });
-
-  it("Assign users to UserRole 1 successfully", async () => {
-    const userRoleDataLenPre = (
-      await connection.getAccountInfo(setup.userRole1, "processed")
-    ).data.length;
-    const ix = await rwaRbacClient.assignUserRoleIxn({
-      usersToAssign: [setup.signer2, setup.signer3],
-      userRole: setup.userRole1,
-      payer: setup.payer,
-      user: setup.signer1,
-      assetAccessController: setup.assetAccessController,
-    });
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
-      setup.payerKp,
-      setup.signer1Kp,
-    ]);
-
-    const userRoleAccount =
-      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
-    const userRoleDataLenPost = (
-      await connection.getAccountInfo(setup.userRole1)
-    ).data.length;
-    assert.equal(userRoleDataLenPost - userRoleDataLenPre, 64);
-    assert.equal(userRoleAccount.users.length, 2);
-    assert(userRoleAccount.users[0].equals(setup.signer2));
-    assert(userRoleAccount.users[1].equals(setup.signer3));
   });
 
   it("CPI: Update Asset Metadata", async () => {
@@ -472,42 +414,5 @@ describe("End to End Tests", () => {
       new Transaction().add(revokeIx),
       [setup.payerKp, setup.signer1Kp]
     );
-  });
-
-  it("Create UserRole 2 successfully with authorized UserRole", async () => {
-    const name = "Role2";
-    const allowedAdminIxs = 0;
-    const allowedMediciIxs = 0;
-
-    const ix = await rwaRbacClient.createUserRoleIxn({
-      payer: setup.payer,
-      user: setup.signer2,
-      assetAccessController: setup.assetAccessController,
-      name,
-      allowedAdminIxs,
-      allowedMediciIxs,
-      authorizedUserRole: setup.userRole1,
-    });
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
-      setup.payerKp,
-      setup.signer2Kp,
-    ]);
-
-    const userRoleAccount =
-      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole2);
-    assert(
-      userRoleAccount.assetAccessController.equals(setup.assetAccessController)
-    );
-    assert(userRoleAccount.id.eq(setup.roleId2));
-    assert.equal(userRoleAccount.name, name);
-    assert(userRoleAccount.allowedAdminIxs.eqn(allowedAdminIxs));
-    assert(userRoleAccount.allowedMediciIxs.eqn(allowedMediciIxs));
-    assert.equal(userRoleAccount.users.length, 0);
-
-    const controllerAccount =
-      await rwaRbacClient.rbacProgram.account.assetAccessController.fetch(
-        setup.assetAccessController
-      );
-    assert(controllerAccount.userRolesCount.eqn(2));
   });
 });

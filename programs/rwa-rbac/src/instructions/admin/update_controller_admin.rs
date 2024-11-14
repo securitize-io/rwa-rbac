@@ -4,8 +4,8 @@ use crate::state::*;
 
 #[derive(Accounts)]
 pub struct UpdateControllerAdmin<'info> {
-    pub user: Signer<'info>,
-    #[account(constraint = asset_access_controller.admin == user.key())]
+    pub admin: Signer<'info>,
+    #[account(mut, has_one = admin)]
     pub asset_access_controller: Account<'info, AssetAccessController>,
 }
 

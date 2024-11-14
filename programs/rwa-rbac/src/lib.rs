@@ -33,6 +33,10 @@ pub mod rwa_rbac {
         instructions::update_controller_admin::handler(ctx, new_admin)
     }
 
+    pub fn withdraw_excess_rent(ctx: Context<WithdrawExcessRent>) -> Result<()> {
+        instructions::withdraw_excess_rent::handler(ctx)
+    }
+
     pub fn create_user_role(
         ctx: Context<CreateUserRole>,
         name: String,

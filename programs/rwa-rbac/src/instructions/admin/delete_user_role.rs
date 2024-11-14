@@ -4,13 +4,14 @@ use crate::{state::*, verify_admin_signer};
 
 #[derive(Accounts)]
 pub struct DeleteUserRole<'info> {
+    /// CHECK: Account to receive rent refund.
     #[account(mut)]
-    pub payer: Signer<'info>,
+    pub receiver: UncheckedAccount<'info>,
     pub user: Signer<'info>,
     pub asset_access_controller: Account<'info, AssetAccessController>,
     #[account(
         mut,
-        close = payer,
+        close = receiver,
         has_one = asset_access_controller,
     )]
     pub user_role: Account<'info, UserRole>,

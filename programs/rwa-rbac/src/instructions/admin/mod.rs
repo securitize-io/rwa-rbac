@@ -5,6 +5,7 @@ pub mod delete_user_role;
 pub mod modify_user_role;
 pub mod remove_user_role;
 pub mod update_controller_admin;
+pub mod withdraw_excess_rent;
 
 pub use assign_user_role::*;
 pub use create_controller::*;
@@ -13,3 +14,4 @@ pub use delete_user_role::*;
 pub use modify_user_role::*;
 pub use remove_user_role::*;
 pub use update_controller_admin::*;
+pub use withdraw_excess_rent::*;

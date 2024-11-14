@@ -497,6 +497,45 @@ export type RwaRbac = {
       ]
     },
     {
+      "name": "deleteUserRole",
+      "discriminator": [
+        177,
+        139,
+        27,
+        46,
+        113,
+        250,
+        139,
+        225
+      ],
+      "accounts": [
+        {
+          "name": "receiver",
+          "writable": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "userRole",
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "userRole",
+          "writable": true
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "detachFromPolicyAccount",
       "discriminator": [
         81,
@@ -691,6 +730,54 @@ export type RwaRbac = {
       ]
     },
     {
+      "name": "modifyUserRole",
+      "discriminator": [
+        108,
+        235,
+        68,
+        252,
+        229,
+        247,
+        71,
+        185
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "userRole",
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "userRole",
+          "writable": true
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "allowedAdminIxs",
+          "type": "u64"
+        },
+        {
+          "name": "allowedMediciIxs",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "removeLevelFromIdentityAccount",
       "discriminator": [
         194,
@@ -748,6 +835,48 @@ export type RwaRbac = {
         {
           "name": "cpiData",
           "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "removeUserRole",
+      "discriminator": [
+        43,
+        242,
+        133,
+        94,
+        48,
+        124,
+        214,
+        153
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "userRole",
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "userRole",
+          "writable": true
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        }
+      ],
+      "args": [
+        {
+          "name": "usersToRemove",
+          "type": {
+            "vec": "pubkey"
+          }
         }
       ]
     },
@@ -1011,6 +1140,38 @@ export type RwaRbac = {
       ]
     },
     {
+      "name": "updateControllerAdmin",
+      "discriminator": [
+        94,
+        188,
+        33,
+        18,
+        191,
+        119,
+        128,
+        209
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newAdmin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
       "name": "updateInterestBearingMintRate",
       "discriminator": [
         29,
@@ -1068,6 +1229,47 @@ export type RwaRbac = {
           "type": "bytes"
         }
       ]
+    },
+    {
+      "name": "withdrawExcessRent",
+      "discriminator": [
+        20,
+        25,
+        71,
+        58,
+        107,
+        60,
+        159,
+        75
+      ],
+      "accounts": [
+        {
+          "name": "receiver",
+          "writable": true
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "controllerAuthority",
+          "writable": true,
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -1142,7 +1344,7 @@ export type RwaRbac = {
           {
             "name": "userRolesCount",
             "docs": [
-              "Number of UserRoles created. Used for deriving all created UserRole PDAs."
+              "Number of UserRoles created since initialization. Used for deriving all created UserRole PDAs."
             ],
             "type": "u64"
           }

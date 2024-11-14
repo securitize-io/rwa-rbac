@@ -1,5 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { BN, Wallet } from "@coral-xyz/anchor";
+import { Wallet } from "@coral-xyz/anchor";
 import {
   Connection,
   sendAndConfirmTransaction,
@@ -10,7 +10,7 @@ import { generateUniqueSeed, RwaRbacClient } from "../client/src/index";
 import { PublicKey } from "@solana/web3.js";
 import { assert } from "chai";
 
-describe("CloseMint CPI Ix Test", () => {
+describe("CloseMint Ixs Test", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
 
@@ -90,6 +90,21 @@ describe("CloseMint CPI Ix Test", () => {
   });
 
   it("Withdraws balance SOL from ControllerAuthority", async () => {
-    // TODO: Complete this.
+    await rwaRbacClient.rbacProgram.methods
+      .withdrawExcessRent()
+      .accounts({
+        receiver: setup.payer,
+        admin: setup.signer1,
+        controllerAuthority: setup.controllerAuthority,
+        assetAccessController: setup.assetAccessController,
+      })
+      .signers([setup.payerKp, setup.signer1Kp])
+      .rpc();
+
+    // Check that all SOL is transferred from ControllerAuthority PDA.
+    const authorityBalancePost = await connection.getBalance(
+      setup.controllerAuthority
+    );
+    assert.equal(authorityBalancePost, 0);
   });
 });
