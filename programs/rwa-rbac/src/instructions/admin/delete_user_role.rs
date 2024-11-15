@@ -20,12 +20,10 @@ pub struct DeleteUserRole<'info> {
 }
 
 pub fn handler(ctx: Context<DeleteUserRole>) -> Result<()> {
-    let controller = &ctx.accounts.asset_access_controller;
-
     // Verify that signer is either a controller admin or has authorized user role.
     verify_admin_signer(
         ctx.accounts.user.key(),
-        controller,
+        &ctx.accounts.asset_access_controller,
         ctx.accounts.authorized_user_role.clone(),
         AdminFlags::CREATE_OR_DELETE_USER_ROLE,
     )?;

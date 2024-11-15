@@ -19,12 +19,10 @@ pub struct AssignUserRole<'info> {
 }
 
 pub fn handler(ctx: Context<AssignUserRole>, users_to_assign: Vec<Pubkey>) -> Result<()> {
-    let controller = &ctx.accounts.asset_access_controller;
-
     // Verify that signer is either a controller admin or has authorized user role.
     verify_admin_signer(
         ctx.accounts.user.key(),
-        controller,
+        &ctx.accounts.asset_access_controller,
         ctx.accounts.authorized_user_role.clone(),
         AdminFlags::ASSIGN_OR_REMOVE_USER_ROLE,
     )?;

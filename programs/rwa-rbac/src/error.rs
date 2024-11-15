@@ -4,4 +4,10 @@ use anchor_lang::prelude::*;
 pub enum ErrorCode {
     #[msg("Unknown program instruction from CPI data")]
     UnknownInstruction,
+
+    #[msg("Invalid name")]
+    InvalidName,
+
+    #[msg("Invalid user role")]
+    InvalidUserRole,
 }

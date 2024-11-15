@@ -4,7 +4,7 @@ use anchor_lang::solana_program::system_instruction::transfer;
 use hex::FromHex;
 use sha256::digest;
 
-use crate::{AdminFlags, AssetAccessController, MediciFlags, UserRole};
+use crate::{AdminFlags, AssetAccessController, MediciFlags, UserRole, error::ErrorCode};
 
 /// Check if user matches controller admin or has role with matching admin flag.
 pub fn verify_admin_signer(
@@ -14,11 +14,11 @@ pub fn verify_admin_signer(
     matching_flag: AdminFlags,
 ) -> Result<()> {
     if user != asset_access_controller.admin {
-        let user_role = user_role.unwrap();
+        let user_role = user_role.ok_or(ErrorCode::InvalidUserRole)?;
         let is_authorized =
             user_role.has_admin_flag(matching_flag) && user_role.users.contains(&user);
         if !is_authorized {
-            panic!("Invalid signer")
+            return err!(ErrorCode::InvalidUserRole)
         }
     }
     Ok(())
@@ -32,11 +32,11 @@ pub fn verify_medici_signer(
     matching_flag: MediciFlags,
 ) -> Result<()> {
     if user != asset_access_controller.admin {
-        let user_role = user_role.unwrap();
+        let user_role = user_role.ok_or(ErrorCode::InvalidUserRole)?;
         let is_authorized =
             user_role.has_medici_flag(matching_flag) && user_role.users.contains(&user);
         if !is_authorized {
-            panic!("Invalid signer")
+          return err!(ErrorCode::InvalidUserRole)
         }
     }
     Ok(())

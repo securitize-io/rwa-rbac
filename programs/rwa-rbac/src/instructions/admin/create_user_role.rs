@@ -45,11 +45,9 @@ pub fn handler(
         AdminFlags::CREATE_OR_DELETE_USER_ROLE,
     )?;
 
-    let controller_info = &controller.to_account_info();
-
     // Initialize new user role.
     let new_user_role = &mut ctx.accounts.new_user_role;
-    new_user_role.asset_access_controller = controller_info.key();
+    new_user_role.asset_access_controller = controller.key();
     new_user_role.id = controller.user_roles_count + 1;
     new_user_role.update_fields(name, allowed_admin_ixs, allowed_medici_ixs)?;
 

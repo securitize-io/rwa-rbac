@@ -23,7 +23,7 @@ pub struct WithdrawExcessRent<'info> {
 }
 
 pub fn handler(ctx: Context<WithdrawExcessRent>) -> Result<()> {
-    let controller_authority = &mut ctx.accounts.controller_authority;
+    let controller_authority = &ctx.accounts.controller_authority;
     let seeds = controller_seeds!(ctx.accounts.asset_access_controller);
     let signers_seeds = &[&seeds[..]];
 

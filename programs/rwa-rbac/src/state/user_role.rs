@@ -1,5 +1,7 @@
 use anchor_lang::prelude::*;
 
+use crate::error::ErrorCode;
+
 #[account]
 pub struct UserRole {
     /// Controller that user role is designated for.
@@ -44,7 +46,7 @@ impl UserRole {
         allowed_medici_ixs: u64,
     ) -> Result<()> {
         if !name.is_ascii() || name.len() > 64 {
-            panic!("invalid name")
+            return err!(ErrorCode::InvalidName);
         }
 
         self.name = name;
