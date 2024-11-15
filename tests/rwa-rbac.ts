@@ -19,7 +19,12 @@ import {
   getAssociatedTokenAddressSync,
   TOKEN_2022_PROGRAM_ID,
 } from "@solana/spl-token";
-import { generateUniqueSeed, RwaRbacClient } from "../client/src/index";
+import {
+  AdminFlags,
+  generateUniqueSeed,
+  MediciFlags,
+  RwaRbacClient,
+} from "../client/src/index";
 
 describe("CPI End to End Tests", () => {
   // Configure the client to use the local cluster.
@@ -99,8 +104,8 @@ describe("CPI End to End Tests", () => {
 
   it("Create UserRole 1 successfully", async () => {
     const name = "Role1";
-    const allowedAdminIxs = 1;
-    const allowedMediciIxs = 2;
+    const allowedAdminIxs = AdminFlags.NONE;
+    const allowedMediciIxs = MediciFlags.NONE;
 
     const ix = await rwaRbacClient.createUserRoleIxn({
       name,

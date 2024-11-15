@@ -6,7 +6,13 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import { setupTests } from "./setup";
-import { generateUniqueSeed, RwaRbacClient } from "../client/src/index";
+import {
+  generateUniqueSeed,
+  RwaRbacClient,
+  AdminFlags,
+  MediciFlags,
+  computeFlags,
+} from "../client/src/index";
 import { PublicKey } from "@solana/web3.js";
 import { assert } from "chai";
 import {
@@ -25,12 +31,7 @@ describe("Admin Ixs Test", () => {
 
   let rwaRbacClient: RwaRbacClient;
   let setup;
-  let mint: string;
   let connection: Connection;
-  let user1Ata: PublicKey;
-  let assetController: PublicKey;
-  let policyAccount: PublicKey;
-  let policyEngine: PublicKey;
 
   before(async () => {
     setup = await setupTests(generateUniqueSeed());
@@ -66,8 +67,10 @@ describe("Admin Ixs Test", () => {
 
   it("Create UserRole 1 successfully", async () => {
     const name = "Role1";
-    const allowedAdminIxs = 1;
-    const allowedMediciIxs = 2;
+    const allowedAdminIxs = computeFlags(AdminFlags.CREATE_OR_DELETE_USER_ROLE);
+    const allowedMediciIxs = computeFlags(
+      MediciFlags.ADD_LEVEL_TO_IDENTITY_ACCOUNT
+    );
 
     const ix = await rwaRbacClient.createUserRoleIxn({
       name,
@@ -103,8 +106,8 @@ describe("Admin Ixs Test", () => {
   it("Fails to create UserRole if unauthorized", async () => {
     try {
       const name = "Role2";
-      const allowedAdminIxs = 0;
-      const allowedMediciIxs = 0;
+      const allowedAdminIxs = AdminFlags.NONE;
+      const allowedMediciIxs = MediciFlags.NONE;
 
       // Signer 2 is not a controller admin and has not been added to a valid role.
       const ix = await rwaRbacClient.createUserRoleIxn({
@@ -178,12 +181,12 @@ describe("Admin Ixs Test", () => {
 
   it("Create UserRole 2 successfully with authorized UserRole", async () => {
     const name = "Role2";
-    const allowedAdminIxs = 0;
-    const allowedMediciIxs = 0;
+    const allowedAdminIxs = AdminFlags.NONE;
+    const allowedMediciIxs = MediciFlags.NONE;
 
     const ix = await rwaRbacClient.createUserRoleIxn({
       payer: setup.payer,
-      user: setup.signer2,
+      user: setup.signer2, // Non-Admin Key
       assetAccessController: setup.assetAccessController,
       name,
       allowedAdminIxs,
@@ -215,8 +218,11 @@ describe("Admin Ixs Test", () => {
 
   it("Modify User Role 1 successfully", async () => {
     const name = "Role2";
-    const allowedAdminIxs = 2;
-    const allowedMediciIxs = 3;
+    const allowedAdminIxs = computeFlags(
+      AdminFlags.MODIFY_USER_ROLE,
+      AdminFlags.CREATE_OR_DELETE_USER_ROLE
+    );
+    const allowedMediciIxs = computeFlags(MediciFlags.ATTACH_TO_POLICY_ACCOUNT);
 
     const ix = await rwaRbacClient.modifyUserRoleIxn({
       name,
