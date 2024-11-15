@@ -8,6 +8,7 @@ import {
 } from "@solana/web3.js";
 import { assert } from "chai";
 import {
+  getAssetControllerPda,
   getPolicyAccount,
   getPolicyAccountPda,
   getPolicyEnginePda,
@@ -18,7 +19,6 @@ import {
   getAssociatedTokenAddressSync,
   TOKEN_2022_PROGRAM_ID,
 } from "@solana/spl-token";
-import { getAssetControllerPda } from "../deps/rwa-token/clients/rwa-token-sdk/src";
 import { generateUniqueSeed, RwaRbacClient } from "../client/src/index";
 
 describe("CPI End to End Tests", () => {
