@@ -12,7 +12,12 @@ import { deriveAssetAccessControllerPda, deriveUserRolePda } from "../pdas";
 import {
   AssignUserRoleArgs,
   CreateControllerArgs,
+  DeleteUserRoleArgs,
+  ModifyUserRoleArgs,
+  RemoveUserRoleArgs,
   SetupUserRoleArgs,
+  UpdateControllerAdminArgs,
+  WithdrawExcessRentArgs,
 } from "../types/instructions";
 
 export class RwaRbacClient {
@@ -58,6 +63,21 @@ export class RwaRbacClient {
   }
 
   /**
+   * Asynchronously generates instruction to update admin key on AssetAccessController.
+   * @param args - {@link UpdateControllerAdminArgs}
+   * @returns A Promise that resolves to the instruction to update admin on AssetAccessController.
+   */
+  async updateControllerAdminIxn(args: UpdateControllerAdminArgs) {
+    return this.rbacProgram.methods
+      .updateControllerAdmin(args.newAdmin)
+      .accountsStrict({
+        admin: args.admin,
+        assetAccessController: args.assetAccessController,
+      })
+      .instruction();
+  }
+
+  /**
    * Asynchronously generates instruction to create a UserRole for an AssetAccessController.
    * @param args - {@link SetupUserRoleArgs}
    * @returns A Promise that resolves to the instruction to create UserRole.
@@ -90,6 +110,45 @@ export class RwaRbacClient {
   }
 
   /**
+   * Asynchronously generates instruction to modify UserRole.
+   * @param args - {@link ModifyUserRoleArgs}
+   * @returns A Promise that resolves to the instruction to modify UserRole.
+   */
+  async modifyUserRoleIxn(args: ModifyUserRoleArgs) {
+    return this.rbacProgram.methods
+      .modifyUserRole(
+        args.name,
+        new BN(args.allowedAdminIxs),
+        new BN(args.allowedMediciIxs)
+      )
+      .accountsStrict({
+        user: args.user,
+        userRole: args.userRole,
+        assetAccessController: args.assetAccessController,
+        authorizedUserRole: args.authorizedUserRole || null,
+      })
+      .instruction();
+  }
+
+  /**
+   * Asynchronously generates instruction to delete UserRole.
+   * @param args - {@link DeleteUserRoleArgs}
+   * @returns A Promise that resolves to the instruction to delete UserRole.
+   */
+  async deleteUserRoleIxn(args: DeleteUserRoleArgs) {
+    return this.rbacProgram.methods
+      .deleteUserRole()
+      .accountsStrict({
+        receiver: args.receiver,
+        user: args.user,
+        userRole: args.userRole,
+        assetAccessController: args.assetAccessController,
+        authorizedUserRole: args.authorizedUserRole || null,
+      })
+      .instruction();
+  }
+
+  /**
    * Asynchronously generates instruction to assign users to a UserRole.
    * @param args - {@link AssignUserRoleArgs}
    * @returns A Promise that resolves to the instruction to assign UserRole.
@@ -102,6 +161,41 @@ export class RwaRbacClient {
         user: args.user,
         userRole: args.userRole,
         authorizedUserRole: args.authorizedUserRole || null,
+        assetAccessController: args.assetAccessController,
+        systemProgram: SystemProgram.programId,
+      })
+      .instruction();
+  }
+
+  /**
+   * Asynchronously generates instruction to remove users from a UserRole.
+   * @param args - {@link RemoveUserRoleArgs}
+   * @returns A Promise that resolves to the instruction to remove users from a UserRole.
+   */
+  async removeUserRoleIxn(args: RemoveUserRoleArgs) {
+    return this.rbacProgram.methods
+      .removeUserRole(args.usersToRemove)
+      .accountsStrict({
+        user: args.user,
+        userRole: args.userRole,
+        authorizedUserRole: args.authorizedUserRole || null,
+        assetAccessController: args.assetAccessController,
+      })
+      .instruction();
+  }
+
+  /**
+   * Asynchronously generates instruction to withdraw excess rent from ControllerAuthority.
+   * @param args - {@link WithdrawExcessRentArgs}
+   * @returns A Promise that resolves to the instruction to withdraw excess rent from ControllerAuthority.
+   */
+  async withdrawExcessRentIxn(args: WithdrawExcessRentArgs) {
+    return this.rbacProgram.methods
+      .withdrawExcessRent()
+      .accountsStrict({
+        receiver: args.receiver,
+        admin: args.admin,
+        controllerAuthority: args.controllerAuthority,
         assetAccessController: args.assetAccessController,
         systemProgram: SystemProgram.programId,
       })

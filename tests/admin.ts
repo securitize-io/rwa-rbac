@@ -160,15 +160,12 @@ describe("Admin Ixs Test", () => {
   });
 
   it("Remove users from UserRole 1 successfully", async () => {
-    const ix = await rwaRbacClient.rbacProgram.methods
-      .removeUserRole([setup.payer, setup.signer3])
-      .accounts({
-        user: setup.signer1, // Admin Key
-        assetAccessController: setup.assetAccessController,
-        userRole: setup.userRole1,
-        authorizedUserRole: null,
-      })
-      .instruction();
+    const ix = await rwaRbacClient.removeUserRoleIxn({
+      user: setup.signer1, // Admin Key
+      assetAccessController: setup.assetAccessController,
+      userRole: setup.userRole1,
+      usersToRemove: [setup.payer, setup.signer3],
+    });
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
       setup.signer1Kp,
     ]);
@@ -221,15 +218,14 @@ describe("Admin Ixs Test", () => {
     const allowedAdminIxs = 2;
     const allowedMediciIxs = 3;
 
-    const ix = await rwaRbacClient.rbacProgram.methods
-      .modifyUserRole(name, new BN(allowedAdminIxs), new BN(allowedMediciIxs))
-      .accountsStrict({
-        user: setup.signer1, // Admin Key
-        assetAccessController: setup.assetAccessController,
-        userRole: setup.userRole1,
-        authorizedUserRole: null,
-      })
-      .instruction();
+    const ix = await rwaRbacClient.modifyUserRoleIxn({
+      name,
+      allowedAdminIxs,
+      allowedMediciIxs,
+      user: setup.signer1, // Admin Key
+      assetAccessController: setup.assetAccessController,
+      userRole: setup.userRole1,
+    });
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
       setup.payerKp,
       setup.signer1Kp,
@@ -249,16 +245,12 @@ describe("Admin Ixs Test", () => {
 
   it("Delete User Role 1 successfully", async () => {
     const preBalance = await connection.getBalance(setup.payer);
-    const ix = await rwaRbacClient.rbacProgram.methods
-      .deleteUserRole()
-      .accountsStrict({
-        receiver: setup.payer,
-        user: setup.signer1, // Admin Key
-        assetAccessController: setup.assetAccessController,
-        userRole: setup.userRole1,
-        authorizedUserRole: null,
-      })
-      .instruction();
+    const ix = await rwaRbacClient.deleteUserRoleIxn({
+      receiver: setup.payer,
+      user: setup.signer1, // Admin Key
+      assetAccessController: setup.assetAccessController,
+      userRole: setup.userRole1,
+    });
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
       setup.payerKp,
       setup.signer1Kp,
@@ -274,13 +266,11 @@ describe("Admin Ixs Test", () => {
   });
 
   it("Update Controller Admin successfully", async () => {
-    const ix = await rwaRbacClient.rbacProgram.methods
-      .updateControllerAdmin(setup.signer2)
-      .accounts({
-        admin: setup.signer1, // Admin Key
-        assetAccessController: setup.assetAccessController,
-      })
-      .instruction();
+    const ix = await rwaRbacClient.updateControllerAdminIxn({
+      admin: setup.signer1, // Admin Key
+      assetAccessController: setup.assetAccessController,
+      newAdmin: setup.signer2,
+    });
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
       setup.signer1Kp,
     ]);

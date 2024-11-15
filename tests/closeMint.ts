@@ -90,16 +90,15 @@ describe("CloseMint Ixs Test", () => {
   });
 
   it("Withdraws balance SOL from ControllerAuthority", async () => {
-    await rwaRbacClient.rbacProgram.methods
-      .withdrawExcessRent()
-      .accounts({
-        receiver: setup.payer,
-        admin: setup.signer1,
-        controllerAuthority: setup.controllerAuthority,
-        assetAccessController: setup.assetAccessController,
-      })
-      .signers([setup.payerKp, setup.signer1Kp])
-      .rpc();
+    const ix = await rwaRbacClient.withdrawExcessRentIxn({
+      receiver: setup.payer,
+      admin: setup.signer1,
+      controllerAuthority: setup.controllerAuthority,
+      assetAccessController: setup.assetAccessController,
+    });
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.signer1Kp,
+    ]);
 
     // Check that all SOL is transferred from ControllerAuthority PDA.
     const authorityBalancePost = await connection.getBalance(

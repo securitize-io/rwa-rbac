@@ -8,6 +8,13 @@ export type CreateControllerArgs = {
   uniqueSeed: number;
 };
 
+/** Args used to update admin on AssetAccessController  */
+export type UpdateControllerAdminArgs = {
+  admin: PublicKey;
+  assetAccessController: PublicKey;
+  newAdmin: PublicKey;
+};
+
 /** Args used to setup a UserRole */
 export type SetupUserRoleArgs = {
   payer: PublicKey;
@@ -19,6 +26,26 @@ export type SetupUserRoleArgs = {
   authorizedUserRole?: PublicKey;
 };
 
+/** Args used to modify a UserRole */
+export type ModifyUserRoleArgs = {
+  user: PublicKey;
+  assetAccessController: PublicKey;
+  userRole: PublicKey;
+  name: string;
+  allowedAdminIxs: number;
+  allowedMediciIxs: number;
+  authorizedUserRole?: PublicKey;
+};
+
+/** Args used to delete a UserRole */
+export type DeleteUserRoleArgs = {
+  receiver: PublicKey;
+  user: PublicKey;
+  assetAccessController: PublicKey;
+  userRole: PublicKey;
+  authorizedUserRole?: PublicKey;
+};
+
 /** Args used to assign users to a UserRole  */
 export type AssignUserRoleArgs = {
   payer: PublicKey;
@@ -27,6 +54,23 @@ export type AssignUserRoleArgs = {
   usersToAssign: PublicKey[];
   assetAccessController: PublicKey;
   authorizedUserRole?: PublicKey;
+};
+
+/** Args used to remove users from a UserRole  */
+export type RemoveUserRoleArgs = {
+  user: PublicKey;
+  userRole: PublicKey;
+  usersToRemove: PublicKey[];
+  assetAccessController: PublicKey;
+  authorizedUserRole?: PublicKey;
+};
+
+/** Args used to withdraw excess rent from ControllerAuthority  */
+export type WithdrawExcessRentArgs = {
+  receiver: PublicKey;
+  admin: PublicKey;
+  controllerAuthority: PublicKey;
+  assetAccessController: PublicKey;
 };
 
 /** Args used to update asset mitn interest rate  */
