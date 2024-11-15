@@ -1305,6 +1305,16 @@ export type RwaRbac = {
       "code": 6000,
       "name": "unknownInstruction",
       "msg": "Unknown program instruction from CPI data"
+    },
+    {
+      "code": 6001,
+      "name": "invalidName",
+      "msg": "Invalid name"
+    },
+    {
+      "code": 6002,
+      "name": "invalidUserRole",
+      "msg": "Invalid user role"
     }
   ],
   "types": [

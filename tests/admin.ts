@@ -1,5 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { BN, Wallet } from "@coral-xyz/anchor";
+import { Wallet } from "@coral-xyz/anchor";
 import {
   Connection,
   sendAndConfirmTransaction,
@@ -13,17 +13,7 @@ import {
   MediciFlags,
   computeFlags,
 } from "../client/src/index";
-import { PublicKey } from "@solana/web3.js";
 import { assert } from "chai";
-import {
-  getAssociatedTokenAddressSync,
-  TOKEN_2022_PROGRAM_ID,
-} from "@solana/spl-token";
-import {
-  getAssetControllerPda,
-  getPolicyEnginePda,
-  getPolicyAccountPda,
-} from "@bridgesplit/rwa-token-sdk";
 
 describe("Admin Ixs Test", () => {
   // Configure the client to use the local cluster.
@@ -129,8 +119,7 @@ describe("Admin Ixs Test", () => {
       ]);
       assert(false);
     } catch (err) {
-      // TODO: Match for error
-      // console.error(err);
+      assert(err.toString().includes("InvalidUserRole"));
     }
   });
 
@@ -162,6 +151,46 @@ describe("Admin Ixs Test", () => {
     assert(userRoleAccount.users[2].equals(setup.payer));
   });
 
+  it("Assign repeated users to UserRole 1 successfully", async () => {
+    const userRoleDataLenPre = (
+      await connection.getAccountInfo(setup.userRole1, "processed")
+    ).data.length;
+
+    // All users below are already assigned.
+    const ix = await rwaRbacClient.assignUserRoleIxn({
+      usersToAssign: [
+        setup.signer3,
+        setup.signer2,
+        setup.payer,
+        setup.signer3,
+        setup.payer,
+      ],
+      userRole: setup.userRole1,
+      payer: setup.payer,
+      user: setup.signer1,
+      assetAccessController: setup.assetAccessController,
+    });
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+
+    const userRoleAccount =
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
+    const userRoleDataLenPost = (
+      await connection.getAccountInfo(setup.userRole1)
+    ).data.length;
+
+    // Extra space allocated even when users already exist.
+    assert.equal(userRoleDataLenPost - userRoleDataLenPre, 160);
+
+    // No change to user assignment list expected.
+    assert.equal(userRoleAccount.users.length, 3);
+    assert(userRoleAccount.users[0].equals(setup.signer2));
+    assert(userRoleAccount.users[1].equals(setup.signer3));
+    assert(userRoleAccount.users[2].equals(setup.payer));
+  });
+
   it("Remove users from UserRole 1 successfully", async () => {
     const ix = await rwaRbacClient.removeUserRoleIxn({
       user: setup.signer1, // Admin Key
@@ -173,8 +202,25 @@ describe("Admin Ixs Test", () => {
       setup.signer1Kp,
     ]);
 
-    const userRoleAccount =
+    let userRoleAccount =
       await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
+    assert.equal(userRoleAccount.users.length, 1);
+    assert(userRoleAccount.users[0].equals(setup.signer2));
+
+    // Removing same users again doesn't result in change in state.
+    const ix2 = await rwaRbacClient.removeUserRoleIxn({
+      user: setup.signer1, // Admin Key
+      assetAccessController: setup.assetAccessController,
+      userRole: setup.userRole1,
+      usersToRemove: [setup.payer, setup.signer3, setup.payer],
+    });
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix2), [
+      setup.signer1Kp,
+    ]);
+
+    userRoleAccount = await rwaRbacClient.rbacProgram.account.userRole.fetch(
+      setup.userRole1
+    );
     assert.equal(userRoleAccount.users.length, 1);
     assert(userRoleAccount.users[0].equals(setup.signer2));
   });
@@ -217,7 +263,7 @@ describe("Admin Ixs Test", () => {
   });
 
   it("Modify User Role 1 successfully", async () => {
-    const name = "Role2";
+    const name = ""; // Empty string is allowed.
     const allowedAdminIxs = computeFlags(
       AdminFlags.MODIFY_USER_ROLE,
       AdminFlags.CREATE_OR_DELETE_USER_ROLE
@@ -247,6 +293,64 @@ describe("Admin Ixs Test", () => {
     assert(userRoleAccount.allowedAdminIxs.eqn(allowedAdminIxs));
     assert(userRoleAccount.allowedMediciIxs.eqn(allowedMediciIxs));
     assert.equal(userRoleAccount.users.length, 1);
+  });
+
+  it("Fail to Modify User Role with Invalid Name", async () => {
+    try {
+      // Test that error is thrown if name exceeds 64 chars.
+      const ix = await rwaRbacClient.modifyUserRoleIxn({
+        name: "x".repeat(65),
+        allowedAdminIxs: AdminFlags.NONE,
+        allowedMediciIxs: AdminFlags.NONE,
+        user: setup.signer1, // Admin Key
+        assetAccessController: setup.assetAccessController,
+        userRole: setup.userRole1,
+      });
+      await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+        setup.payerKp,
+        setup.signer1Kp,
+      ]);
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("InvalidName"));
+    }
+
+    try {
+      // Test that error is thrown if name includes non-ascii chars.
+      const ix = await rwaRbacClient.modifyUserRoleIxn({
+        name: "😊🌍",
+        allowedAdminIxs: AdminFlags.NONE,
+        allowedMediciIxs: AdminFlags.NONE,
+        user: setup.signer1, // Admin Key
+        assetAccessController: setup.assetAccessController,
+        userRole: setup.userRole1,
+      });
+      await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+        setup.payerKp,
+        setup.signer1Kp,
+      ]);
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("InvalidName"));
+    }
+
+    // Test that name under length of 64 chars is allowed.
+    const name = "x".repeat(64);
+    const ix = await rwaRbacClient.modifyUserRoleIxn({
+      name,
+      allowedAdminIxs: AdminFlags.NONE,
+      allowedMediciIxs: AdminFlags.NONE,
+      user: setup.signer1, // Admin Key
+      assetAccessController: setup.assetAccessController,
+      userRole: setup.userRole1,
+    });
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+    const userRoleAccount =
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
+    assert.equal(userRoleAccount.name, name);
   });
 
   it("Delete User Role 1 successfully", async () => {

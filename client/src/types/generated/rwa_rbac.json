@@ -1299,6 +1299,16 @@
       "code": 6000,
       "name": "UnknownInstruction",
       "msg": "Unknown program instruction from CPI data"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidName",
+      "msg": "Invalid name"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidUserRole",
+      "msg": "Invalid user role"
     }
   ],
   "types": [
