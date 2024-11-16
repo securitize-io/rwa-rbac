@@ -1,14 +1,16 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Wallet } from "@coral-xyz/anchor";
+import { assert } from "chai";
 import {
+  PublicKey,
   Connection,
   sendAndConfirmTransaction,
   Transaction,
 } from "@solana/web3.js";
+
 import { setupTests } from "./setup";
 import { generateUniqueSeed, RwaRbacClient } from "../client/src/index";
-import { PublicKey } from "@solana/web3.js";
-import { assert } from "chai";
+import { SetupAssetControllerArgs } from "../deps/rwa-token/clients/rwa-token-sdk/src";
 
 describe("CloseMint Ixs Test", () => {
   // Configure the client to use the local cluster.
@@ -34,13 +36,17 @@ describe("CloseMint Ixs Test", () => {
       setup.signer1Kp,
     ]);
 
-    const setupAssetControllerArgs = {
+    const setupAssetControllerArgs: SetupAssetControllerArgs = {
+      authority: setup.controllerAuthority.toString(),
       decimals: 2,
       payer: setup.payer.toString(),
-      authority: setup.controllerAuthority.toString(),
+      delegate: null,
       name: "Test Class Asset",
       uri: "https://test.com",
       symbol: "TFT",
+      interestRate: null,
+      requireIdentityCreation: false,
+      enforcePolicyIssuance: false,
     };
     const setupIx = await rwaRbacClient.assetController.setupNewRegistry(
       setupAssetControllerArgs
