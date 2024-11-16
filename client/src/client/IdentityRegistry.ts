@@ -1,5 +1,12 @@
 import { Program } from "@coral-xyz/anchor";
+import {
+  PublicKey,
+  SystemProgram,
+  TransactionInstruction,
+} from "@solana/web3.js";
+
 import { RwaRbac } from "../types/generated/rwa_rbac";
+import { RevokeIdentityArgs } from "../types/instructions";
 import {
   AddLevelToIdentityAccountArgs,
   getAddLevelToIdentityAccount,
@@ -12,13 +19,7 @@ import {
   RemoveLevelFromIdentityAccountArgs,
   RwaClient,
   SetupUserArgs,
-} from "@bridgesplit/rwa-token-sdk";
-import {
-  PublicKey,
-  SystemProgram,
-  TransactionInstruction,
-} from "@solana/web3.js";
-import { RevokeIdentityArgs } from "../types/instructions";
+} from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
 
 /**
  * Represents the role-based access client for Identity Registry for an RWA.

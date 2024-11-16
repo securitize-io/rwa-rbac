@@ -1,4 +1,18 @@
 import { Program } from "@coral-xyz/anchor";
+import {
+  PublicKey,
+  SystemProgram,
+  SYSVAR_INSTRUCTIONS_PUBKEY,
+  TransactionInstruction,
+} from "@solana/web3.js";
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  createAssociatedTokenAccountInstruction,
+  getAssociatedTokenAddressSync,
+  TOKEN_2022_PROGRAM_ID,
+} from "@solana/spl-token";
+
+import { UpdateInterestBearingMintRateArgs } from "../types/instructions";
 import { RwaRbac } from "../types/generated/rwa_rbac";
 import {
   assetControllerProgramId,
@@ -27,20 +41,7 @@ import {
   TransferTokensArgs,
   UpdateAssetMetadataArgs,
   VoidTokensArgs,
-} from "@bridgesplit/rwa-token-sdk";
-import {
-  PublicKey,
-  SystemProgram,
-  SYSVAR_INSTRUCTIONS_PUBKEY,
-  TransactionInstruction,
-} from "@solana/web3.js";
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccountInstruction,
-  getAssociatedTokenAddressSync,
-  TOKEN_2022_PROGRAM_ID,
-} from "@solana/spl-token";
-import { UpdateInterestBearingMintRateArgs } from "../types/instructions";
+} from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
 
 /**
  * Represents the role-based access client for Asset Controller for an RWA.

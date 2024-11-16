@@ -1,19 +1,20 @@
 import { Program } from "@coral-xyz/anchor";
-import { RwaRbac } from "../types/generated/rwa_rbac";
-import {
-  AttachPolicyArgs,
-  DetachPolicyArgs,
-  getCreatePolicyAccountIx,
-  getPolicyAccountPda,
-  getPolicyEnginePda,
-  policyEngineProgramId,
-  RwaClient,
-} from "@bridgesplit/rwa-token-sdk";
 import {
   PublicKey,
   SystemProgram,
   TransactionInstruction,
 } from "@solana/web3.js";
+
+import { RwaRbac } from "../types/generated/rwa_rbac";
+import {
+  AttachPolicyArgs,
+  DetachPolicyArgs,
+  // getCreatePolicyAccountIx,
+  getPolicyAccountPda,
+  getPolicyEnginePda,
+  policyEngineProgramId,
+  RwaClient,
+} from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
 
 /**
  * Represents the role-based access client for Policy Engine for an RWA.
@@ -41,25 +42,26 @@ export class PolicyEngine {
     assetAccessController: PublicKey,
     authorizedUserRole?: PublicKey
   ): Promise<TransactionInstruction> {
-    const { ixs } = await getCreatePolicyAccountIx(
-      args,
-      this.rwaClient.provider
-    );
-    const ixData = ixs[0].data;
-    return this.rbacProgram.methods
-      .createPolicyAccount(ixData)
-      .accountsStrict({
-        payer: args.payer,
-        user: signer,
-        controllerAuthority: args.authority,
-        assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
-        policyEngine: getPolicyEnginePda(args.assetMint),
-        policyAccount: getPolicyAccountPda(args.assetMint),
-        policyEngineProgram: policyEngineProgramId,
-        systemProgram: SystemProgram.programId,
-      })
-      .instruction();
+    // const { ixs } = await getCreatePolicyAccountIx(
+    //   args,
+    //   this.rwaClient.provider
+    // );
+    // const ixData = ixs[0].data;
+    // return this.rbacProgram.methods
+    //   .createPolicyAccount(ixData)
+    //   .accountsStrict({
+    //     payer: args.payer,
+    //     user: signer,
+    //     controllerAuthority: args.authority,
+    //     assetAccessController,
+    //     authorizedUserRole: authorizedUserRole || null,
+    //     policyEngine: getPolicyEnginePda(args.assetMint),
+    //     policyAccount: getPolicyAccountPda(args.assetMint),
+    //     policyEngineProgram: policyEngineProgramId,
+    //     systemProgram: SystemProgram.programId,
+    //   })
+    //   .instruction();
+    return;
   }
 
   /**

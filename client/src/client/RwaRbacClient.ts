@@ -1,6 +1,4 @@
 import { AnchorProvider, BN, Program, Wallet } from "@coral-xyz/anchor";
-import { Config } from "@bridgesplit/rwa-token-sdk/dist/classes/types";
-import { RwaClient } from "@bridgesplit/rwa-token-sdk";
 import { SystemProgram } from "@solana/web3.js";
 
 import { RwaRbac } from "../types/generated/rwa_rbac";
@@ -19,6 +17,8 @@ import {
   UpdateControllerAdminArgs,
   WithdrawExcessRentArgs,
 } from "../types/instructions";
+import { RwaClient } from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
+import { Config } from "../../../deps/rwa-token/clients/rwa-token-sdk/src/classes/types";
 
 export class RwaRbacClient {
   rbacProgram: Program<RwaRbac>;
