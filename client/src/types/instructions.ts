@@ -1,5 +1,6 @@
 import { CommonArgs } from "@bridgesplit/rwa-token-sdk/dist";
 import { PublicKey } from "@solana/web3.js";
+import { BN } from "@coral-xyz/anchor";
 
 /** Args used to setup a AssetAccessController  */
 export type CreateControllerArgs = {
@@ -86,4 +87,27 @@ export type RevokeIdentityArgs = {
   signer: string;
   owner: string;
   authority: string;
+};
+
+/** Args used to refresh expiry on a Identity Account level  */
+export type RefreshLevelArgs = {
+  assetMint: string;
+  payer: string;
+  signer: string;
+  owner: string;
+  authority: string;
+  level: number;
+  expiry: BN;
+};
+
+/** Args used to edit Identity Metadata  */
+export type EditIdentityMetadataArgs = {
+  assetMint: string;
+  payer: string;
+  signer: string;
+  owner: string;
+  authority: string;
+  level: number;
+  maxAllowed?: BN;
+  minAllowed?: BN;
 };

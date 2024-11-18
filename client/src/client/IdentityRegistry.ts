@@ -6,7 +6,11 @@ import {
 } from "@solana/web3.js";
 
 import { RwaRbac } from "../types/generated/rwa_rbac";
-import { RevokeIdentityArgs } from "../types/instructions";
+import {
+  EditIdentityMetadataArgs,
+  RefreshLevelArgs,
+  RevokeIdentityArgs,
+} from "../types/instructions";
 import { deriveControllerAuthorityPda } from "../pdas";
 import {
   AddLevelToIdentityAccountArgs,
@@ -224,6 +228,94 @@ export class IdentityRegistry {
         identityRegistryProgram: identityRegistryProgramId,
         identityRegistry,
         identityAccount,
+      })
+      .instruction();
+  }
+
+  /**
+   * Asynchronously generates instruction to refresh expiry on an Identity Account level.
+   * @param args - {@link RefreshLevelArgs}
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @returns A Promise that resolves to refresh expiry on an Identity Account level.
+   * */
+  async refreshLevelToIdentityAccountIxn(
+    args: RefreshLevelArgs,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const identityProgram = getIdentityRegistryProgram(this.rwaClient.provider);
+    const identityRegistry = getIdentityRegistryPda(args.assetMint);
+    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
+    const refreshIx = await identityProgram.methods
+      .refreshLevelToIdentityAccount(args.level, args.expiry)
+      .accountsStrict({
+        payer: args.payer,
+        signer: args.authority,
+        identityRegistry,
+        identityAccount,
+      })
+      .instruction();
+    return this.rbacProgram.methods
+      .refreshLevelToIdentityAccount(refreshIx.data)
+      .accountsStrict({
+        payer: args.payer,
+        user: args.signer,
+        controllerAuthority: args.authority,
+        assetAccessController,
+        authorizedUserRole: authorizedUserRole || null,
+        identityRegistryProgram: identityRegistryProgramId,
+        identityRegistry,
+        identityAccount,
+        systemProgram: SystemProgram.programId,
+      })
+      .instruction();
+  }
+
+  /**
+   * Asynchronously generates instruction to edit Identity Metadata.
+   * @param args - {@link EditIdentityMetadataArgs}
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @returns A Promise that resolves to edit Identity Metadata.
+   * */
+  async editIdentityMetadataIxn(
+    args: EditIdentityMetadataArgs,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const identityProgram = getIdentityRegistryProgram(this.rwaClient.provider);
+    const identityRegistry = getIdentityRegistryPda(args.assetMint);
+    const identityMetadataAccount = getIdentityMetadataPda(
+      args.assetMint,
+      args.level
+    );
+    const editIx = await identityProgram.methods
+      .editIdentityMetdata(
+        args.level,
+        args.maxAllowed || null,
+        args.minAllowed || null
+      )
+      .accountsStrict({
+        payer: args.payer,
+        signer: args.authority,
+        identityRegistry,
+        identityMetadataAccount,
+        systemProgram: SystemProgram.programId,
+      })
+      .instruction();
+    return this.rbacProgram.methods
+      .editIdentityMetadata(editIx.data)
+      .accountsStrict({
+        payer: args.payer,
+        user: args.signer,
+        controllerAuthority: args.authority,
+        assetAccessController,
+        authorizedUserRole: authorizedUserRole || null,
+        identityRegistryProgram: identityRegistryProgramId,
+        identityRegistry,
+        identityMetadataAccount,
+        systemProgram: SystemProgram.programId,
       })
       .instruction();
   }

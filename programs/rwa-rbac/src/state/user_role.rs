@@ -102,5 +102,7 @@ bitflags::bitflags! {
       const CREATE_IDENTITY_ACCOUNT = 1 << 11;
       const REMOVE_LEVEL_FROM_IDENTITY_ACCOUNT = 1 << 12;
       const REVOKE_IDENTITY_ACCOUNT = 1 << 13;
+      const EDIT_IDENTITY_METADATA = 1 << 14;
+      const REFRESH_LEVEL_TO_IDENTITY_ACCOUNT = 1 << 15;
   }
 }
