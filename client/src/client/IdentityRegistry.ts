@@ -7,10 +7,12 @@ import {
 
 import { RwaRbac } from "../types/generated/rwa_rbac";
 import { RevokeIdentityArgs } from "../types/instructions";
+import { deriveControllerAuthorityPda } from "../pdas";
 import {
   AddLevelToIdentityAccountArgs,
   getAddLevelToIdentityAccount,
   getIdentityAccountPda,
+  getIdentityMetadataPda,
   getIdentityRegistryPda,
   getIdentityRegistryProgram,
   getRemoveLevelFromIdentityAccount,
@@ -45,30 +47,69 @@ export class IdentityRegistry {
    */
   async setupUserIxns(
     args: SetupUserArgs,
-    authority: PublicKey,
     assetAccessController: PublicKey,
     authorizedUserRole?: PublicKey
   ): Promise<IxReturn> {
     const { ixs } = await this.rwaClient.identityRegistry.setupUserIxns(args);
-    const [identityAccountIx, trackerAccountIx] = ixs;
-    const ixData = identityAccountIx.data;
-    const wrappedIx = await this.rbacProgram.methods
-      .createIdentityAccount(ixData)
-      .accountsStrict({
-        payer: args.payer,
-        user: args.signer,
-        controllerAuthority: authority,
-        assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
-        identityRegistryProgram: identityRegistryProgramId,
-        identityRegistry: getIdentityRegistryPda(args.assetMint),
-        identityAccount: getIdentityAccountPda(args.assetMint, args.owner),
-        systemProgram: SystemProgram.programId,
-      })
-      .instruction();
+    const returnIxs = [];
+
+    const identityAccountIx = ixs[0];
+    const addLevelIxs = ixs.slice(1, -1);
+    const trackerAccountIx = ixs[ixs.length - 1];
+    const controllerAuthority = deriveControllerAuthorityPda(
+      assetAccessController
+    );
+    returnIxs.push(
+      await this.rbacProgram.methods
+        .createIdentityAccount(identityAccountIx.data)
+        .accountsStrict({
+          payer: args.payer,
+          user: args.signer,
+          controllerAuthority,
+          assetAccessController,
+          authorizedUserRole: authorizedUserRole || null,
+          identityRegistryProgram: identityRegistryProgramId,
+          identityRegistry: getIdentityRegistryPda(args.assetMint),
+          identityAccount: getIdentityAccountPda(args.assetMint, args.owner),
+          identityMetadataAccount: getIdentityMetadataPda(
+            args.assetMint,
+            args.levels[0]
+          ),
+          systemProgram: SystemProgram.programId,
+        })
+        .instruction()
+    );
+
+    if (args.levels.length > 1) {
+      for (let i = 1; i < args.levels.length; i++) {
+        returnIxs.push(
+          await this.rbacProgram.methods
+            .addLevelToIdentityAccount(addLevelIxs[i - 1].data)
+            .accountsStrict({
+              payer: args.payer,
+              user: args.signer,
+              controllerAuthority,
+              assetAccessController,
+              authorizedUserRole: authorizedUserRole || null,
+              identityRegistryProgram: identityRegistryProgramId,
+              identityRegistry: getIdentityRegistryPda(args.assetMint),
+              identityAccount: getIdentityAccountPda(
+                args.assetMint,
+                args.owner
+              ),
+              identityMetadataAccount: getIdentityMetadataPda(
+                args.assetMint,
+                args.levels[i]
+              ),
+              systemProgram: SystemProgram.programId,
+            })
+            .instruction()
+        );
+      }
+    }
 
     return {
-      ixs: [wrappedIx, trackerAccountIx],
+      ixs: [...returnIxs, trackerAccountIx],
       signers: [],
     };
   }
@@ -101,6 +142,10 @@ export class IdentityRegistry {
         identityRegistryProgram: identityRegistryProgramId,
         identityRegistry: getIdentityRegistryPda(args.assetMint),
         identityAccount: getIdentityAccountPda(args.assetMint, args.owner),
+        identityMetadataAccount: getIdentityMetadataPda(
+          args.assetMint,
+          args.level
+        ),
         systemProgram: SystemProgram.programId,
       })
       .instruction();
@@ -134,6 +179,10 @@ export class IdentityRegistry {
         identityRegistryProgram: identityRegistryProgramId,
         identityRegistry: getIdentityRegistryPda(args.assetMint),
         identityAccount: getIdentityAccountPda(args.assetMint, args.owner),
+        identityMetadataAccount: getIdentityMetadataPda(
+          args.assetMint,
+          args.level
+        ),
         systemProgram: SystemProgram.programId,
       })
       .instruction();

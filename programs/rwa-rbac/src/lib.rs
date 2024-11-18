@@ -110,25 +110,18 @@ pub mod rwa_rbac {
         instructions::update_interest_bearing_mint_rate::handler(ctx, cpi_data)
     }
 
-    pub fn create_policy_account(
-        ctx: Context<CreatePolicyAccount>,
+    pub fn attach_to_policy_engine(
+        ctx: Context<AttachToPolicyEngine>,
         cpi_data: Vec<u8>,
     ) -> Result<()> {
-        instructions::create_policy_account::handler(ctx, cpi_data)
+        instructions::attach_to_policy_engine::handler(ctx, cpi_data)
     }
 
-    pub fn attach_to_policy_account(
-        ctx: Context<AttachToPolicyAccount>,
+    pub fn detach_from_policy_engine(
+        ctx: Context<DetachFromPolicyEngine>,
         cpi_data: Vec<u8>,
     ) -> Result<()> {
-        instructions::attach_to_policy_account::handler(ctx, cpi_data)
-    }
-
-    pub fn detach_from_policy_account(
-        ctx: Context<DetachFromPolicyAccount>,
-        cpi_data: Vec<u8>,
-    ) -> Result<()> {
-        instructions::detach_from_policy_account::handler(ctx, cpi_data)
+        instructions::detach_from_policy_engine::handler(ctx, cpi_data)
     }
 
     pub fn create_identity_account(

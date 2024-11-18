@@ -7,7 +7,7 @@ use anchor_lang::{
 use anchor_spl::{associated_token::AssociatedToken, token_2022::Token2022};
 
 use crate::{
-    constants::ASSET_CONTROLLER_ID, controller_seeds, error::ErrorCode, get_discriminator,
+    constants::{ASSET_CONTROLLER_ID, POLICY_ENGINE_ID}, controller_seeds, error::ErrorCode, get_discriminator,
     state::*, verify_medici_signer,
 };
 
@@ -34,9 +34,21 @@ pub struct IssueTokens<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub token_account: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub identity_registry: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub identity_account: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    #[account(mut)]
+    pub tracker_account: UncheckedAccount<'info>,
     pub token_program: Program<'info, Token2022>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
+    /// CHECK: Checked against known program address.
+    #[account(address = Pubkey::from_str(POLICY_ENGINE_ID).unwrap())]
+    pub policy_engine_program: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub policy_engine: UncheckedAccount<'info>,
 }
 
 pub fn handler(ctx: Context<IssueTokens>, cpi_data: Vec<u8>) -> Result<()> {
@@ -69,9 +81,14 @@ pub fn handler(ctx: Context<IssueTokens>, cpi_data: Vec<u8>) -> Result<()> {
                 AccountMeta::new_readonly(ctx.accounts.asset_controller.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.to.key(), false),
                 AccountMeta::new(ctx.accounts.token_account.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.identity_account.key(), false),
+                AccountMeta::new(ctx.accounts.tracker_account.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.associated_token_program.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.policy_engine_program.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.policy_engine.key(), false),
             ],
             data: cpi_data,
         },
@@ -81,9 +98,14 @@ pub fn handler(ctx: Context<IssueTokens>, cpi_data: Vec<u8>) -> Result<()> {
             ctx.accounts.asset_controller.to_account_info(),
             ctx.accounts.to.to_account_info(),
             ctx.accounts.token_account.to_account_info(),
+            ctx.accounts.identity_registry.to_account_info(),
+            ctx.accounts.identity_account.to_account_info(),
+            ctx.accounts.tracker_account.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
             ctx.accounts.associated_token_program.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.policy_engine_program.to_account_info(),
+            ctx.accounts.policy_engine.to_account_info(),
         ],
         signers_seeds,
     )?;
