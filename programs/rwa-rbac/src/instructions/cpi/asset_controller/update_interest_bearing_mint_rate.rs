@@ -62,8 +62,8 @@ pub fn handler(ctx: Context<UpdateInterestBearingMintRate>, cpi_data: Vec<u8>) -
                 AccountMeta::new(ctx.accounts.asset_mint.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.asset_controller.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
-                AccountMeta::new_readonly(ctx.accounts.event_authority.key(), false),
-                AccountMeta::new_readonly(ctx.accounts.asset_controller_program.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.event_authority.key(), false), // For Event CPI
+                AccountMeta::new_readonly(ctx.accounts.asset_controller_program.key(), false), // For Event CPI
             ],
             data: cpi_data,
         },

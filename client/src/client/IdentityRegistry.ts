@@ -267,7 +267,6 @@ export class IdentityRegistry {
         identityRegistryProgram: identityRegistryProgramId,
         identityRegistry,
         identityAccount,
-        systemProgram: SystemProgram.programId,
       })
       .instruction();
   }

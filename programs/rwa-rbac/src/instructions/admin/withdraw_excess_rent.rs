@@ -30,10 +30,10 @@ pub fn handler(ctx: Context<WithdrawExcessRent>) -> Result<()> {
     // Transfer all lamports from controller_authority (which is a PDA, not an account) to receiver.
     invoke_signed(
         &transfer(
-          controller_authority.key,
-          ctx.accounts.receiver.key,
-          controller_authority.lamports(),
-      ),
+            controller_authority.key,
+            ctx.accounts.receiver.key,
+            controller_authority.lamports(),
+        ),
         &[
             controller_authority.to_account_info(),
             ctx.accounts.receiver.to_account_info(),

@@ -62,7 +62,7 @@ pub fn handler(ctx: Context<AttachToPolicyEngine>, cpi_data: Vec<u8>) -> Result<
             ],
             data: cpi_data,
         },
-        &vec![
+        &[
             ctx.accounts.payer.to_account_info(),
             ctx.accounts.controller_authority.to_account_info(),
             ctx.accounts.policy_engine.to_account_info(),

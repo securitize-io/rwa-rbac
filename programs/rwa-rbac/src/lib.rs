@@ -159,7 +159,6 @@ pub mod rwa_rbac {
         instructions::edit_identity_metadata::handler(ctx, cpi_data)
     }
 
-
     pub fn revoke_identity_account(
         ctx: Context<RevokeIdentityAccount>,
         cpi_data: Vec<u8>,

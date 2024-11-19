@@ -29,7 +29,6 @@ pub struct RefreshLevelToIdentityAccount<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub identity_account: UncheckedAccount<'info>,
-    pub system_program: Program<'info, System>,
 }
 
 pub fn handler(ctx: Context<RefreshLevelToIdentityAccount>, cpi_data: Vec<u8>) -> Result<()> {
@@ -61,16 +60,14 @@ pub fn handler(ctx: Context<RefreshLevelToIdentityAccount>, cpi_data: Vec<u8>) -
                 AccountMeta::new_readonly(ctx.accounts.controller_authority.key(), true),
                 AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
                 AccountMeta::new(ctx.accounts.identity_account.key(), false),
-                AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
             ],
             data: cpi_data,
         },
-        &vec![
+        &[
             ctx.accounts.payer.to_account_info(),
             ctx.accounts.controller_authority.to_account_info(),
             ctx.accounts.identity_registry.to_account_info(),
             ctx.accounts.identity_account.to_account_info(),
-            ctx.accounts.system_program.to_account_info(),
         ],
         signers_seeds,
     )?;
