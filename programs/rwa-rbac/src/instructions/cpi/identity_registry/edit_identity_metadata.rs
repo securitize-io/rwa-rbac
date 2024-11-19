@@ -6,12 +6,12 @@ use anchor_lang::{
 };
 
 use crate::{
-    constants::POLICY_ENGINE_ID, controller_seeds, error::ErrorCode, get_discriminator, state::*,
-    verify_medici_signer,
+    constants::IDENTITY_REGISTRY_ID, controller_seeds, error::ErrorCode, get_discriminator,
+    state::*, verify_medici_signer,
 };
 
 #[derive(Accounts)]
-pub struct DetachFromPolicyAccount<'info> {
+pub struct EditIdentityMetadata<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub user: Signer<'info>,
@@ -22,18 +22,17 @@ pub struct DetachFromPolicyAccount<'info> {
     #[account(has_one = asset_access_controller)]
     pub authorized_user_role: Option<Account<'info, UserRole>>,
     /// CHECK: Checked against known program address.
-    #[account(address = Pubkey::from_str(POLICY_ENGINE_ID).unwrap())]
-    pub policy_engine_program: UncheckedAccount<'info>,
+    #[account(address = Pubkey::from_str(IDENTITY_REGISTRY_ID).unwrap())]
+    pub identity_registry_program: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub identity_registry: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     #[account(mut)]
-    pub policy_engine: UncheckedAccount<'info>,
-    /// CHECK: Verified in CPI.
-    #[account(mut)]
-    pub policy_account: UncheckedAccount<'info>,
+    pub identity_metadata_account: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<DetachFromPolicyAccount>, cpi_data: Vec<u8>) -> Result<()> {
+pub fn handler(ctx: Context<EditIdentityMetadata>, cpi_data: Vec<u8>) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
     // Verify that signer is either a controller admin or has authorized user role.
@@ -41,12 +40,12 @@ pub fn handler(ctx: Context<DetachFromPolicyAccount>, cpi_data: Vec<u8>) -> Resu
         ctx.accounts.user.key(),
         controller,
         ctx.accounts.authorized_user_role.clone(),
-        MediciFlags::DETACH_FROM_POLICY_ACCOUNT,
+        MediciFlags::EDIT_IDENTITY_METADATA,
     )?;
 
     // Verify instruction discriminator in cpi_data
     require!(
-        cpi_data.starts_with(&get_discriminator("detach_from_policy_account")),
+        cpi_data.starts_with(&get_discriminator("edit_identity_metdata")),
         ErrorCode::UnknownInstruction
     );
 
@@ -56,12 +55,12 @@ pub fn handler(ctx: Context<DetachFromPolicyAccount>, cpi_data: Vec<u8>) -> Resu
 
     invoke_signed(
         &Instruction {
-            program_id: ctx.accounts.policy_engine_program.key(),
+            program_id: ctx.accounts.identity_registry_program.key(),
             accounts: vec![
                 AccountMeta::new(ctx.accounts.payer.key(), true),
                 AccountMeta::new_readonly(ctx.accounts.controller_authority.key(), true),
-                AccountMeta::new(ctx.accounts.policy_engine.key(), false),
-                AccountMeta::new(ctx.accounts.policy_account.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
+                AccountMeta::new(ctx.accounts.identity_metadata_account.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
             ],
             data: cpi_data,
@@ -69,8 +68,8 @@ pub fn handler(ctx: Context<DetachFromPolicyAccount>, cpi_data: Vec<u8>) -> Resu
         &vec![
             ctx.accounts.payer.to_account_info(),
             ctx.accounts.controller_authority.to_account_info(),
-            ctx.accounts.policy_engine.to_account_info(),
-            ctx.accounts.policy_account.to_account_info(),
+            ctx.accounts.identity_registry.to_account_info(),
+            ctx.accounts.identity_metadata_account.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
         ],
         signers_seeds,

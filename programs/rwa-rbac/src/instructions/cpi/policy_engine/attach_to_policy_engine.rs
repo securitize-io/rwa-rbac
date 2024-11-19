@@ -11,7 +11,7 @@ use crate::{
 };
 
 #[derive(Accounts)]
-pub struct AttachToPolicyAccount<'info> {
+pub struct AttachToPolicyEngine<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub user: Signer<'info>,
@@ -27,13 +27,10 @@ pub struct AttachToPolicyAccount<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub policy_engine: UncheckedAccount<'info>,
-    /// CHECK: Verified in CPI.
-    #[account(mut)]
-    pub policy_account: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<AttachToPolicyAccount>, cpi_data: Vec<u8>) -> Result<()> {
+pub fn handler(ctx: Context<AttachToPolicyEngine>, cpi_data: Vec<u8>) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
     // Verify that signer is either a controller admin or has authorized user role.
@@ -46,7 +43,7 @@ pub fn handler(ctx: Context<AttachToPolicyAccount>, cpi_data: Vec<u8>) -> Result
 
     // Verify instruction discriminator in cpi_data
     require!(
-        cpi_data.starts_with(&get_discriminator("attach_to_policy_account")),
+        cpi_data.starts_with(&get_discriminator("attach_to_policy_engine")),
         ErrorCode::UnknownInstruction
     );
 
@@ -61,16 +58,14 @@ pub fn handler(ctx: Context<AttachToPolicyAccount>, cpi_data: Vec<u8>) -> Result
                 AccountMeta::new(ctx.accounts.payer.key(), true),
                 AccountMeta::new_readonly(ctx.accounts.controller_authority.key(), true),
                 AccountMeta::new(ctx.accounts.policy_engine.key(), false),
-                AccountMeta::new(ctx.accounts.policy_account.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
             ],
             data: cpi_data,
         },
-        &vec![
+        &[
             ctx.accounts.payer.to_account_info(),
             ctx.accounts.controller_authority.to_account_info(),
             ctx.accounts.policy_engine.to_account_info(),
-            ctx.accounts.policy_account.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
         ],
         signers_seeds,

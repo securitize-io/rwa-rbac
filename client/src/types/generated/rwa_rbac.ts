@@ -63,6 +63,10 @@ export type RwaRbac = {
           "writable": true
         },
         {
+          "name": "identityMetadataAccount",
+          "writable": true
+        },
+        {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
@@ -126,16 +130,16 @@ export type RwaRbac = {
       ]
     },
     {
-      "name": "attachToPolicyAccount",
+      "name": "attachToPolicyEngine",
       "discriminator": [
-        247,
-        116,
-        130,
-        17,
-        89,
-        232,
-        103,
-        16
+        99,
+        59,
+        117,
+        21,
+        146,
+        11,
+        54,
+        173
       ],
       "accounts": [
         {
@@ -169,10 +173,6 @@ export type RwaRbac = {
         },
         {
           "name": "policyEngine",
-          "writable": true
-        },
-        {
-          "name": "policyAccount",
           "writable": true
         },
         {
@@ -366,65 +366,7 @@ export type RwaRbac = {
           "writable": true
         },
         {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "cpiData",
-          "type": "bytes"
-        }
-      ]
-    },
-    {
-      "name": "createPolicyAccount",
-      "discriminator": [
-        52,
-        228,
-        143,
-        138,
-        102,
-        135,
-        59,
-        193
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controllerAuthority",
-          "relations": [
-            "assetAccessController"
-          ]
-        },
-        {
-          "name": "assetAccessController",
-          "relations": [
-            "authorizedUserRole"
-          ]
-        },
-        {
-          "name": "authorizedUserRole",
-          "optional": true
-        },
-        {
-          "name": "policyEngineProgram",
-          "address": "po1cPf1eyUJJPqULw4so3T4JU9pdFn83CDyuLEKFAau"
-        },
-        {
-          "name": "policyEngine",
-          "writable": true
-        },
-        {
-          "name": "policyAccount",
+          "name": "identityMetadataAccount",
           "writable": true
         },
         {
@@ -536,16 +478,16 @@ export type RwaRbac = {
       "args": []
     },
     {
-      "name": "detachFromPolicyAccount",
+      "name": "detachFromPolicyEngine",
       "discriminator": [
-        81,
-        24,
-        116,
-        10,
-        12,
-        108,
-        109,
-        242
+        156,
+        137,
+        67,
+        121,
+        46,
+        207,
+        45,
+        12
       ],
       "accounts": [
         {
@@ -582,7 +524,64 @@ export type RwaRbac = {
           "writable": true
         },
         {
-          "name": "policyAccount",
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpiData",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "editIdentityMetadata",
+      "discriminator": [
+        91,
+        176,
+        160,
+        204,
+        72,
+        229,
+        80,
+        115
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "identityRegistryProgram",
+          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+        },
+        {
+          "name": "identityRegistry"
+        },
+        {
+          "name": "identityMetadataAccount",
           "writable": true
         },
         {
@@ -710,6 +709,16 @@ export type RwaRbac = {
           "writable": true
         },
         {
+          "name": "identityRegistry"
+        },
+        {
+          "name": "identityAccount"
+        },
+        {
+          "name": "trackerAccount",
+          "writable": true
+        },
+        {
           "name": "tokenProgram",
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
         },
@@ -720,6 +729,13 @@ export type RwaRbac = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "policyEngineProgram",
+          "address": "po1cPf1eyUJJPqULw4so3T4JU9pdFn83CDyuLEKFAau"
+        },
+        {
+          "name": "policyEngine"
         }
       ],
       "args": [
@@ -778,6 +794,63 @@ export type RwaRbac = {
       ]
     },
     {
+      "name": "refreshLevelToIdentityAccount",
+      "discriminator": [
+        23,
+        68,
+        237,
+        111,
+        144,
+        169,
+        239,
+        91
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "identityRegistryProgram",
+          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+        },
+        {
+          "name": "identityRegistry"
+        },
+        {
+          "name": "identityAccount",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "cpiData",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
       "name": "removeLevelFromIdentityAccount",
       "discriminator": [
         194,
@@ -824,6 +897,10 @@ export type RwaRbac = {
         },
         {
           "name": "identityAccount",
+          "writable": true
+        },
+        {
+          "name": "identityMetadataAccount",
           "writable": true
         },
         {
@@ -1053,6 +1130,10 @@ export type RwaRbac = {
         },
         {
           "name": "assetController"
+        },
+        {
+          "name": "identityRegistryAccount",
+          "writable": true
         },
         {
           "name": "tokenAccount",
