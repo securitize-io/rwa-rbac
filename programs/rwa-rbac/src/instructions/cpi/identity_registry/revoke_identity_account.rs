@@ -48,7 +48,7 @@ pub fn handler(ctx: Context<RevokeIdentityAccount>, cpi_data: Vec<u8>) -> Result
         ErrorCode::UnknownInstruction
     );
 
-    // Perform CPI to PolicyEngine Program.
+    // Perform CPI to IdentityRegistry Program.
     let seeds = controller_seeds!(controller);
     let signers_seeds = &[&seeds[..]];
 
