@@ -1,10 +1,5 @@
-import {
-  getIdentityRegistryPda,
-  identityRegistryProgramId,
-} from "@bridgesplit/rwa-token-sdk";
 import { BN, getProvider } from "@coral-xyz/anchor";
 import {
-  ConfirmOptions,
   Connection,
   Keypair,
   LAMPORTS_PER_SOL,
@@ -12,15 +7,6 @@ import {
 } from "@solana/web3.js";
 import { pdas, RBAC_PROGRAM } from "../client/src";
 import { Config } from "@bridgesplit/rwa-token-sdk/dist/classes/types";
-
-export const getIdentityMetadataPda = (assetMint: string, level: number) =>
-  PublicKey.findProgramAddressSync(
-    [
-      new BN(level).toArrayLike(Buffer, "le", 1),
-      getIdentityRegistryPda(assetMint).toBuffer(),
-    ],
-    identityRegistryProgramId
-  )[0];
 
 export async function setupTests(uniqueSeed: number) {
   const payerKp = new Keypair();

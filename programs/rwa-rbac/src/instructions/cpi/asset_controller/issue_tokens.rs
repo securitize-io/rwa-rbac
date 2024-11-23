@@ -52,6 +52,7 @@ pub struct IssueTokens<'info> {
     #[account(address = Pubkey::from_str(POLICY_ENGINE_ID).unwrap())]
     pub policy_engine_program: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
+    #[account(mut)]
     pub policy_engine: UncheckedAccount<'info>,
 }
 
@@ -92,7 +93,7 @@ pub fn handler(ctx: Context<IssueTokens>, cpi_data: Vec<u8>) -> Result<()> {
                 AccountMeta::new_readonly(ctx.accounts.associated_token_program.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.policy_engine_program.key(), false),
-                AccountMeta::new_readonly(ctx.accounts.policy_engine.key(), false),
+                AccountMeta::new(ctx.accounts.policy_engine.key(), false),
             ],
             data: cpi_data,
         },

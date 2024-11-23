@@ -1,4 +1,4 @@
 [submodule "deps/rwa-token"]
 	path = deps/rwa-token
 	url = https://github.com/tiago18c/rwa-token.git
-	branch = multiple_investor_wallets
+	branch = holders_policy

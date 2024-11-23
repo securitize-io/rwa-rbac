@@ -23,13 +23,11 @@ import {
   getAssetControllerPda,
   getIdentityAccount,
   getIdentityAccountPda,
-  getPolicyAccountPda,
   getPolicyEngineAccount,
   getPolicyEnginePda,
   IssueTokenArgs,
   SetupAssetControllerArgs,
 } from "../deps/rwa-token/clients/rwa-token-sdk/src";
-import { getIdentityMetadata } from "./utils";
 
 describe("CPI End to End Tests", () => {
   // Configure the client to use the local cluster.
@@ -108,7 +106,6 @@ describe("CPI End to End Tests", () => {
     );
     assetController = getAssetControllerPda(mint);
     policyEngine = getPolicyEnginePda(mint);
-    policyAccount = getPolicyAccountPda(mint);
   });
 
   it("Create UserRole 1 successfully", async () => {
@@ -298,11 +295,8 @@ describe("CPI End to End Tests", () => {
     );
   });
 
-  // TODO: Test is failing due to inmplementation error in AddIdentityLevelToUserAccount
-  it.skip("CPI: Add Level to Identity Account", async () => {
-    console.log(
-      await rwaRbacClient.provider.connection.getBalance(setup.payer)
-    );
+  it("CPI: Add Level to Identity Account", async () => {
+    const expiry = new BN(Date.now() / 1000 + 24 * 60 * 60);
     const addLevelIx =
       await rwaRbacClient.identityRegistry.addIdentityLevelToUserAccount(
         {
@@ -312,7 +306,7 @@ describe("CPI End to End Tests", () => {
           owner: setup.user1.toString(), // Target Account
           assetMint: mint,
           level: 2,
-          expiry: new BN(Date.now() / 1000 + 24 * 60 * 60),
+          expiry,
         },
         setup.assetAccessController,
         setup.userRole1
@@ -322,10 +316,19 @@ describe("CPI End to End Tests", () => {
       new Transaction().add(addLevelIx),
       [setup.payerKp, setup.signer1Kp]
     );
+
+    const identityAccount = await getIdentityAccount(
+      mint,
+      setup.user1,
+      rwaRbacClient.provider
+    );
+
+    // Level 2 should be added.
+    assert.equal(identityAccount.levels.at(-1).level, 2);
+    assert(identityAccount.levels.at(-1).expiry.eq(expiry));
   });
 
-  // TODO: Test is failing due to inmplementation error in CreateIdentityAccount
-  it.skip("CPI: Remove Level from Identity Account", async () => {
+  it("CPI: Remove Level from Identity Account", async () => {
     const removeLevelIx =
       await rwaRbacClient.identityRegistry.removeIdentityLevelFromUserAccount(
         {
@@ -344,12 +347,17 @@ describe("CPI End to End Tests", () => {
       new Transaction().add(removeLevelIx),
       [setup.payerKp, setup.signer1Kp]
     );
+
     const identityAccount = await getIdentityAccount(
       mint,
       setup.user1,
       rwaRbacClient.provider
     );
-    // TODO: Check that level has been removed.
+
+    // Level 1 should be removed.
+    identityAccount.levels.forEach((level) => {
+      assert.notEqual(level.level, 1);
+    });
   });
 
   it("CPI: Refresh Level To Identity Account", async () => {
@@ -359,7 +367,7 @@ describe("CPI End to End Tests", () => {
       owner: setup.user1.toString(), // Target Account
       authority: setup.controllerAuthority.toString(), // ControllerAuthority
       assetMint: mint,
-      level: 1,
+      level: 2,
       expiry: new BN(Date.now() / 1000 + 24 * 60 * 60),
     };
     const ix =
@@ -401,36 +409,6 @@ describe("CPI End to End Tests", () => {
       new Transaction().add(...issueTokenIxns),
       [setup.payerKp, setup.signer1Kp]
     );
-  });
-
-  it("CPI: Edit Identity Metadata Account", async () => {
-    const editArgs = {
-      payer: setup.payer.toString(), // Payer Account
-      signer: setup.signer1.toString(), // User Account
-      owner: setup.user1.toString(), // Target Account
-      authority: setup.controllerAuthority.toString(), // ControllerAuthority
-      assetMint: mint,
-      level: 2,
-      maxAllowed: new BN(50),
-      minAllowed: new BN(20),
-    };
-    const editIx = await rwaRbacClient.identityRegistry.editIdentityMetadataIxn(
-      editArgs,
-      setup.assetAccessController,
-      setup.userRole1
-    );
-    await sendAndConfirmTransaction(connection, new Transaction().add(editIx), [
-      setup.payerKp,
-      setup.signer1Kp,
-    ]);
-
-    const metadataPost = await getIdentityMetadata(
-      editArgs.assetMint,
-      editArgs.level,
-      rwaRbacClient.provider
-    );
-    assert(metadataPost.maxUsers.eqn(50));
-    assert(metadataPost.minUsers.eqn(20));
   });
 
   it("CPI: Revoke Identity Account", async () => {

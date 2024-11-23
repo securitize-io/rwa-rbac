@@ -57,10 +57,6 @@
           "writable": true
         },
         {
-          "name": "identity_metadata_account",
-          "writable": true
-        },
-        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
@@ -360,10 +356,6 @@
           "writable": true
         },
         {
-          "name": "identity_metadata_account",
-          "writable": true
-        },
-        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
@@ -530,67 +522,6 @@
       ]
     },
     {
-      "name": "edit_identity_metadata",
-      "discriminator": [
-        91,
-        176,
-        160,
-        204,
-        72,
-        229,
-        80,
-        115
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controller_authority",
-          "relations": [
-            "asset_access_controller"
-          ]
-        },
-        {
-          "name": "asset_access_controller",
-          "relations": [
-            "authorized_user_role"
-          ]
-        },
-        {
-          "name": "authorized_user_role",
-          "optional": true
-        },
-        {
-          "name": "identity_registry_program",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
-        },
-        {
-          "name": "identity_registry"
-        },
-        {
-          "name": "identity_metadata_account",
-          "writable": true
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "cpi_data",
-          "type": "bytes"
-        }
-      ]
-    },
-    {
       "name": "freeze_token_account",
       "discriminator": [
         138,
@@ -729,7 +660,8 @@
           "address": "po1cPf1eyUJJPqULw4so3T4JU9pdFn83CDyuLEKFAau"
         },
         {
-          "name": "policy_engine"
+          "name": "policy_engine",
+          "writable": true
         }
       ],
       "args": [
@@ -891,10 +823,6 @@
         },
         {
           "name": "identity_account",
-          "writable": true
-        },
-        {
-          "name": "identity_metadata_account",
           "writable": true
         },
         {

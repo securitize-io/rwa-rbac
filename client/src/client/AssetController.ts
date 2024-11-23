@@ -26,7 +26,6 @@ import {
   getIdentityAccountPda,
   getIdentityRegistryPda,
   getIssueTokensIx,
-  getPolicyAccountPda,
   getPolicyEnginePda,
   getRevokeTokensIx,
   getThawTokenIx,
@@ -306,7 +305,6 @@ export class AssetController {
       );
       ixs.push(createAtaIx);
     }
-
     ixs.push(
       await this.rbacProgram.methods
         .revokeTokens(ixData)
@@ -327,7 +325,7 @@ export class AssetController {
         .remainingAccounts([
           {
             pubkey: getPolicyEnginePda(args.assetMint),
-            isWritable: false,
+            isWritable: true,
             isSigner: false,
           },
           {
@@ -373,11 +371,6 @@ export class AssetController {
           },
           {
             pubkey: SYSVAR_INSTRUCTIONS_PUBKEY,
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: policyEngineProgramId,
             isWritable: false,
             isSigner: false,
           },

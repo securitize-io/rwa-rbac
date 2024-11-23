@@ -29,9 +29,6 @@ pub struct AddLevelToIdentityAccount<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub identity_account: UncheckedAccount<'info>,
-    /// CHECK: Verified in CPI.
-    #[account(mut)]
-    pub identity_metadata_account: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 }
 
@@ -64,7 +61,6 @@ pub fn handler(ctx: Context<AddLevelToIdentityAccount>, cpi_data: Vec<u8>) -> Re
                 AccountMeta::new_readonly(ctx.accounts.controller_authority.key(), true),
                 AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
                 AccountMeta::new(ctx.accounts.identity_account.key(), false),
-                AccountMeta::new(ctx.accounts.identity_metadata_account.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
             ],
             data: cpi_data,
@@ -74,7 +70,6 @@ pub fn handler(ctx: Context<AddLevelToIdentityAccount>, cpi_data: Vec<u8>) -> Re
             ctx.accounts.controller_authority.to_account_info(),
             ctx.accounts.identity_registry.to_account_info(),
             ctx.accounts.identity_account.to_account_info(),
-            ctx.accounts.identity_metadata_account.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
         ],
         signers_seeds,
