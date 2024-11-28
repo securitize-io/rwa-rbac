@@ -1,6 +1,26 @@
 import { BN } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import { RBAC_PROGRAM } from "./constants";
+import { IMR_PROGRAM, RBAC_PROGRAM } from "./constants";
+
+export const deriveInvestorPda = (
+  investorId: string,
+  programId = IMR_PROGRAM
+) => {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from(investorId), Buffer.from("Investor")],
+    programId
+  )[0];
+};
+
+export const deriveIdentityToOwnerPda = (
+  identityAccount: PublicKey,
+  programId = IMR_PROGRAM
+) => {
+  return PublicKey.findProgramAddressSync(
+    [identityAccount.toBuffer(), Buffer.from("IdentityToInvestor")],
+    programId
+  )[0];
+};
 
 export const deriveAssetAccessControllerPda = (
   uniqueSeed: BN,

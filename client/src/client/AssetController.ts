@@ -17,10 +17,12 @@ import { RwaRbac } from "../types/generated/rwa_rbac";
 import {
   assetControllerProgramId,
   CloseMintArgs,
+  CreateAssetControllerIx,
   FreezeTokenArgs,
   getAssetControllerEventAuthority,
   getAssetControllerPda,
   getCloseMintIx,
+  getCreateAssetControllerIx,
   getExtraMetasListPda,
   getFreezeTokenIx,
   getIdentityAccountPda,
@@ -28,6 +30,7 @@ import {
   getIssueTokensIx,
   getPolicyEnginePda,
   getRevokeTokensIx,
+  getSeizeTokensIx,
   getThawTokenIx,
   getTrackerAccountPda,
   getUpdateInterestBearingMintRateIx,
@@ -37,7 +40,7 @@ import {
   policyEngineProgramId,
   RevokeTokensArgs,
   RwaClient,
-  SetupAssetControllerArgs,
+  SeizeTokensArgs,
   TransferTokensArgs,
   UpdateAssetMetadataArgs,
   VoidTokensArgs,
@@ -57,11 +60,11 @@ export class AssetController {
 
   /**
    * Asynchronously generates instructions to setup a new asset controller.
-   * @param args - {@link SetupAssetControllerArgs}
+   * @param args - {@link CreateAssetControllerIx}
    * @returns A Promise that resolves to the instructions to create an asset controller.
    */
-  async setupNewRegistry(args: SetupAssetControllerArgs) {
-    return this.rwaClient.assetController.setupNewRegistry(args);
+  async setupNewRegistry(args: CreateAssetControllerIx) {
+    return getCreateAssetControllerIx(args, this.rwaClient.provider);
   }
 
   /**
@@ -457,6 +460,105 @@ export class AssetController {
         eventAuthority: getAssetControllerEventAuthority(),
         tokenProgram: TOKEN_2022_PROGRAM_ID,
       })
+      .instruction();
+  }
+
+  /**
+   * Asynchronously generates instruction to seize tokens.
+   * @param args - {@link SeizeTokensArgs}
+   * @param signer - User signer public key.
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @returns A Promise that resolves to the instruction to seize.
+   */
+  async seizeTokensIxn(
+    args: SeizeTokensArgs,
+    signer: PublicKey,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const [_, seizeIx] = await getSeizeTokensIx(args, this.rwaClient.provider);
+    return this.rbacProgram.methods
+      .seizeTokens(seizeIx.data)
+      .accountsStrict({
+        user: signer,
+        controllerAuthority: args.authority,
+        assetAccessController: assetAccessController,
+        authorizedUserRole: authorizedUserRole || null,
+        assetControllerProgram: assetControllerProgramId,
+        assetMint: args.assetMint,
+        assetController: getAssetControllerPda(args.assetMint),
+        sourceTokenAccount: getAssociatedTokenAddressSync(
+          new PublicKey(args.assetMint),
+          new PublicKey(args.from),
+          false,
+          TOKEN_2022_PROGRAM_ID
+        ),
+        destinationTokenAccount: getAssociatedTokenAddressSync(
+          new PublicKey(args.assetMint),
+          new PublicKey(args.to),
+          true,
+          TOKEN_2022_PROGRAM_ID
+        ),
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
+      })
+      .remainingAccounts([
+        {
+          pubkey: getPolicyEnginePda(args.assetMint),
+          isWritable: true,
+          isSigner: false,
+        },
+        {
+          pubkey: identityRegistryProgramId,
+          isWritable: false,
+          isSigner: false,
+        },
+        {
+          pubkey: policyEngineProgramId,
+          isWritable: false,
+          isSigner: false,
+        },
+        {
+          pubkey: getIdentityRegistryPda(args.assetMint),
+          isWritable: false,
+          isSigner: false,
+        },
+        {
+          pubkey: getIdentityAccountPda(args.assetMint, args.to),
+          isWritable: false,
+          isSigner: false,
+        },
+        {
+          pubkey: getIdentityAccountPda(args.assetMint, args.from),
+          isWritable: false,
+          isSigner: false,
+        },
+        {
+          pubkey: getTrackerAccountPda(args.assetMint, args.to),
+          isWritable: true,
+          isSigner: false,
+        },
+        {
+          pubkey: getTrackerAccountPda(args.assetMint, args.from),
+          isWritable: true,
+          isSigner: false,
+        },
+        {
+          pubkey: getExtraMetasListPda(args.assetMint),
+          isWritable: false,
+          isSigner: false,
+        },
+        {
+          pubkey: getWalletIdentityAccountPda(args.assetMint, args.to),
+          isWritable: false,
+          isSigner: false,
+        },
+        {
+          pubkey: getWalletIdentityAccountPda(args.assetMint, args.from),
+          isWritable: false,
+          isSigner: false,
+        },
+      ])
       .instruction();
   }
 }

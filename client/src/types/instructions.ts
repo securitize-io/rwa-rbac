@@ -74,6 +74,14 @@ export type WithdrawExcessRentArgs = {
   assetAccessController: PublicKey;
 };
 
+/** Args used to seize tokens  */
+export type SeizeTokensArgs = {
+  payer: string;
+  signer: string;
+  assetMint: string;
+  owner: string;
+};
+
 /** Args used to update asset mitn interest rate  */
 export type UpdateInterestBearingMintRateArgs = {
   rate: number;
@@ -110,4 +118,57 @@ export type EditIdentityMetadataArgs = {
   level: number;
   maxAllowed?: BN;
   minAllowed?: BN;
+};
+
+/** Args used to setup Investor  */
+export type SetupInvestorArgs = {
+  payer: string;
+  signer: string;
+  investorId: string;
+  collisionHash: string;
+  assetMint: string;
+  owner: string;
+  levels: number[];
+  expiries: BN[];
+  proofHashes: string[];
+};
+
+/** Args used to add levels to Investor  */
+export type AddLevelsArgs = {
+  payer: string;
+  signer: string;
+  investorId: string;
+  assetMint: string;
+  owner: string;
+  levels: number[];
+  expiries: BN[];
+  proofHashes: string[];
+};
+
+/** Args used to remove levels to Investor  */
+export type RemoveLevelsArgs = {
+  payer: string;
+  signer: string;
+  investorId: string;
+  assetMint: string;
+  owner: string;
+  levels: number[];
+};
+
+/** Args used to remove an Investor  */
+export type RemoveInvestorArgs = {
+  payer: string;
+  signer: string;
+  investorId: string;
+  assetMint: string;
+  owner: string;
+};
+
+/** Args used to attach or detach a wallet to an IdentityAccount  */
+export type AttachDetachWalletArgs = {
+  payer: string;
+  signer: string;
+  owner: string;
+  assetMint: string;
+  wallet: PublicKey;
 };

@@ -2,7 +2,9 @@ import { AnchorProvider, BN, Program, Wallet } from "@coral-xyz/anchor";
 import { SystemProgram } from "@solana/web3.js";
 
 import { RwaRbac } from "../types/generated/rwa_rbac";
-import * as IDL from "../types/generated/rwa_rbac.json";
+import * as rbacIDL from "../types/generated/rwa_rbac.json";
+import { RwaImr } from "../types/generated/rwa_imr";
+import * as imrIDL from "../types/generated/rwa_imr.json";
 import { AssetController } from "./AssetController";
 import { PolicyEngine } from "./PolicyEngine";
 import { IdentityRegistry } from "./IdentityRegistry";
@@ -19,19 +21,23 @@ import {
 } from "../types/instructions";
 import { RwaClient } from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
 import { Config } from "../../../deps/rwa-token/clients/rwa-token-sdk/src/classes/types";
+import { IdentityMetadataRegistry } from "./IdentityMetadataRegistry";
 
 export class RwaRbacClient {
   rbacProgram: Program<RwaRbac>;
+  imrProgram: Program<RwaImr>;
   rwaClient: RwaClient;
   assetController: AssetController;
   policyEngine: PolicyEngine;
   identityRegistry: IdentityRegistry;
+  identityMetadataRegistry: IdentityMetadataRegistry;
   provider: AnchorProvider;
 
   constructor(config: Config, wallet: Wallet) {
     this.rwaClient = new RwaClient(config, wallet);
     this.provider = this.rwaClient.provider;
-    this.rbacProgram = new Program(IDL as RwaRbac, this.provider);
+    this.rbacProgram = new Program(rbacIDL as RwaRbac, this.provider);
+    this.imrProgram = new Program(imrIDL as RwaImr, this.provider);
     this.assetController = new AssetController(
       this.rwaClient,
       this.rbacProgram
@@ -39,7 +45,13 @@ export class RwaRbacClient {
     this.policyEngine = new PolicyEngine(this.rwaClient, this.rbacProgram);
     this.identityRegistry = new IdentityRegistry(
       this.rwaClient,
-      this.rbacProgram
+      this.rbacProgram,
+      this.imrProgram
+    );
+    this.identityMetadataRegistry = new IdentityMetadataRegistry(
+      this.rwaClient,
+      this.rbacProgram,
+      this.imrProgram
     );
   }
 

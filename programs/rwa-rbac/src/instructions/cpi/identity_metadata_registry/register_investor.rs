@@ -6,12 +6,16 @@ use anchor_lang::{
 };
 
 use crate::{
-    constants::IDENTITY_REGISTRY_ID, controller_seeds, error::ErrorCode, get_discriminator,
-    state::*, verify_medici_signer,
+    constants::{IDENTITY_METADATA_REGISTRY_ID, IDENTITY_REGISTRY_ID},
+    controller_seeds,
+    error::ErrorCode,
+    get_discriminator,
+    state::*,
+    verify_medici_signer,
 };
 
 #[derive(Accounts)]
-pub struct RevokeIdentityAccount<'info> {
+pub struct RegisterInvestor<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub user: Signer<'info>,
@@ -22,6 +26,15 @@ pub struct RevokeIdentityAccount<'info> {
     #[account(has_one = asset_access_controller)]
     pub authorized_user_role: Option<Account<'info, UserRole>>,
     /// CHECK: Checked against known program address.
+    #[account(address = Pubkey::from_str(IDENTITY_METADATA_REGISTRY_ID).unwrap())]
+    pub identity_metadata_registry_program: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    #[account(mut)]
+    pub investor: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    #[account(mut)]
+    pub identity_to_investor: UncheckedAccount<'info>,
+    /// CHECK: Checked against known program address.
     #[account(address = Pubkey::from_str(IDENTITY_REGISTRY_ID).unwrap())]
     pub identity_registry_program: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
@@ -29,9 +42,10 @@ pub struct RevokeIdentityAccount<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub identity_account: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<RevokeIdentityAccount>, cpi_data: Vec<u8>) -> Result<()> {
+pub fn handler(ctx: Context<RegisterInvestor>, cpi_data: Vec<u8>) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
     // Verify that signer is either a controller admin or has authorized user role.
@@ -39,12 +53,12 @@ pub fn handler(ctx: Context<RevokeIdentityAccount>, cpi_data: Vec<u8>) -> Result
         ctx.accounts.user.key(),
         controller,
         ctx.accounts.authorized_user_role.clone(),
-        MediciFlags::REVOKE_IDENTITY_ACCOUNT,
+        MediciFlags::REGISTER_INVESTOR,
     )?;
 
     // Verify instruction discriminator in cpi_data
     require!(
-        cpi_data.starts_with(&get_discriminator("revoke_identity_account")),
+        cpi_data.starts_with(&get_discriminator("register_investor")),
         ErrorCode::UnknownInstruction
     );
 
@@ -54,20 +68,28 @@ pub fn handler(ctx: Context<RevokeIdentityAccount>, cpi_data: Vec<u8>) -> Result
 
     invoke_signed(
         &Instruction {
-            program_id: ctx.accounts.identity_registry_program.key(),
+            program_id: ctx.accounts.identity_metadata_registry_program.key(),
             accounts: vec![
                 AccountMeta::new(ctx.accounts.payer.key(), true),
                 AccountMeta::new_readonly(ctx.accounts.controller_authority.key(), true),
+                AccountMeta::new(ctx.accounts.investor.key(), false),
+                AccountMeta::new(ctx.accounts.identity_to_investor.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.identity_registry_program.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
                 AccountMeta::new(ctx.accounts.identity_account.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
             ],
             data: cpi_data,
         },
-        &[
+        &vec![
             ctx.accounts.payer.to_account_info(),
             ctx.accounts.controller_authority.to_account_info(),
+            ctx.accounts.investor.to_account_info(),
+            ctx.accounts.identity_to_investor.to_account_info(),
+            ctx.accounts.identity_registry_program.to_account_info(),
             ctx.accounts.identity_registry.to_account_info(),
             ctx.accounts.identity_account.to_account_info(),
+            ctx.accounts.system_program.to_account_info(),
         ],
         signers_seeds,
     )?;

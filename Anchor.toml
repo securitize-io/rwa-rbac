@@ -8,6 +8,10 @@ skip-lint = false
 rwa_rbac = "9gUXb1jJ4wmwht3G6mMaHdWbo2gf7faHYyM6ryVGy4ae"
 
 [[test.genesis]]
+address = "6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9"
+program = "./deps/rwa_imr.so"
+
+[[test.genesis]]
 address = "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
 program = "./deps/asset_controller.so"
 

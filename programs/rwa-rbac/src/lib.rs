@@ -92,6 +92,13 @@ pub mod rwa_rbac {
         instructions::freeze_token_account::handler(ctx, cpi_data)
     }
 
+    pub fn seize_tokens<'info>(
+        ctx: Context<'_, '_, '_, 'info, SeizeTokens<'info>>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::seize_tokens::handler(ctx, cpi_data)
+    }
+
     pub fn revoke_tokens<'info>(
         ctx: Context<'_, '_, '_, 'info, RevokeTokens<'info>>,
         cpi_data: Vec<u8>,
@@ -124,25 +131,20 @@ pub mod rwa_rbac {
         instructions::detach_from_policy_engine::handler(ctx, cpi_data)
     }
 
-    pub fn create_identity_account(
-        ctx: Context<CreateIdentityAccount>,
-        cpi_data: Vec<u8>,
-    ) -> Result<()> {
-        instructions::create_identity_account::handler(ctx, cpi_data)
+    pub fn register_investor(ctx: Context<RegisterInvestor>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::register_investor::handler(ctx, cpi_data)
     }
 
-    pub fn add_level_to_identity_account(
-        ctx: Context<AddLevelToIdentityAccount>,
-        cpi_data: Vec<u8>,
-    ) -> Result<()> {
-        instructions::add_level_to_identity_account::handler(ctx, cpi_data)
+    pub fn remove_investor(ctx: Context<RemoveInvestor>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::remove_investor::handler(ctx, cpi_data)
     }
 
-    pub fn remove_level_from_identity_account(
-        ctx: Context<RemoveLevelFromIdentityAccount>,
-        cpi_data: Vec<u8>,
-    ) -> Result<()> {
-        instructions::remove_level_from_identity_account::handler(ctx, cpi_data)
+    pub fn add_levels(ctx: Context<AddLevels>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::add_levels::handler(ctx, cpi_data)
+    }
+
+    pub fn remove_levels(ctx: Context<RemoveLevels>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::remove_levels::handler(ctx, cpi_data)
     }
 
     pub fn refresh_level_to_identity_account(
@@ -152,10 +154,17 @@ pub mod rwa_rbac {
         instructions::refresh_level_to_identity_account::handler(ctx, cpi_data)
     }
 
-    pub fn revoke_identity_account(
-        ctx: Context<RevokeIdentityAccount>,
+    pub fn attach_wallet_to_identity(
+        ctx: Context<AttachWalletToIdentity>,
         cpi_data: Vec<u8>,
     ) -> Result<()> {
-        instructions::revoke_identity_account::handler(ctx, cpi_data)
+        instructions::attach_wallet_to_identity::handler(ctx, cpi_data)
+    }
+
+    pub fn detach_wallet_from_identity(
+        ctx: Context<DetachWalletFromIdentity>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::detach_wallet_from_identity::handler(ctx, cpi_data)
     }
 }

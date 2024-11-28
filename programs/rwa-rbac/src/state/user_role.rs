@@ -98,11 +98,14 @@ bitflags::bitflags! {
       const ATTACH_TO_POLICY_ACCOUNT = 1 << 7;
       const CREATE_POLICY_ACCOUNT = 1 << 8;
       const DETACH_FROM_POLICY_ACCOUNT = 1 << 9;
-      const ADD_LEVEL_TO_IDENTITY_ACCOUNT = 1 << 10;
-      const CREATE_IDENTITY_ACCOUNT = 1 << 11;
-      const REMOVE_LEVEL_FROM_IDENTITY_ACCOUNT = 1 << 12;
-      const REVOKE_IDENTITY_ACCOUNT = 1 << 13;
+      const ADD_LEVELS = 1 << 10;
+      const REGISTER_INVESTOR = 1 << 11;
+      const REMOVE_LEVELS = 1 << 12;
+      const REMOVE_INVESTOR = 1 << 13;
       const EDIT_IDENTITY_METADATA = 1 << 14;
       const REFRESH_LEVEL_TO_IDENTITY_ACCOUNT = 1 << 15;
+      const ATTACH_WALLET_TO_IDENTITY = 1 << 16;
+      const DETACH_WALLET_FROM_IDENTITY = 1 << 17;
+      const SEIZE_TOKENS = 1 << 18;
   }
 }

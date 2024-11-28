@@ -4,6 +4,8 @@
 
 Medici is composed of 4 different programs: Asset Controller, Policy Engine, Identity Registry and Data Registry. Typically, an organization may create one or more assets representing a RWA they are intending to tokenize. An asset is created by invoking the CreateAssetController instruction which sets up a new token mint, AssetControllerAccount, PolicyEngine, IdentityRegistry and DataRegistry. These accounts and token mint will have an authority, a keypair held by the organization that can authorize instructions to mutate the state of these accounts. A secondary delegate signer can be assigned, with access to a smaller scope of instructions.
 
+In addition, a new auxillary program, the Identity Metadata Registry (IMR), serves to store additional investor related metadata and sync levels to the related IdentityAccount.
+
 ## Program Design
 
 In Medici RBAC, we introduce `AssetAccessController` as the main data structure. The `AssetAccessController` has an `admin` authority and a `controller_authority` , a [program derived address](https://solana.com/docs/core/pda) that serves as the signer authority for all accounts governed by the `AssetAccessController`. This address is intentionally set to be different from the public key of `AssetAccessController`, as `rwa-token` program has instructions that require mutability access to the signer authority.
@@ -16,7 +18,7 @@ The organization admin can then:
 2. configure instructions that a `UserRole` is given access for and
 3. assign or remove wallets from a `UserRole`.
 
-Users can then invoke instructions through the RBAC program to perform the same tasks on Medici, such as adding or modifying a policy or freezing a token account, if they are in a UserRole with authorization to call the associated instruction.
+Users can then invoke instructions through the RBAC program to perform the same tasks on Medici and IMR Program, such as adding or modifying a policy or freezing a token account, if they are in a UserRole with authorization to call the associated instruction.
 
 ### Design Considerations
 

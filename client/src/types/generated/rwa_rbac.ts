@@ -14,16 +14,16 @@ export type RwaRbac = {
   },
   "instructions": [
     {
-      "name": "addLevelToIdentityAccount",
+      "name": "addLevels",
       "discriminator": [
-        102,
-        204,
-        64,
-        169,
-        252,
-        177,
-        192,
-        232
+        101,
+        239,
+        15,
+        85,
+        60,
+        13,
+        183,
+        192
       ],
       "accounts": [
         {
@@ -50,6 +50,14 @@ export type RwaRbac = {
         {
           "name": "authorizedUserRole",
           "optional": true
+        },
+        {
+          "name": "identityMetadataRegistryProgram",
+          "address": "6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9"
+        },
+        {
+          "name": "investor",
+          "writable": true
         },
         {
           "name": "identityRegistryProgram",
@@ -170,6 +178,74 @@ export type RwaRbac = {
         {
           "name": "policyEngine",
           "writable": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpiData",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "attachWalletToIdentity",
+      "discriminator": [
+        61,
+        129,
+        252,
+        190,
+        8,
+        202,
+        179,
+        90
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "identityRegistryProgram",
+          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+        },
+        {
+          "name": "walletIdentity",
+          "writable": true
+        },
+        {
+          "name": "identityAccount",
+          "writable": true
+        },
+        {
+          "name": "identityRegistry"
+        },
+        {
+          "name": "assetMint"
         },
         {
           "name": "systemProgram",
@@ -309,67 +385,6 @@ export type RwaRbac = {
         {
           "name": "uniqueSeed",
           "type": "u64"
-        }
-      ]
-    },
-    {
-      "name": "createIdentityAccount",
-      "discriminator": [
-        82,
-        240,
-        35,
-        129,
-        113,
-        134,
-        116,
-        70
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controllerAuthority",
-          "relations": [
-            "assetAccessController"
-          ]
-        },
-        {
-          "name": "assetAccessController",
-          "relations": [
-            "authorizedUserRole"
-          ]
-        },
-        {
-          "name": "authorizedUserRole",
-          "optional": true
-        },
-        {
-          "name": "identityRegistryProgram",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
-        },
-        {
-          "name": "identityRegistry"
-        },
-        {
-          "name": "identityAccount",
-          "writable": true
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "cpiData",
-          "type": "bytes"
         }
       ]
     },
@@ -518,6 +533,68 @@ export type RwaRbac = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpiData",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "detachWalletFromIdentity",
+      "discriminator": [
+        166,
+        70,
+        236,
+        254,
+        166,
+        116,
+        201,
+        50
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "writable": true,
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "identityRegistryProgram",
+          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+        },
+        {
+          "name": "walletIdentity",
+          "writable": true
+        },
+        {
+          "name": "identityAccount",
+          "writable": true
+        },
+        {
+          "name": "identityRegistry"
         }
       ],
       "args": [
@@ -783,16 +860,16 @@ export type RwaRbac = {
       ]
     },
     {
-      "name": "removeLevelFromIdentityAccount",
+      "name": "registerInvestor",
       "discriminator": [
-        194,
-        231,
-        187,
-        54,
-        197,
+        95,
+        16,
+        66,
+        212,
+        152,
+        123,
         136,
-        170,
-        55
+        173
       ],
       "accounts": [
         {
@@ -819,6 +896,156 @@ export type RwaRbac = {
         {
           "name": "authorizedUserRole",
           "optional": true
+        },
+        {
+          "name": "identityMetadataRegistryProgram",
+          "address": "6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9"
+        },
+        {
+          "name": "investor",
+          "writable": true
+        },
+        {
+          "name": "identityToInvestor",
+          "writable": true
+        },
+        {
+          "name": "identityRegistryProgram",
+          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+        },
+        {
+          "name": "identityRegistry"
+        },
+        {
+          "name": "identityAccount",
+          "writable": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpiData",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "removeInvestor",
+      "discriminator": [
+        93,
+        0,
+        162,
+        199,
+        76,
+        5,
+        180,
+        2
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "identityMetadataRegistryProgram",
+          "address": "6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9"
+        },
+        {
+          "name": "investor",
+          "writable": true
+        },
+        {
+          "name": "identityToInvestor",
+          "writable": true
+        },
+        {
+          "name": "identityRegistryProgram",
+          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+        },
+        {
+          "name": "identityRegistry"
+        },
+        {
+          "name": "identityAccount",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "cpiData",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "removeLevels",
+      "discriminator": [
+        200,
+        96,
+        65,
+        253,
+        97,
+        55,
+        16,
+        192
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "identityMetadataRegistryProgram",
+          "address": "6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9"
+        },
+        {
+          "name": "investor",
+          "writable": true
         },
         {
           "name": "identityRegistryProgram",
@@ -886,63 +1113,6 @@ export type RwaRbac = {
       ]
     },
     {
-      "name": "revokeIdentityAccount",
-      "discriminator": [
-        77,
-        88,
-        182,
-        61,
-        235,
-        49,
-        2,
-        137
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controllerAuthority",
-          "relations": [
-            "assetAccessController"
-          ]
-        },
-        {
-          "name": "assetAccessController",
-          "relations": [
-            "authorizedUserRole"
-          ]
-        },
-        {
-          "name": "authorizedUserRole",
-          "optional": true
-        },
-        {
-          "name": "identityRegistryProgram",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
-        },
-        {
-          "name": "identityRegistry"
-        },
-        {
-          "name": "identityAccount",
-          "writable": true
-        }
-      ],
-      "args": [
-        {
-          "name": "cpiData",
-          "type": "bytes"
-        }
-      ]
-    },
-    {
       "name": "revokeTokens",
       "discriminator": [
         215,
@@ -1006,6 +1176,70 @@ export type RwaRbac = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpiData",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "seizeTokens",
+      "discriminator": [
+        79,
+        30,
+        69,
+        54,
+        78,
+        1,
+        16,
+        23
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "writable": true,
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "assetControllerProgram",
+          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+        },
+        {
+          "name": "assetMint"
+        },
+        {
+          "name": "assetController"
+        },
+        {
+          "name": "destinationTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "sourceTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
         }
       ],
       "args": [

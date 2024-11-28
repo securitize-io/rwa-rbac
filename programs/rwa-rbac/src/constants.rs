@@ -2,3 +2,4 @@ pub const POLICY_ENGINE_ID: &str = "po1cPf1eyUJJPqULw4so3T4JU9pdFn83CDyuLEKFAau"
 pub const ASSET_CONTROLLER_ID: &str = "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan";
 pub const DATA_REGISTRY_ID: &str = "dataeP5X1e7XsWN1ovDSEDP5cqaEUnKBmHE5iZhXPVw";
 pub const IDENTITY_REGISTRY_ID: &str = "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf";
+pub const IDENTITY_METADATA_REGISTRY_ID: &str = "6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9";
