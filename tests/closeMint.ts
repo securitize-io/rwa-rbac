@@ -6,11 +6,13 @@ import {
   Connection,
   sendAndConfirmTransaction,
   Transaction,
+  Keypair,
 } from "@solana/web3.js";
 
 import { setupTests } from "./setup";
 import { generateUniqueSeed, RwaRbacClient } from "../client/src/index";
-import { SetupAssetControllerArgs } from "../deps/rwa-token/clients/rwa-token-sdk/src";
+import { CreateAssetControllerIx } from "../deps/rwa-token/clients/rwa-token-sdk/src";
+import { ComputeBudgetProgram } from "@solana/web3.js";
 
 describe("CloseMint Ixs Test", () => {
   // Configure the client to use the local cluster.
@@ -36,7 +38,8 @@ describe("CloseMint Ixs Test", () => {
       setup.signer1Kp,
     ]);
 
-    const setupAssetControllerArgs: SetupAssetControllerArgs = {
+    const assetMintKp = Keypair.generate();
+    const args: CreateAssetControllerIx = {
       authority: setup.controllerAuthority.toString(),
       decimals: 2,
       payer: setup.payer.toString(),
@@ -45,20 +48,22 @@ describe("CloseMint Ixs Test", () => {
       uri: "https://test.com",
       symbol: "TFT",
       interestRate: null,
-      requireIdentityCreation: false,
+      assetMint: assetMintKp.publicKey.toString(),
       enforcePolicyIssuance: false,
+      allowMultipleWallets: true,
     };
-    const setupIx = await rwaRbacClient.assetController.setupNewRegistry(
-      setupAssetControllerArgs
-    );
+    const setupIx = await rwaRbacClient.assetController.setupNewRegistry(args);
     await sendAndConfirmTransaction(
       connection,
-      new Transaction().add(...setupIx.ixs),
-      [setup.payerKp, ...setupIx.signers]
+      new Transaction().add(
+        ComputeBudgetProgram.setComputeUnitLimit({ units: 400000 }),
+        setupIx
+      ),
+      [setup.payerKp, assetMintKp]
     );
 
     // Store values for later use
-    mint = setupIx.signers[0].publicKey.toString();
+    mint = args.assetMint;
   });
 
   // Callable only when mint supply is 0.

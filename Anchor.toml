@@ -6,10 +6,7 @@ skip-lint = false
 
 [programs.localnet]
 rwa_rbac = "9gUXb1jJ4wmwht3G6mMaHdWbo2gf7faHYyM6ryVGy4ae"
-
-[[test.genesis]]
-address = "6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9"
-program = "./deps/rwa_imr.so"
+rwa_imr = "6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9"
 
 [[test.genesis]]
 address = "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"

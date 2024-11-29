@@ -1764,6 +1764,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e819f2bc632f285be6d7cd36e25940d45b2391dd6d9b939e79de557f7014248"
 
 [[package]]
+name = "rwa-imr"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "hex",
+ "sha256",
+]
+
+[[package]]
 name = "rwa-rbac"
 version = "0.1.0"
 dependencies = [

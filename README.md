@@ -1,4 +1,4 @@
-# Medici Role-Based Access Control (RBAC) Program
+# Medici Extensions
 
 ## Background
 
@@ -6,7 +6,34 @@ Medici is composed of 4 different programs: Asset Controller, Policy Engine, Ide
 
 In addition, a new auxillary program, the Identity Metadata Registry (IMR), serves to store additional investor related metadata and sync levels to the related IdentityAccount.
 
-## Program Design
+## Identity Metadata Registry (IMR) Program
+
+### Program Design
+
+In RWA Token program, the intention is to utilize `level` as an enum, where each level (from 0 to 255) could represent either a user’s type and status or country. For example,
+
+- 1 represents `KYC_APPROVED` type + `PENDING` status,
+- 4 represents `ACCREDITED` type + `PENDING` status,
+- 50 represents `US` country.
+
+The client would first determine map the user’s attribute and country off-chain to a set of levels, alongside their expiry and proof hash (if they are attributes) . These levels would be push to the IMR, which would subsequently propagate it as levels to store it in `IdentityAccount` for policy enfocement.
+
+In Identity Metadata Registry, there are two accounts `Investor` and `IdentityToInvestor`. `Investor` tracks the metadata associated to an `IdentityAccount` and `IdentityToInvestor` is used for reverse mapping from a wallet to the Investor account.
+
+A user, after setting up an `AssetAccessController` and `AccessController` using the RBAC, would first invoke `RegisterInvestor` to create an Investor, IdentityToInvestor and IdentityAccount with the associated metadata and initial level, expiry and proof hash. Further levels can be added with `AddLevels` or removed with `RemoveLevels` instructions. Lastly, the accounts created can be removed with `RemoveInvestor`.
+
+When a level is added, we perform the following validations:
+
+- Check if a proof hash is valid (ascii string with <= 32 chars),
+- Check that there are no duplicate levels
+- Check that each attribute type appears only once (TBD)
+- Check that each attribute status for a type appears only once (TBD)
+- Check that there's only a maxiumum of one country (TBD)
+- Maxiumum of only 5 levels
+
+## Medici Role-Based Access Control (RBAC) Program
+
+### Program Design
 
 In Medici RBAC, we introduce `AssetAccessController` as the main data structure. The `AssetAccessController` has an `admin` authority and a `controller_authority` , a [program derived address](https://solana.com/docs/core/pda) that serves as the signer authority for all accounts governed by the `AssetAccessController`. This address is intentionally set to be different from the public key of `AssetAccessController`, as `rwa-token` program has instructions that require mutability access to the signer authority.
 
@@ -41,4 +68,6 @@ Integration tests in [rwa-rbac/tests](https://github.com/exo-tech-xyz/rwa-rbac/t
 
 ## TypeScript Client
 
-The TypeScript [Client](https://github.com/exo-tech-xyz/rwa-rbac/tree/main/client) can be installed with `yarn install @exo-tech-xyz/rwa-rbac` command. Refer to [integration tests](https://github.com/exo-tech-xyz/rwa-rbac/blob/main/tests/cpiTests.ts) for examples on how to initialize an `RwaRbacClient` and generate instructions for the program. `RwaRbacClient` is intentionally designed to share the same interface as [`RwaClient`](https://github.com/bridgesplit/rwa-token/blob/main/clients/rwa-token-sdk/src/classes/Client.ts) whenever feasible.
+The TypeScript [Client](https://github.com/exo-tech-xyz/rwa-rbac/tree/main/client) can be installed with `yarn install @exo-tech-xyz/rwa-rbac` command. Refer to [integration tests](https://github.com/exo-tech-xyz/rwa-rbac/blob/main/tests/cpiTests.ts) for examples on how to initialize an `RwaRbacClient` and generate instructions for the program.
+
+`RwaRbacClient` is intentionally designed to share the same interface as [`RwaClient`](https://github.com/bridgesplit/rwa-token/blob/main/clients/rwa-token-sdk/src/classes/Client.ts) whenever feasible, and is used as the entry point for interacting with the Medici RWA Token, and Investor Metadata Registry Programs.

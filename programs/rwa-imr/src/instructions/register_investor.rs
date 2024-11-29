@@ -1,0 +1,110 @@
+use std::str::FromStr;
+
+use anchor_lang::{
+    prelude::*,
+    solana_program::{instruction::Instruction, program::invoke},
+};
+
+use crate::{
+    constants::IDENTITY_REGISTRY_ID,
+    error::ErrorCode,
+    helper::{get_discriminator, is_valid_hash},
+    state::*,
+};
+
+#[derive(Accounts)]
+#[instruction(investor_id: String)]
+pub struct RegisterInvestor<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    /// Authority has to be authority or delegate of IdentityRegistry for CPI to succeed.
+    pub authority: Signer<'info>,
+    #[account(
+        init,
+        seeds = [
+            &investor_id.as_ref(),
+            b"Investor".as_ref(),
+        ],
+        bump,
+        space = 8 + Investor::INIT_SPACE,
+        payer = payer
+    )]
+    pub investor: Account<'info, Investor>,
+    #[account(
+        init,
+        seeds = [
+            &identity_account.key().as_ref(),
+            b"IdentityToInvestor".as_ref(),
+        ],
+        bump,
+        space = 8 + std::mem::size_of::<IdentityToInvestor>(),
+        payer = payer
+    )]
+    pub identity_to_investor: Account<'info, IdentityToInvestor>,
+    /// CHECK: Checked against known program address.
+    #[account(address = Pubkey::from_str(IDENTITY_REGISTRY_ID).unwrap())]
+    pub identity_registry_program: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub identity_registry: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    #[account(mut)]
+    pub identity_account: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+pub fn handler(
+    ctx: Context<RegisterInvestor>,
+    investor_id: String,
+    collision_hash: String,
+    owner: Pubkey,
+    level: u8,
+    expiry: i64,
+    proof_hash: String,
+) -> Result<()> {
+    require!(is_valid_hash(&investor_id), ErrorCode::InvalidHash);
+    require!(is_valid_hash(&collision_hash), ErrorCode::InvalidHash);
+
+    let investor = &mut ctx.accounts.investor;
+    investor.authority = ctx.accounts.authority.key();
+    investor.identity_account = ctx.accounts.identity_account.key();
+    investor.investor_id = investor_id;
+    investor.collision_hash = collision_hash;
+    investor.last_updated_by = ctx.accounts.payer.key();
+    investor.levels = vec![LevelData { level, proof_hash }];
+
+    let identity_to_investor = &mut ctx.accounts.identity_to_investor;
+    identity_to_investor.identity_account = ctx.accounts.identity_account.key();
+    identity_to_investor.investor = ctx.accounts.investor.key();
+
+    // Build data arg for CPI manually.
+    let cpi_data = [
+        &get_discriminator("create_identity_account"),
+        owner.as_ref(),
+        &[level],
+        &expiry.to_le_bytes(),
+    ]
+    .concat();
+
+    // Perform CPI to IdentityRegistry Program.
+    invoke(
+        &Instruction {
+            program_id: ctx.accounts.identity_registry_program.key(),
+            accounts: vec![
+                AccountMeta::new(ctx.accounts.payer.key(), true),
+                AccountMeta::new_readonly(ctx.accounts.authority.key(), true),
+                AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
+                AccountMeta::new(ctx.accounts.identity_account.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
+            ],
+            data: cpi_data,
+        },
+        &vec![
+            ctx.accounts.payer.to_account_info(),
+            ctx.accounts.authority.to_account_info(),
+            ctx.accounts.identity_registry.to_account_info(),
+            ctx.accounts.identity_account.to_account_info(),
+            ctx.accounts.system_program.to_account_info(),
+        ],
+    )?;
+    Ok(())
+}

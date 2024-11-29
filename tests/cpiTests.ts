@@ -1,6 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { BN, Wallet } from "@coral-xyz/anchor";
 import {
+  ComputeBudgetProgram,
   Connection,
   Keypair,
   PublicKey,
@@ -47,6 +48,10 @@ describe("CPI End to End Tests", () => {
   let assetController: PublicKey;
   let policyAccount: PublicKey;
   let policyEngine: PublicKey;
+
+  const INVESTOR_ID = "d1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6";
+  const PLACEHOLDER_HASH1 = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6";
+  const PLACEHOLDER_HASH2 = "b1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6";
 
   before(async () => {
     setup = await setupTests(generateUniqueSeed());
@@ -98,7 +103,10 @@ describe("CPI End to End Tests", () => {
     const setupIx = await rwaRbacClient.assetController.setupNewRegistry(args);
     await sendAndConfirmTransaction(
       connection,
-      new Transaction().add(setupIx),
+      new Transaction().add(
+        ComputeBudgetProgram.setComputeUnitLimit({ units: 400000 }),
+        setupIx
+      ),
       [setup.payerKp, assetMintKp]
     );
 
@@ -259,14 +267,14 @@ describe("CPI End to End Tests", () => {
       signer: setup.signer1.toString(), // User Account
       owner: setup.user1.toString(), // Target Account
       assetMint: mint,
-      investorId: "solana",
-      collisionHash: "hash123",
+      investorId: INVESTOR_ID,
+      collisionHash: PLACEHOLDER_HASH2,
       levels: [1, 2],
       expiries: [
         new BN(Date.now() / 1000 + 24 * 60 * 60),
         new BN(Date.now() / 1000 + 30 * 60 * 60),
       ],
-      proofHashes: ["abcd", "abc"],
+      proofHashes: [PLACEHOLDER_HASH1, PLACEHOLDER_HASH2],
     };
     const ixReturn = await rwaRbacClient.identityMetadataRegistry.setupUserIxns(
       args,
@@ -294,6 +302,10 @@ describe("CPI End to End Tests", () => {
     );
     assert(identityToInvestorAccount.investor.equals(investorPda));
 
+    const rawData = await rwaRbacClient.provider.connection.getAccountInfo(
+      investorPda
+    );
+    console.log(rawData);
     const investorAccount =
       await rwaRbacClient.identityMetadataRegistry.imrProgram.account.investor.fetch(
         investorPda
@@ -322,20 +334,20 @@ describe("CPI End to End Tests", () => {
     });
   });
 
-  it("CPI: Add Levels", async () => {
+  it("CPI: Add Multiple Levels", async () => {
     const args = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // User Account
       owner: setup.user1.toString(), // Target Account
       assetMint: mint,
-      investorId: "solana",
+      investorId: INVESTOR_ID,
       levels: [5, 3, 4],
       expiries: [
         new BN(Date.now() / 1000 + 24 * 60 * 60),
         new BN(Date.now() / 1000 + 24 * 60 * 60),
         new BN(Date.now() / 1000 + 24 * 60 * 60),
       ],
-      proofHashes: ["hash2", "hash3", "hash4"],
+      proofHashes: [PLACEHOLDER_HASH1, PLACEHOLDER_HASH2, PLACEHOLDER_HASH1],
     };
     const ix = await rwaRbacClient.identityMetadataRegistry.addLevels(
       args,
@@ -378,7 +390,7 @@ describe("CPI End to End Tests", () => {
       signer: setup.signer1.toString(), // User Account
       owner: setup.user1.toString(), // Target Account
       assetMint: mint,
-      investorId: "solana",
+      investorId: INVESTOR_ID,
       levels: [2, 3, 4, 5],
     };
     const ix = await rwaRbacClient.identityMetadataRegistry.removeLevels(
@@ -541,7 +553,7 @@ describe("CPI End to End Tests", () => {
       signer: setup.signer1.toString(), // User Account
       owner: setup.user1.toString(), // Target Account
       assetMint: mint,
-      investorId: "solana",
+      investorId: INVESTOR_ID,
     };
     const ix = await rwaRbacClient.identityMetadataRegistry.removeInvestor(
       args,
