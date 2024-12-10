@@ -98,7 +98,7 @@ export type RwaImr = {
         {
           "name": "authority",
           "docs": [
-            "Authority has to be authority or delegate of IdentityRegistry for CPI to succeed,"
+            "Authority has to be authority or delegate of IdentityRegistry for CPI to succeed."
           ],
           "signer": true
         },
@@ -351,6 +351,11 @@ export type RwaImr = {
       "code": 6001,
       "name": "invalidHash",
       "msg": "Invalid hash"
+    },
+    {
+      "code": 6002,
+      "name": "invalidLevels",
+      "msg": "Invalid levels"
     }
   ],
   "types": [
@@ -393,6 +398,13 @@ export type RwaImr = {
             "name": "identityAccount",
             "docs": [
               "IdentityAccount associated with this investor."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "identityRegistry",
+            "docs": [
+              "IdentityRegistryAccount associated with this investor."
             ],
             "type": "pubkey"
           },

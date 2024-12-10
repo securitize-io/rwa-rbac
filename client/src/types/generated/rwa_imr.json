@@ -92,7 +92,7 @@
         {
           "name": "authority",
           "docs": [
-            "Authority has to be authority or delegate of IdentityRegistry for CPI to succeed,"
+            "Authority has to be authority or delegate of IdentityRegistry for CPI to succeed."
           ],
           "signer": true
         },
@@ -345,6 +345,11 @@
       "code": 6001,
       "name": "InvalidHash",
       "msg": "Invalid hash"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidLevels",
+      "msg": "Invalid levels"
     }
   ],
   "types": [
@@ -387,6 +392,13 @@
             "name": "identity_account",
             "docs": [
               "IdentityAccount associated with this investor."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "identity_registry",
+            "docs": [
+              "IdentityRegistryAccount associated with this investor."
             ],
             "type": "pubkey"
           },

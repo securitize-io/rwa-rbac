@@ -107,5 +107,8 @@ bitflags::bitflags! {
       const ATTACH_WALLET_TO_IDENTITY = 1 << 16;
       const DETACH_WALLET_FROM_IDENTITY = 1 << 17;
       const SEIZE_TOKENS = 1 << 18;
+      const CREATE_IDENTITY_ACCOUNT = 1 << 19;
+      const ADD_LEVEL_TO_IDENTITY_ACCOUNT = 1 << 20;
+      const REMOVE_LEVEL_FROM_IDENTITY_ACCOUNT = 1 << 21;
   }
 }

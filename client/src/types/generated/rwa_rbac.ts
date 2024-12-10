@@ -14,6 +14,70 @@ export type RwaRbac = {
   },
   "instructions": [
     {
+      "name": "addLevelToIdentityAccount",
+      "discriminator": [
+        102,
+        204,
+        64,
+        169,
+        252,
+        177,
+        192,
+        232
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "identityRegistryProgram",
+          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+        },
+        {
+          "name": "identityRegistry"
+        },
+        {
+          "name": "identityAccount",
+          "writable": true
+        },
+        {
+          "name": "identityToInvestor"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpiData",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
       "name": "addLevels",
       "discriminator": [
         101,
@@ -385,6 +449,67 @@ export type RwaRbac = {
         {
           "name": "uniqueSeed",
           "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "createIdentityAccount",
+      "discriminator": [
+        82,
+        240,
+        35,
+        129,
+        113,
+        134,
+        116,
+        70
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "identityRegistryProgram",
+          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+        },
+        {
+          "name": "identityRegistry"
+        },
+        {
+          "name": "identityAccount",
+          "writable": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpiData",
+          "type": "bytes"
         }
       ]
     },
@@ -1002,6 +1127,70 @@ export type RwaRbac = {
       ]
     },
     {
+      "name": "removeLevelFromIdentityAccount",
+      "discriminator": [
+        194,
+        231,
+        187,
+        54,
+        197,
+        136,
+        170,
+        55
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "identityRegistryProgram",
+          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+        },
+        {
+          "name": "identityRegistry"
+        },
+        {
+          "name": "identityAccount",
+          "writable": true
+        },
+        {
+          "name": "identityToInvestor"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpiData",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
       "name": "removeLevels",
       "discriminator": [
         200,
@@ -1558,6 +1747,11 @@ export type RwaRbac = {
       "code": 6002,
       "name": "invalidUserRole",
       "msg": "Invalid user role"
+    },
+    {
+      "code": 6003,
+      "name": "dataIsNotEmpty",
+      "msg": "Data is not empty"
     }
   ],
   "types": [

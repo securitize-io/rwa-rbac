@@ -8,6 +8,70 @@
   },
   "instructions": [
     {
+      "name": "add_level_to_identity_account",
+      "discriminator": [
+        102,
+        204,
+        64,
+        169,
+        252,
+        177,
+        192,
+        232
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controller_authority",
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role",
+          "optional": true
+        },
+        {
+          "name": "identity_registry_program",
+          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+        },
+        {
+          "name": "identity_registry"
+        },
+        {
+          "name": "identity_account",
+          "writable": true
+        },
+        {
+          "name": "identity_to_investor"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpi_data",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
       "name": "add_levels",
       "discriminator": [
         101,
@@ -379,6 +443,67 @@
         {
           "name": "unique_seed",
           "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "create_identity_account",
+      "discriminator": [
+        82,
+        240,
+        35,
+        129,
+        113,
+        134,
+        116,
+        70
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controller_authority",
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role",
+          "optional": true
+        },
+        {
+          "name": "identity_registry_program",
+          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+        },
+        {
+          "name": "identity_registry"
+        },
+        {
+          "name": "identity_account",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpi_data",
+          "type": "bytes"
         }
       ]
     },
@@ -996,6 +1121,70 @@
       ]
     },
     {
+      "name": "remove_level_from_identity_account",
+      "discriminator": [
+        194,
+        231,
+        187,
+        54,
+        197,
+        136,
+        170,
+        55
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controller_authority",
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role",
+          "optional": true
+        },
+        {
+          "name": "identity_registry_program",
+          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+        },
+        {
+          "name": "identity_registry"
+        },
+        {
+          "name": "identity_account",
+          "writable": true
+        },
+        {
+          "name": "identity_to_investor"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpi_data",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
       "name": "remove_levels",
       "discriminator": [
         200,
@@ -1552,6 +1741,11 @@
       "code": 6002,
       "name": "InvalidUserRole",
       "msg": "Invalid user role"
+    },
+    {
+      "code": 6003,
+      "name": "DataIsNotEmpty",
+      "msg": "Data is not empty"
     }
   ],
   "types": [

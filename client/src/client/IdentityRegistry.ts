@@ -7,14 +7,23 @@ import {
   RefreshLevelArgs,
 } from "../types/instructions";
 import {
+  AddLevelToIdentityAccountArgs,
+  getAddLevelToIdentityAccount,
   getIdentityAccountPda,
   getIdentityRegistryPda,
   getIdentityRegistryProgram,
+  getRemoveLevelFromIdentityAccount,
   getWalletIdentityAccountPda,
   identityRegistryProgramId,
+  IxReturn,
+  RemoveLevelFromIdentityAccountArgs,
   RwaClient,
+  SetupUserArgs,
 } from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
-import { deriveControllerAuthorityPda } from "../pdas";
+import {
+  deriveControllerAuthorityPda,
+  deriveIdentityToOwnerPda,
+} from "../pdas";
 import { SystemProgram } from "@solana/web3.js";
 
 /**
@@ -27,6 +36,152 @@ export class IdentityRegistry {
   constructor(rwaClient: RwaClient, rbacProgram: Program<RwaRbac>) {
     this.rwaClient = rwaClient;
     this.rbacProgram = rbacProgram;
+  }
+
+  /**
+   * Asynchronously generates instructions to setup a non-investor user with an identity account.
+   * @param args - {@link SetupUserArgs}
+   * @param authority - RBAC AssetAccessController ControllerAuthority.
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @returns A Promise that resolves to the instructions to setup a user.
+   *
+   * It is required for at least a single user to be setup before issuing tokens.
+   */
+  async setupUserIxns(
+    args: SetupUserArgs,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<IxReturn> {
+    const { ixs } = await this.rwaClient.identityRegistry.setupUserIxns(args);
+    const returnIxs = [];
+
+    const identityAccountIx = ixs[0];
+    const addLevelIxs = ixs.slice(1, -1);
+    const trackerAccountIx = ixs[ixs.length - 1];
+    const controllerAuthority = deriveControllerAuthorityPda(
+      assetAccessController
+    );
+    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
+    returnIxs.push(
+      await this.rbacProgram.methods
+        .createIdentityAccount(identityAccountIx.data)
+        .accountsStrict({
+          payer: args.payer,
+          user: args.signer,
+          controllerAuthority,
+          assetAccessController,
+          authorizedUserRole: authorizedUserRole || null,
+          identityRegistryProgram: identityRegistryProgramId,
+          identityRegistry: getIdentityRegistryPda(args.assetMint),
+          identityAccount,
+          systemProgram: SystemProgram.programId,
+        })
+        .instruction()
+    );
+
+    if (args.levels.length > 1) {
+      for (let i = 1; i < args.levels.length; i++) {
+        returnIxs.push(
+          await this.rbacProgram.methods
+            .addLevelToIdentityAccount(addLevelIxs[i - 1].data)
+            .accountsStrict({
+              payer: args.payer,
+              user: args.signer,
+              controllerAuthority,
+              assetAccessController,
+              authorizedUserRole: authorizedUserRole || null,
+              identityRegistryProgram: identityRegistryProgramId,
+              identityRegistry: getIdentityRegistryPda(args.assetMint),
+              identityAccount,
+              identityToInvestor: deriveIdentityToOwnerPda(identityAccount),
+              systemProgram: SystemProgram.programId,
+            })
+            .instruction()
+        );
+      }
+    }
+
+    return {
+      ixs: [...returnIxs, trackerAccountIx],
+      signers: [],
+    };
+  }
+
+  /**
+   * Asynchronously update a non-investor user identity account level.
+   * @param args - {@link AddLevelToIdentityAccountArgs}
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @returns A Promise that resolves to the instructions to update user account identity.
+   * */
+  async addIdentityLevelToUserAccount(
+    args: AddLevelToIdentityAccountArgs,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const addLevelIx = await getAddLevelToIdentityAccount(
+      args,
+      this.rwaClient.provider
+    );
+    const ixData = addLevelIx.data;
+    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
+    const controllerAuthority = deriveControllerAuthorityPda(
+      assetAccessController
+    );
+    return this.rbacProgram.methods
+      .addLevelToIdentityAccount(ixData)
+      .accountsStrict({
+        payer: args.payer,
+        user: args.signer,
+        controllerAuthority,
+        assetAccessController,
+        authorizedUserRole: authorizedUserRole || null,
+        identityRegistryProgram: identityRegistryProgramId,
+        identityRegistry: getIdentityRegistryPda(args.assetMint),
+        identityAccount,
+        identityToInvestor: deriveIdentityToOwnerPda(identityAccount),
+        systemProgram: SystemProgram.programId,
+      })
+      .instruction();
+  }
+
+  /**
+   * Asynchronously reduces a non-Investor user identity account level.
+   * @param args - {@link RemoveLevelFromIdentityAccount}
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @returns A Promise that resolves to the instructions to reduce the level of a user identity account.
+   */
+  async removeIdentityLevelFromUserAccount(
+    args: RemoveLevelFromIdentityAccountArgs,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const removeLevelIx = await getRemoveLevelFromIdentityAccount(
+      args,
+      this.rwaClient.provider
+    );
+    const ixData = removeLevelIx.data;
+    const controllerAuthority = deriveControllerAuthorityPda(
+      assetAccessController
+    );
+    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
+    return this.rbacProgram.methods
+      .removeLevelFromIdentityAccount(ixData)
+      .accountsStrict({
+        payer: args.payer,
+        user: args.signer,
+        controllerAuthority,
+        assetAccessController,
+        authorizedUserRole: authorizedUserRole || null,
+        identityRegistryProgram: identityRegistryProgramId,
+        identityRegistry: getIdentityRegistryPda(args.assetMint),
+        identityAccount,
+        identityToInvestor: deriveIdentityToOwnerPda(identityAccount),
+        systemProgram: SystemProgram.programId,
+      })
+      .instruction();
   }
 
   /**
@@ -44,11 +199,14 @@ export class IdentityRegistry {
     const identityProgram = getIdentityRegistryProgram(this.rwaClient.provider);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
+    const controllerAuthority = deriveControllerAuthorityPda(
+      assetAccessController
+    );
     const refreshIx = await identityProgram.methods
       .refreshLevelToIdentityAccount(args.level, args.expiry)
       .accountsStrict({
         payer: args.payer,
-        signer: args.authority,
+        signer: controllerAuthority,
         identityRegistry,
         identityAccount,
       })
@@ -58,7 +216,7 @@ export class IdentityRegistry {
       .accountsStrict({
         payer: args.payer,
         user: args.signer,
-        controllerAuthority: args.authority,
+        controllerAuthority,
         assetAccessController,
         authorizedUserRole: authorizedUserRole || null,
         identityRegistryProgram: identityRegistryProgramId,
