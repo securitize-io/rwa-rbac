@@ -61,7 +61,7 @@ pub fn handler(ctx: Context<AddLevelToIdentityAccount>, cpi_data: Vec<u8>) -> Re
         ctx.accounts.user.key(),
         controller,
         ctx.accounts.authorized_user_role.clone(),
-        MediciFlags::ADD_LEVEL_TO_IDENTITY_ACCOUNT,
+        MediciFlags::ADD_LEVELS,
     )?;
 
     // Verify instruction discriminator in cpi_data

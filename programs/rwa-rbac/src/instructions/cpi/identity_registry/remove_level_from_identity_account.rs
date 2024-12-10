@@ -61,7 +61,7 @@ pub fn handler(ctx: Context<RemoveLevelFromIdentityAccount>, cpi_data: Vec<u8>) 
         ctx.accounts.user.key(),
         controller,
         ctx.accounts.authorized_user_role.clone(),
-        MediciFlags::REMOVE_LEVEL_FROM_IDENTITY_ACCOUNT,
+        MediciFlags::REMOVE_LEVELS,
     )?;
 
     // Verify instruction discriminator in cpi_data
