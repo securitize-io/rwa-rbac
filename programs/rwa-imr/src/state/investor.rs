@@ -24,6 +24,9 @@ pub struct Investor {
 
     /// IdentityAccount associated with this investor.
     pub identity_account: Pubkey,
+    
+    /// IdentityRegistryAccount associated with this investor.
+    pub identity_registry: Pubkey,
 
     /// Unique ID for Investor, generated off-chain.
     #[max_len(32)]

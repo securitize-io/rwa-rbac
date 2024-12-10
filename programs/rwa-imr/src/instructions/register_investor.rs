@@ -67,6 +67,7 @@ pub fn handler(
     let investor = &mut ctx.accounts.investor;
     investor.authority = ctx.accounts.authority.key();
     investor.identity_account = ctx.accounts.identity_account.key();
+    investor.identity_registry = ctx.accounts.identity_registry.key();
     investor.investor_id = investor_id;
     investor.collision_hash = collision_hash;
     investor.last_updated_by = ctx.accounts.payer.key();

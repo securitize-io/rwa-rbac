@@ -59,7 +59,7 @@ pub fn handler(ctx: Context<AddLevels>, cpi_data: Vec<u8>) -> Result<()> {
         ErrorCode::UnknownInstruction
     );
 
-    // Perform CPI to IdentityRegistry Program.
+    // Perform CPI to IdentityMetadataRegistry Program.
     let seeds = controller_seeds!(controller);
     let signers_seeds = &[&seeds[..]];
 
