@@ -1,8 +1,8 @@
 use crate::{constants::IDENTITY_REGISTRY_ID, error::ErrorCode};
 use anchor_lang::prelude::*;
-
 use hex::FromHex;
 use sha256::digest;
+
 fn get_acc_discriminator(account_name: &str) -> Vec<u8> {
     let full_account_name = String::from("account:") + account_name;
     // 16 char hex string converts to 8 bytes

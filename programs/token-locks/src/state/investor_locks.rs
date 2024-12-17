@@ -50,14 +50,14 @@ pub struct InvestorLocks {
     /// Address of Investor account.
     pub investor: Pubkey,
 
-    /// Wallet (owned by the Investor) that is locked.
+    /// Wallet (owned by the Investor) that is holding the locked tokens.
     pub wallet: Pubkey,
 
     /// Account storing locked tokens for wallet. Will be frozen upon initialization of
-    /// investor locks.
+    /// InvestorLocks.
     pub locked_token_account: Pubkey,
 
-    #[max_len(0)] // Init 0 space for vec. Account will be resized on adding on locks.
+    #[max_len(0)] // Init 0 space for vec. Account will be resized on adding of locks.
     pub locks: Vec<Lock>,
 }
 

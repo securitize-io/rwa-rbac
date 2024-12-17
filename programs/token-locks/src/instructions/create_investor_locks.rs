@@ -39,7 +39,7 @@ pub struct CreateInvestorLocks<'info> {
     /// CHECKED: Validated in deserialized_checked.
     #[account(address = investor.identity_account)]
     pub identity_account: UncheckedAccount<'info>,
-    /// CHECK: Verfied by checking seed derivation of known identity_registry.
+    /// CHECK: Verified by checking seed derivation of known identity_registry.
     #[account(mut)]
     pub asset_mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(
