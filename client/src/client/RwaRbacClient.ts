@@ -5,6 +5,8 @@ import { RwaRbac } from "../types/generated/rwa_rbac";
 import * as rbacIDL from "../types/generated/rwa_rbac.json";
 import { RwaImr } from "../types/generated/rwa_imr";
 import * as imrIDL from "../types/generated/rwa_imr.json";
+import { TokenLocks as TokenLocksType } from "../types/generated/token_locks";
+import * as tokenLocksIdl from "../types/generated/token_locks.json";
 import { AssetController } from "./AssetController";
 import { PolicyEngine } from "./PolicyEngine";
 import { IdentityRegistry } from "./IdentityRegistry";
@@ -22,22 +24,22 @@ import {
 import { RwaClient } from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
 import { Config } from "../../../deps/rwa-token/clients/rwa-token-sdk/src/classes/types";
 import { IdentityMetadataRegistry } from "./IdentityMetadataRegistry";
+import { TokenLocks } from "./TokenLocks";
 
 export class RwaRbacClient {
   rbacProgram: Program<RwaRbac>;
-  imrProgram: Program<RwaImr>;
   rwaClient: RwaClient;
   assetController: AssetController;
   policyEngine: PolicyEngine;
   identityRegistry: IdentityRegistry;
   identityMetadataRegistry: IdentityMetadataRegistry;
+  tokenLocks: TokenLocks;
   provider: AnchorProvider;
 
   constructor(config: Config, wallet: Wallet) {
     this.rwaClient = new RwaClient(config, wallet);
     this.provider = this.rwaClient.provider;
     this.rbacProgram = new Program(rbacIDL as RwaRbac, this.provider);
-    this.imrProgram = new Program(imrIDL as RwaImr, this.provider);
     this.assetController = new AssetController(
       this.rwaClient,
       this.rbacProgram
@@ -45,13 +47,17 @@ export class RwaRbacClient {
     this.policyEngine = new PolicyEngine(this.rwaClient, this.rbacProgram);
     this.identityRegistry = new IdentityRegistry(
       this.rwaClient,
-      this.rbacProgram,
-      this.imrProgram
+      this.rbacProgram
     );
     this.identityMetadataRegistry = new IdentityMetadataRegistry(
       this.rwaClient,
       this.rbacProgram,
-      this.imrProgram
+      new Program(imrIDL as RwaImr, this.provider)
+    );
+    this.tokenLocks = new TokenLocks(
+      this.rwaClient,
+      this.rbacProgram,
+      new Program(tokenLocksIdl as TokenLocksType, this.provider)
     );
   }
 

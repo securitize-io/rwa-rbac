@@ -5,7 +5,7 @@ import {
   sendAndConfirmTransaction,
   Transaction,
 } from "@solana/web3.js";
-import { setupTests } from "./setup";
+import { setupTests } from "./utils";
 import {
   generateUniqueSeed,
   RwaRbacClient,

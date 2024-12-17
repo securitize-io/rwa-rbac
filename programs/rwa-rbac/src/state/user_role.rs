@@ -108,5 +108,9 @@ bitflags::bitflags! {
       const DETACH_WALLET_FROM_IDENTITY = 1 << 17;
       const SEIZE_TOKENS = 1 << 18;
       const CREATE_IDENTITY_ACCOUNT = 1 << 19;
+      const CREATE_INVESTOR_LOCKS = 1 << 20;
+      const CLOSE_INVESTOR_LOCKS = 1 << 21;
+      const ADD_TOKEN_LOCK = 1 << 22;
+      const REMOVE_TOKEN_LOCK = 1 << 23;
   }
 }

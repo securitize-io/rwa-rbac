@@ -9,7 +9,7 @@ import {
   Keypair,
 } from "@solana/web3.js";
 
-import { setupTests } from "./setup";
+import { setupTests } from "./utils";
 import { generateUniqueSeed, RwaRbacClient } from "../client/src/index";
 import { CreateAssetControllerIx } from "../deps/rwa-token/clients/rwa-token-sdk/src";
 import { ComputeBudgetProgram } from "@solana/web3.js";

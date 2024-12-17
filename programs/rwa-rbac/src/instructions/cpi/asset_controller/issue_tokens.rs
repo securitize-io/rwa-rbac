@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke_signed},
@@ -26,7 +24,7 @@ pub struct IssueTokens<'info> {
     #[account(has_one = asset_access_controller)]
     pub authorized_user_role: Option<Account<'info, UserRole>>,
     /// CHECK: Checked against known program address.
-    #[account(address = Pubkey::from_str(ASSET_CONTROLLER_ID).unwrap())]
+    #[account(address = ASSET_CONTROLLER_ID)]
     pub asset_controller_program: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     #[account(mut)]
@@ -49,7 +47,7 @@ pub struct IssueTokens<'info> {
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
     /// CHECK: Checked against known program address.
-    #[account(address = Pubkey::from_str(POLICY_ENGINE_ID).unwrap())]
+    #[account(address = POLICY_ENGINE_ID)]
     pub policy_engine_program: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     #[account(mut)]

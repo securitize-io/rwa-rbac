@@ -7,3 +7,7 @@ export const IMR_PROGRAM = new PublicKey(
 export const RBAC_PROGRAM = new PublicKey(
   "9gUXb1jJ4wmwht3G6mMaHdWbo2gf7faHYyM6ryVGy4ae"
 );
+
+export const TL_PROGRAM = new PublicKey(
+  "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5"
+);

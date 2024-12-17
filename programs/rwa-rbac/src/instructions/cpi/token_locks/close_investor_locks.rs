@@ -1,0 +1,69 @@
+use anchor_lang::{
+    prelude::*,
+    solana_program::{instruction::Instruction, program::invoke_signed},
+};
+
+use crate::{
+    constants::TOKEN_LOCKS_ID, controller_seeds, get_discriminator, state::*, verify_medici_signer,
+};
+
+#[derive(Accounts)]
+pub struct CloseInvestorLocks<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub user: Signer<'info>,
+    /// CHECK: Verified to match field in asset_access_controller.
+    pub controller_authority: UncheckedAccount<'info>,
+    #[account(has_one = controller_authority)]
+    pub asset_access_controller: Account<'info, AssetAccessController>,
+    #[account(has_one = asset_access_controller)]
+    pub authorized_user_role: Option<Account<'info, UserRole>>,
+    /// CHECK: Checked against known program address.
+    #[account(address = TOKEN_LOCKS_ID)]
+    pub token_locks_program: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    #[account(mut)]
+    pub investor_locks: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub investor: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+pub fn handler(ctx: Context<CloseInvestorLocks>) -> Result<()> {
+    let controller = &ctx.accounts.asset_access_controller;
+
+    // Verify that signer is either a controller admin or has authorized user role.
+    verify_medici_signer(
+        ctx.accounts.user.key(),
+        controller,
+        ctx.accounts.authorized_user_role.clone(),
+        MediciFlags::CLOSE_INVESTOR_LOCKS,
+    )?;
+
+    let seeds = controller_seeds!(controller);
+    let signers_seeds = &[&seeds[..]];
+
+    invoke_signed(
+        &Instruction {
+            program_id: ctx.accounts.token_locks_program.key(),
+            accounts: vec![
+                AccountMeta::new(ctx.accounts.payer.key(), true),
+                AccountMeta::new_readonly(ctx.accounts.controller_authority.key(), true),
+                AccountMeta::new(ctx.accounts.investor_locks.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.investor.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
+            ],
+            data: get_discriminator("close_investor_locks"),
+        },
+        &vec![
+            ctx.accounts.payer.to_account_info(),
+            ctx.accounts.controller_authority.to_account_info(),
+            ctx.accounts.investor_locks.to_account_info(),
+            ctx.accounts.investor.to_account_info(),
+            ctx.accounts.system_program.to_account_info(),
+        ],
+        signers_seeds,
+    )?;
+
+    Ok(())
+}

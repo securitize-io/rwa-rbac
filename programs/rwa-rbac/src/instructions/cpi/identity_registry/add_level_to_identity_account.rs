@@ -1,13 +1,15 @@
-use std::str::FromStr;
-
 use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 
 use crate::{
-    constants::{IDENTITY_METADATA_REGISTRY_ID, IDENTITY_REGISTRY_ID}, controller_seeds, error::ErrorCode, get_discriminator,
-    state::*, verify_medici_signer,
+    constants::{IDENTITY_METADATA_REGISTRY_ID, IDENTITY_REGISTRY_ID},
+    controller_seeds,
+    error::ErrorCode,
+    get_discriminator,
+    state::*,
+    verify_medici_signer,
 };
 
 #[derive(Accounts)]
@@ -22,38 +24,29 @@ pub struct AddLevelToIdentityAccount<'info> {
     #[account(has_one = asset_access_controller)]
     pub authorized_user_role: Option<Account<'info, UserRole>>,
     /// CHECK: Checked against known program address.
-    #[account(address = Pubkey::from_str(IDENTITY_REGISTRY_ID).unwrap())]
+    #[account(address = IDENTITY_REGISTRY_ID)]
     pub identity_registry_program: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     pub identity_registry: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub identity_account: UncheckedAccount<'info>,
-    /// CHECK: Verifying seeds.
+    /// CHECK: Verify seeds and that data is empty.
+    /// Note that if identity_to_investor exists for investor, CPI to IdentityMetadataRegistry should be called.
+    #[account(
+        seeds = [
+            &identity_account.key().as_ref(),
+            b"IdentityToInvestor".as_ref(),
+        ],
+        bump,
+        seeds::program = IDENTITY_METADATA_REGISTRY_ID,
+        constraint = identity_to_investor.data_is_empty() @ ErrorCode::DataIsNotEmpty,
+    )]
     pub identity_to_investor: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 }
 
 pub fn handler(ctx: Context<AddLevelToIdentityAccount>, cpi_data: Vec<u8>) -> Result<()> {
-    // Verify that identity_to_investor key is correct and that account does not exist (data is empty).
-    // Note that if identity_to_investor exists for investor, CPI to IdentityMetadataRegistry should be called.
-    let identity_to_investor = Pubkey::find_program_address(
-        &[
-            &ctx.accounts.identity_account.key().as_ref(),
-            b"IdentityToInvestor".as_ref(),
-        ],
-        &Pubkey::from_str(IDENTITY_METADATA_REGISTRY_ID).unwrap(),
-    )
-    .0;
-    require_keys_eq!(
-        ctx.accounts.identity_to_investor.key(),
-        identity_to_investor
-    );
-    require!(
-        ctx.accounts.identity_to_investor.data_is_empty(),
-        ErrorCode::DataIsNotEmpty
-    );
-
     let controller = &ctx.accounts.asset_access_controller;
 
     // Verify that signer is either a controller admin or has authorized user role.

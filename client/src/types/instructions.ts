@@ -172,3 +172,42 @@ export type AttachDetachWalletArgs = {
   assetMint: string;
   wallet: PublicKey;
 };
+
+/** Args used to create InvestorLocks */
+export type CreateOrCloseInvestorLocksArgs = {
+  payer: string;
+  signer: string;
+  owner: string;
+  investorId: string;
+  assetMint: string;
+  wallet: PublicKey;
+  lockedTokenAccount: PublicKey;
+  walletIdentity?: PublicKey;
+};
+
+/** Args used to add a token lock */
+export type AddTokenLockArgs = {
+  payer: string;
+  signer: string;
+  owner: string;
+  wallet: PublicKey; // Same value as owner if owner is to be locked.
+  investorId: string;
+  assetMint: string;
+  value: BN;
+  releaseTime: BN;
+  reasonCode: BN;
+  reasonString: string;
+  lockedTokenAccount: PublicKey;
+};
+
+/** Args used to remove a token lock */
+export type RemoveTokenLockArgs = {
+  payer: string;
+  signer: string;
+  owner: string;
+  wallet: PublicKey; // Same value as owner if owner is to be locked.
+  investorId: string;
+  assetMint: string;
+  lockedTokenAccount: PublicKey;
+  index: BN;
+};

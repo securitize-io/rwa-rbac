@@ -106,12 +106,14 @@ export class AssetController {
    * @param args - {@link IssueTokenArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
    * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param recipientWallet - Optional recipient wallet. Defaults to arg.owner is not provided.
    * @returns A Promise that resolves to the instructions to issue tokens.
    */
   async issueTokenIxns(
     args: IssueTokenArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole?: PublicKey,
+    recipientWallet?: PublicKey
   ): Promise<TransactionInstruction[]> {
     const issueTokensIxs = await getIssueTokensIx(
       args,
@@ -120,7 +122,7 @@ export class AssetController {
     const ixData = issueTokensIxs[0].data;
     const tokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
-      new PublicKey(args.owner),
+      new PublicKey(recipientWallet || args.owner),
       false,
       TOKEN_2022_PROGRAM_ID
     );
@@ -135,7 +137,7 @@ export class AssetController {
       const createAtaIx = createAssociatedTokenAccountInstruction(
         new PublicKey(args.payer),
         tokenAccount,
-        new PublicKey(args.owner),
+        new PublicKey(recipientWallet || args.owner),
         new PublicKey(args.assetMint),
         TOKEN_2022_PROGRAM_ID
       );
@@ -153,7 +155,7 @@ export class AssetController {
           assetControllerProgram: assetControllerProgramId,
           assetMint: args.assetMint,
           assetController: getAssetControllerPda(args.assetMint),
-          to: args.owner,
+          to: recipientWallet || args.owner,
           tokenAccount,
           policyEngine: getPolicyEnginePda(args.assetMint),
           policyEngineProgram: policyEngineProgramId,

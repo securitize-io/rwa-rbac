@@ -14,7 +14,7 @@ import {
   TOKEN_2022_PROGRAM_ID,
 } from "@solana/spl-token";
 
-import { setupTests } from "./setup";
+import { setupTests } from "./utils";
 import {
   AdminFlags,
   generateUniqueSeed,

@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke_signed},
@@ -22,7 +20,7 @@ pub struct AttachToPolicyEngine<'info> {
     #[account(has_one = asset_access_controller)]
     pub authorized_user_role: Option<Account<'info, UserRole>>,
     /// CHECK: Checked against known program address.
-    #[account(address = Pubkey::from_str(POLICY_ENGINE_ID).unwrap())]
+    #[account(address = POLICY_ENGINE_ID)]
     pub policy_engine_program: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     #[account(mut)]

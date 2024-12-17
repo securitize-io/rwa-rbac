@@ -28,5 +28,9 @@ export enum MediciFlags {
   DETACH_WALLET_FROM_IDENTITY = 1 << 17,
   SEIZE_TOKENS = 1 << 18,
   CREATE_IDENTITY_ACCOUNT = 1 << 19,
-  ALL = (1 << 20) - 1,
+  CREATE_INVESTOR_LOCKS = 1 << 20,
+  CLOSE_INVESTOR_LOCKS = 1 << 21,
+  ADD_TOKEN_LOCK = 1 << 22,
+  REMOVE_TOKEN_LOCK = 1 << 23,
+  ALL = (1 << 24) - 1,
 }

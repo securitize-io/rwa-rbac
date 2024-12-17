@@ -168,6 +168,28 @@ pub mod rwa_rbac {
         instructions::detach_wallet_from_identity::handler(ctx, cpi_data)
     }
 
+    pub fn create_investor_locks(ctx: Context<CreateInvestorLocks>, wallet: Pubkey) -> Result<()> {
+        instructions::create_investor_locks::handler(ctx, wallet)
+    }
+
+    pub fn close_investor_locks(ctx: Context<CloseInvestorLocks>) -> Result<()> {
+        instructions::close_investor_locks::handler(ctx)
+    }
+
+    pub fn add_token_lock<'info>(
+        ctx: Context<'_, '_, '_, 'info, AddTokenLock<'info>>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::add_token_lock::handler(ctx, cpi_data)
+    }
+
+    pub fn remove_token_lock<'info>(
+        ctx: Context<'_, '_, '_, 'info, RemoveTokenLock<'info>>,
+        index: u64,
+    ) -> Result<()> {
+        instructions::remove_token_lock::handler(ctx, index)
+    }
+
     pub fn create_identity_account(
         ctx: Context<CreateIdentityAccount>,
         cpi_data: Vec<u8>,

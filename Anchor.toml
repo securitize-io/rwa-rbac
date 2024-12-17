@@ -5,8 +5,24 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-rwa_rbac = "9gUXb1jJ4wmwht3G6mMaHdWbo2gf7faHYyM6ryVGy4ae"
 rwa_imr = "6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9"
+rwa_rbac = "9gUXb1jJ4wmwht3G6mMaHdWbo2gf7faHYyM6ryVGy4ae"
+token-locks = "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+
+[test]
+startup_wait = 5000
+shutdown_wait = 2000
+upgradeable = false
 
 [[test.genesis]]
 address = "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
@@ -23,13 +39,3 @@ program = "./deps/identity_registry.so"
 [[test.genesis]]
 address = "po1cPf1eyUJJPqULw4so3T4JU9pdFn83CDyuLEKFAau"
 program = "./deps/policy_engine.so"
-
-[registry]
-url = "https://api.apr.dev"
-
-[provider]
-cluster = "Localnet"
-wallet = "~/.config/solana/id.json"
-
-[scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

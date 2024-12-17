@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke_signed},
@@ -21,7 +19,7 @@ pub struct FreezeTokenAccount<'info> {
     #[account(has_one = asset_access_controller)]
     pub authorized_user_role: Option<Account<'info, UserRole>>,
     /// CHECK: Checked against known program address.
-    #[account(address = Pubkey::from_str(ASSET_CONTROLLER_ID).unwrap())]
+    #[account(address = ASSET_CONTROLLER_ID)]
     pub asset_controller_program: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     #[account(mut)]

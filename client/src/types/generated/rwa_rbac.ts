@@ -147,6 +147,95 @@ export type RwaRbac = {
       ]
     },
     {
+      "name": "addTokenLock",
+      "discriminator": [
+        195,
+        26,
+        109,
+        80,
+        46,
+        7,
+        195,
+        55
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "writable": true,
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "tokenLocksProgram",
+          "address": "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5"
+        },
+        {
+          "name": "investorLocks",
+          "writable": true
+        },
+        {
+          "name": "investor"
+        },
+        {
+          "name": "assetMint",
+          "writable": true
+        },
+        {
+          "name": "unlockedTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "lockedTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "assetController"
+        },
+        {
+          "name": "identityRegistry",
+          "writable": true
+        },
+        {
+          "name": "assetControllerProgram",
+          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpiData",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
       "name": "assignUserRole",
       "discriminator": [
         39,
@@ -322,6 +411,62 @@ export type RwaRbac = {
           "type": "bytes"
         }
       ]
+    },
+    {
+      "name": "closeInvestorLocks",
+      "discriminator": [
+        255,
+        60,
+        220,
+        115,
+        217,
+        104,
+        157,
+        171
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "tokenLocksProgram",
+          "address": "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5"
+        },
+        {
+          "name": "investorLocks",
+          "writable": true
+        },
+        {
+          "name": "investor"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
     },
     {
       "name": "closeMintAccount",
@@ -510,6 +655,93 @@ export type RwaRbac = {
         {
           "name": "cpiData",
           "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "createInvestorLocks",
+      "discriminator": [
+        223,
+        81,
+        139,
+        162,
+        204,
+        48,
+        24,
+        213
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "tokenLocksProgram",
+          "address": "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5"
+        },
+        {
+          "name": "investorLocks",
+          "writable": true
+        },
+        {
+          "name": "investor"
+        },
+        {
+          "name": "identityAccount"
+        },
+        {
+          "name": "assetMint",
+          "writable": true
+        },
+        {
+          "name": "lockedTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "assetController"
+        },
+        {
+          "name": "assetControllerProgram",
+          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "walletIdentity",
+          "optional": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "wallet",
+          "type": "pubkey"
         }
       ]
     },
@@ -1256,6 +1488,86 @@ export type RwaRbac = {
         {
           "name": "cpiData",
           "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "removeTokenLock",
+      "discriminator": [
+        168,
+        128,
+        173,
+        188,
+        172,
+        228,
+        154,
+        90
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "writable": true,
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "tokenLocksProgram",
+          "address": "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5"
+        },
+        {
+          "name": "investorLocks",
+          "writable": true
+        },
+        {
+          "name": "investor"
+        },
+        {
+          "name": "assetMint",
+          "writable": true
+        },
+        {
+          "name": "unlockedTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "lockedTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "assetController"
+        },
+        {
+          "name": "identityRegistry",
+          "writable": true
+        },
+        {
+          "name": "assetControllerProgram",
+          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": [
+        {
+          "name": "index",
+          "type": "u64"
         }
       ]
     },

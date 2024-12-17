@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke_signed},
@@ -26,7 +24,7 @@ pub struct RemoveInvestor<'info> {
     #[account(has_one = asset_access_controller)]
     pub authorized_user_role: Option<Account<'info, UserRole>>,
     /// CHECK: Checked against known program address.
-    #[account(address = Pubkey::from_str(IDENTITY_METADATA_REGISTRY_ID).unwrap())]
+    #[account(address = IDENTITY_METADATA_REGISTRY_ID)]
     pub identity_metadata_registry_program: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     #[account(mut)]
@@ -35,7 +33,7 @@ pub struct RemoveInvestor<'info> {
     #[account(mut)]
     pub identity_to_investor: UncheckedAccount<'info>,
     /// CHECK: Checked against known program address.
-    #[account(address = Pubkey::from_str(IDENTITY_REGISTRY_ID).unwrap())]
+    #[account(address = IDENTITY_REGISTRY_ID)]
     pub identity_registry_program: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     pub identity_registry: UncheckedAccount<'info>,

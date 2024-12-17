@@ -1,6 +1,23 @@
 import { BN } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import { IMR_PROGRAM, RBAC_PROGRAM } from "./constants";
+import { IMR_PROGRAM, RBAC_PROGRAM, TL_PROGRAM } from "./constants";
+
+export const deriveInvestorLocks = (
+  investorId: string,
+  identityRegistry: PublicKey,
+  wallet: PublicKey,
+  programId = TL_PROGRAM
+) => {
+  return PublicKey.findProgramAddressSync(
+    [
+      Buffer.from(investorId),
+      identityRegistry.toBuffer(),
+      wallet.toBuffer(),
+      Buffer.from("InvestorLocks"),
+    ],
+    programId
+  )[0];
+};
 
 export const deriveInvestorPda = (
   investorId: string,

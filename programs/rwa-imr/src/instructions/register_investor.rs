@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke},
@@ -42,7 +40,7 @@ pub struct RegisterInvestor<'info> {
     )]
     pub identity_to_investor: Account<'info, IdentityToInvestor>,
     /// CHECK: Checked against known program address.
-    #[account(address = Pubkey::from_str(IDENTITY_REGISTRY_ID).unwrap())]
+    #[account(address = IDENTITY_REGISTRY_ID)]
     pub identity_registry_program: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     pub identity_registry: UncheckedAccount<'info>,
