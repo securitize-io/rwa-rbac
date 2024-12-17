@@ -63,7 +63,78 @@ export type RwaRbac = {
           "writable": true
         },
         {
-          "name": "identityToInvestor"
+          "name": "identityToInvestor",
+          "docs": [
+            "Note that if identity_to_investor exists for investor, CPI to IdentityMetadataRegistry should be called."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "identityAccount"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  73,
+                  100,
+                  101,
+                  110,
+                  116,
+                  105,
+                  116,
+                  121,
+                  84,
+                  111,
+                  73,
+                  110,
+                  118,
+                  101,
+                  115,
+                  116,
+                  111,
+                  114
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                83,
+                215,
+                73,
+                31,
+                32,
+                170,
+                244,
+                103,
+                61,
+                117,
+                168,
+                187,
+                57,
+                229,
+                199,
+                137,
+                186,
+                255,
+                123,
+                48,
+                175,
+                161,
+                231,
+                23,
+                103,
+                146,
+                178,
+                241,
+                84,
+                26,
+                120,
+                76
+              ]
+            }
+          }
         },
         {
           "name": "systemProgram",
@@ -1408,7 +1479,78 @@ export type RwaRbac = {
           "writable": true
         },
         {
-          "name": "identityToInvestor"
+          "name": "identityToInvestor",
+          "docs": [
+            "Note that if identity_to_investor exists for investor, CPI to IdentityMetadataRegistry should be called."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "identityAccount"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  73,
+                  100,
+                  101,
+                  110,
+                  116,
+                  105,
+                  116,
+                  121,
+                  84,
+                  111,
+                  73,
+                  110,
+                  118,
+                  101,
+                  115,
+                  116,
+                  111,
+                  114
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                83,
+                215,
+                73,
+                31,
+                32,
+                170,
+                244,
+                103,
+                61,
+                117,
+                168,
+                187,
+                57,
+                229,
+                199,
+                137,
+                186,
+                255,
+                123,
+                48,
+                175,
+                161,
+                231,
+                23,
+                103,
+                146,
+                178,
+                241,
+                84,
+                26,
+                120,
+                76
+              ]
+            }
+          }
         },
         {
           "name": "systemProgram",

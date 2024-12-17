@@ -296,7 +296,6 @@ describe("Token Locks End to End Tests", () => {
       ]);
       assert(false);
     } catch (err) {
-      console.log(err);
       assert(err.toString().includes("RequireKeysNeqViolated"));
     }
   });
@@ -324,7 +323,6 @@ describe("Token Locks End to End Tests", () => {
       ]);
       assert(false);
     } catch (err) {
-      console.log(err);
       assert(err.toString().includes("ConstraintTokenOwner"));
     }
   });

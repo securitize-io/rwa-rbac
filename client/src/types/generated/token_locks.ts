@@ -595,14 +595,14 @@ export type TokenLocks = {
           {
             "name": "investor",
             "docs": [
-              "Addresss of Investor account."
+              "Address of Investor account."
             ],
             "type": "pubkey"
           },
           {
             "name": "wallet",
             "docs": [
-              "Wallet (owned by the Investor) that is locked."
+              "Wallet (owned by the Investor) that is holding the locked tokens."
             ],
             "type": "pubkey"
           },
@@ -610,7 +610,7 @@ export type TokenLocks = {
             "name": "lockedTokenAccount",
             "docs": [
               "Account storing locked tokens for wallet. Will be frozen upon initialization of",
-              "investor locks."
+              "InvestorLocks."
             ],
             "type": "pubkey"
           },
