@@ -112,6 +112,10 @@ export type RwaImr = {
                 "path": "investorId"
               },
               {
+                "kind": "account",
+                "path": "identityRegistry"
+              },
+              {
                 "kind": "const",
                 "value": [
                   73,

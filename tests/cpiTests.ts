@@ -291,7 +291,10 @@ describe("CPI End to End Tests", () => {
     ]);
 
     // Validate Investor, IdentityToInvestor and IdentityAccount
-    const investorPda = deriveInvestorPda(args.investorId);
+    const investorPda = deriveInvestorPda(
+      args.investorId,
+      getIdentityRegistryPda(mint)
+    );
     const identityAccountPda = getIdentityAccountPda(mint, setup.user1);
     const identityToInvestor = deriveIdentityToOwnerPda(identityAccountPda);
 
@@ -460,7 +463,10 @@ describe("CPI End to End Tests", () => {
     ]);
 
     // Validate Investor and IdentityAccount
-    const investorPda = deriveInvestorPda(args.investorId);
+    const investorPda = deriveInvestorPda(
+      args.investorId,
+      getIdentityRegistryPda(mint)
+    );
     const investorAccount =
       await rwaRbacClient.identityMetadataRegistry.imrProgram.account.investor.fetch(
         investorPda
@@ -565,7 +571,10 @@ describe("CPI End to End Tests", () => {
     ]);
 
     // Validate Investor and IdentityAccount
-    const investorPda = deriveInvestorPda(args.investorId);
+    const investorPda = deriveInvestorPda(
+      args.investorId,
+      getIdentityRegistryPda(mint)
+    );
     const investorAccount =
       await rwaRbacClient.identityMetadataRegistry.imrProgram.account.investor.fetch(
         investorPda
@@ -727,7 +736,10 @@ describe("CPI End to End Tests", () => {
     ]);
 
     // Validate Investor and IdentityAccount
-    const investorPda = deriveInvestorPda(args.investorId);
+    const investorPda = deriveInvestorPda(
+      args.investorId,
+      getIdentityRegistryPda(mint)
+    );
     const identityAccountPda = getIdentityAccountPda(mint, setup.user1);
     const identityToInvestor = deriveIdentityToOwnerPda(identityAccountPda);
     assert.isNull(

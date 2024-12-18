@@ -68,6 +68,7 @@ export class TokenLocks {
     assetAccessController: PublicKey,
     authorizedUserRole?: PublicKey
   ): Promise<TransactionInstruction> {
+    const identityRegistry = getIdentityRegistryPda(args.assetMint);
     return this.rbacProgram.methods
       .createInvestorLocks(args.wallet)
       .accountsStrict({
@@ -81,10 +82,10 @@ export class TokenLocks {
         tokenLocksProgram: TL_PROGRAM,
         investorLocks: deriveInvestorLocks(
           args.investorId,
-          getIdentityRegistryPda(args.assetMint),
+          identityRegistry,
           args.wallet
         ),
-        investor: deriveInvestorPda(args.investorId),
+        investor: deriveInvestorPda(args.investorId, identityRegistry),
         identityAccount: getIdentityAccountPda(args.assetMint, args.owner),
         assetMint: args.assetMint,
         lockedTokenAccount: args.lockedTokenAccount,
@@ -127,7 +128,7 @@ export class TokenLocks {
           identityRegistry,
           args.wallet
         ),
-        investor: deriveInvestorPda(args.investorId),
+        investor: deriveInvestorPda(args.investorId, identityRegistry),
         systemProgram: SystemProgram.programId,
       })
       .instruction();
@@ -146,12 +147,13 @@ export class TokenLocks {
     authorizedUserRole?: PublicKey
   ): Promise<TransactionInstruction> {
     const assetController = getAssetControllerPda(args.assetMint);
+    const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investorLocks = deriveInvestorLocks(
       args.investorId,
-      getIdentityRegistryPda(args.assetMint),
+      identityRegistry,
       args.wallet
     );
-    const investor = deriveInvestorPda(args.investorId);
+    const investor = deriveInvestorPda(args.investorId, identityRegistry);
     const unlockedTokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
       args.wallet,
@@ -265,12 +267,13 @@ export class TokenLocks {
     authorizedUserRole?: PublicKey
   ): Promise<TransactionInstruction> {
     const assetController = getAssetControllerPda(args.assetMint);
+    const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investorLocks = deriveInvestorLocks(
       args.investorId,
-      getIdentityRegistryPda(args.assetMint),
+      identityRegistry,
       args.wallet
     );
-    const investor = deriveInvestorPda(args.investorId);
+    const investor = deriveInvestorPda(args.investorId, identityRegistry);
     const unlockedTokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
       args.wallet,

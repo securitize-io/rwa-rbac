@@ -66,10 +66,10 @@ export class IdentityMetadataRegistry {
     const controllerAuthority = deriveControllerAuthorityPda(
       assetAccessController
     );
-    const investor = deriveInvestorPda(args.investorId);
+    const identityRegistry = getIdentityRegistryPda(args.assetMint);
+    const investor = deriveInvestorPda(args.investorId, identityRegistry);
     const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
     const identityToInvestor = deriveIdentityToOwnerPda(identityAccount);
-    const identityRegistry = getIdentityRegistryPda(args.assetMint);
 
     const registerIx = await this.imrProgram.methods
       .registerInvestor(
@@ -162,9 +162,9 @@ export class IdentityMetadataRegistry {
     const controllerAuthority = deriveControllerAuthorityPda(
       assetAccessController
     );
-    const investor = deriveInvestorPda(args.investorId);
-    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
+    const investor = deriveInvestorPda(args.investorId, identityRegistry);
+    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
 
     const ix = await this.imrProgram.methods
       .addLevels(Buffer.from(args.levels), args.expiries, args.proofHashes)
@@ -212,9 +212,9 @@ export class IdentityMetadataRegistry {
     const controllerAuthority = deriveControllerAuthorityPda(
       assetAccessController
     );
-    const investor = deriveInvestorPda(args.investorId);
-    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
+    const investor = deriveInvestorPda(args.investorId, identityRegistry);
+    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
 
     const ix = await this.imrProgram.methods
       .removeLevels(Buffer.from(args.levels))
@@ -262,10 +262,10 @@ export class IdentityMetadataRegistry {
     const controllerAuthority = deriveControllerAuthorityPda(
       assetAccessController
     );
-    const investor = deriveInvestorPda(args.investorId);
+    const identityRegistry = getIdentityRegistryPda(args.assetMint);
+    const investor = deriveInvestorPda(args.investorId, identityRegistry);
     const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
     const identityToInvestor = deriveIdentityToOwnerPda(identityAccount);
-    const identityRegistry = getIdentityRegistryPda(args.assetMint);
 
     const ix = await this.imrProgram.methods
       .removeInvestor(new PublicKey(args.owner))

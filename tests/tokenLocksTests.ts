@@ -369,7 +369,11 @@ describe("Token Locks End to End Tests", () => {
       await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
         investorLocksKey1
       );
-    assert(investorLocks.investor.equals(deriveInvestorPda(INVESTOR_ID)));
+    assert(
+      investorLocks.investor.equals(
+        deriveInvestorPda(INVESTOR_ID, getIdentityRegistryPda(mint))
+      )
+    );
     assert(investorLocks.wallet.equals(args.wallet));
     assert(investorLocks.lockedTokenAccount.equals(args.lockedTokenAccount));
     assert.equal(investorLocks.locks.length, 0);
@@ -423,7 +427,11 @@ describe("Token Locks End to End Tests", () => {
       await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
         investorLocksKey2
       );
-    assert(investorLocks.investor.equals(deriveInvestorPda(INVESTOR_ID)));
+    assert(
+      investorLocks.investor.equals(
+        deriveInvestorPda(INVESTOR_ID, getIdentityRegistryPda(mint))
+      )
+    );
     assert(investorLocks.wallet.equals(args.wallet));
     assert(investorLocks.lockedTokenAccount.equals(args.lockedTokenAccount));
     assert.equal(investorLocks.locks.length, 0);
@@ -514,7 +522,11 @@ describe("Token Locks End to End Tests", () => {
       await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
         investorLocksKey1
       );
-    assert(investorLocks.investor.equals(deriveInvestorPda(INVESTOR_ID)));
+    assert(
+      investorLocks.investor.equals(
+        deriveInvestorPda(INVESTOR_ID, getIdentityRegistryPda(mint))
+      )
+    );
     assert(investorLocks.wallet.equals(args.wallet));
     assert(investorLocks.lockedTokenAccount.equals(args.lockedTokenAccount));
     assert.equal(investorLocks.locks.length, 0);
@@ -609,7 +621,11 @@ describe("Token Locks End to End Tests", () => {
       await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
         investorLocksKey1
       );
-    assert(investorLocks.investor.equals(deriveInvestorPda(INVESTOR_ID)));
+    assert(
+      investorLocks.investor.equals(
+        deriveInvestorPda(INVESTOR_ID, getIdentityRegistryPda(mint))
+      )
+    );
     assert(investorLocks.wallet.equals(args.wallet));
     assert(investorLocks.lockedTokenAccount.equals(args.lockedTokenAccount));
     assert.equal(investorLocks.locks.length, 1);
@@ -696,7 +712,11 @@ describe("Token Locks End to End Tests", () => {
       await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
         investorLocksKey1
       );
-    assert(investorLocks.investor.equals(deriveInvestorPda(INVESTOR_ID)));
+    assert(
+      investorLocks.investor.equals(
+        deriveInvestorPda(INVESTOR_ID, getIdentityRegistryPda(mint))
+      )
+    );
     assert(investorLocks.wallet.equals(args.wallet));
     assert(investorLocks.lockedTokenAccount.equals(args.lockedTokenAccount));
 
@@ -774,7 +794,11 @@ describe("Token Locks End to End Tests", () => {
       await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
         investorLocksKey1
       );
-    assert(investorLocks.investor.equals(deriveInvestorPda(INVESTOR_ID)));
+    assert(
+      investorLocks.investor.equals(
+        deriveInvestorPda(INVESTOR_ID, getIdentityRegistryPda(mint))
+      )
+    );
     assert(investorLocks.wallet.equals(args.wallet));
     assert(investorLocks.lockedTokenAccount.equals(args.lockedTokenAccount));
     assert.equal(investorLocks.locks.length, 2);
@@ -837,7 +861,11 @@ describe("Token Locks End to End Tests", () => {
       await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
         investorLocksKey2
       );
-    assert(investorLocks.investor.equals(deriveInvestorPda(INVESTOR_ID)));
+    assert(
+      investorLocks.investor.equals(
+        deriveInvestorPda(INVESTOR_ID, getIdentityRegistryPda(mint))
+      )
+    );
     assert(investorLocks.wallet.equals(args.wallet));
     assert(investorLocks.lockedTokenAccount.equals(args.lockedTokenAccount));
     assert.equal(investorLocks.locks.length, 1);
@@ -928,7 +956,11 @@ describe("Token Locks End to End Tests", () => {
       await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
         investorLocksKey2
       );
-    assert(investorLocks.investor.equals(deriveInvestorPda(INVESTOR_ID)));
+    assert(
+      investorLocks.investor.equals(
+        deriveInvestorPda(INVESTOR_ID, getIdentityRegistryPda(mint))
+      )
+    );
     assert(investorLocks.wallet.equals(args.wallet));
     assert(investorLocks.lockedTokenAccount.equals(args.lockedTokenAccount));
     assert.equal(investorLocks.locks.length, 0);

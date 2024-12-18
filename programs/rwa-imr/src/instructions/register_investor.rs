@@ -21,6 +21,7 @@ pub struct RegisterInvestor<'info> {
         init,
         seeds = [
             &investor_id.as_ref(),
+            &identity_registry.key().as_ref(),
             b"Investor".as_ref(),
         ],
         bump,

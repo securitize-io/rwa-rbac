@@ -21,10 +21,15 @@ export const deriveInvestorLocks = (
 
 export const deriveInvestorPda = (
   investorId: string,
+  identityRegistry: PublicKey,
   programId = IMR_PROGRAM
 ) => {
   return PublicKey.findProgramAddressSync(
-    [Buffer.from(investorId), Buffer.from("Investor")],
+    [
+      Buffer.from(investorId),
+      identityRegistry.toBuffer(),
+      Buffer.from("Investor"),
+    ],
     programId
   )[0];
 };

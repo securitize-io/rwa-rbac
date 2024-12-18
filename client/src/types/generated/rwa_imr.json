@@ -106,6 +106,10 @@
                 "path": "investor_id"
               },
               {
+                "kind": "account",
+                "path": "identity_registry"
+              },
+              {
                 "kind": "const",
                 "value": [
                   73,
