@@ -15,12 +15,7 @@ import {
 } from "@solana/spl-token";
 
 import { setupTests } from "./utils";
-import {
-  AdminFlags,
-  generateUniqueSeed,
-  MediciFlags,
-  RwaRbacClient,
-} from "../client/src/index";
+import { AdminFlags, MediciFlags, RwaRbacClient } from "../client/src/index";
 import {
   CreateAssetControllerIx,
   getAssetControllerPda,
@@ -30,7 +25,6 @@ import {
   getPolicyEngineAccount,
   getPolicyEnginePda,
   IssueTokenArgs,
-  SetupAssetControllerArgs,
 } from "../deps/rwa-token/clients/rwa-token-sdk/src";
 import {
   deriveIdentityToOwnerPda,
@@ -56,7 +50,7 @@ describe("CPI End to End Tests", () => {
   const PLACEHOLDER_HASH2 = "b1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6";
 
   before(async () => {
-    setup = await setupTests(generateUniqueSeed());
+    setup = await setupTests();
     connection = setup.config.connection;
     rwaRbacClient = new RwaRbacClient(setup.config, new Wallet(setup.payerKp));
   });
@@ -83,7 +77,7 @@ describe("CPI End to End Tests", () => {
       setup.controllerAuthorityBump
     );
     assert(controllerAccount.admin.equals(setup.signer1));
-    assert(controllerAccount.uniqueSeed.eq(new BN(setup.uniqueSeed)));
+    assert(controllerAccount.uniqueSeed.equals(setup.uniqueSeed));
     assert(controllerAccount.userRolesCount.eqn(0));
   });
 

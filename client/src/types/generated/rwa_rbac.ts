@@ -664,7 +664,7 @@ export type RwaRbac = {
       "args": [
         {
           "name": "uniqueSeed",
-          "type": "u64"
+          "type": "pubkey"
         }
       ]
     },
@@ -2240,7 +2240,7 @@ export type RwaRbac = {
             "docs": [
               "Unique seed used for creating this account."
             ],
-            "type": "u64"
+            "type": "pubkey"
           },
           {
             "name": "userRolesCount",

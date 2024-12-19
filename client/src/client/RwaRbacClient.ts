@@ -68,13 +68,11 @@ export class RwaRbacClient {
    */
   async createAssetAccessControllerIxn(args: CreateControllerArgs) {
     return this.rbacProgram.methods
-      .createController(new BN(args.uniqueSeed))
+      .createController(args.uniqueSeed)
       .accountsStrict({
         payer: args.payer,
         admin: args.admin,
-        assetAccessController: deriveAssetAccessControllerPda(
-          new BN(args.uniqueSeed)
-        ),
+        assetAccessController: deriveAssetAccessControllerPda(args.uniqueSeed),
         systemProgram: SystemProgram.programId,
       })
       .instruction();

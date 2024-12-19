@@ -658,7 +658,7 @@
       "args": [
         {
           "name": "unique_seed",
-          "type": "u64"
+          "type": "pubkey"
         }
       ]
     },
@@ -2234,7 +2234,7 @@
             "docs": [
               "Unique seed used for creating this account."
             ],
-            "type": "u64"
+            "type": "pubkey"
           },
           {
             "name": "user_roles_count",

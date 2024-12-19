@@ -12,7 +12,7 @@ pub struct AssetAccessController {
     pub admin: Pubkey,
 
     /// Unique seed used for creating this account.
-    pub unique_seed: u64,
+    pub unique_seed: Pubkey,
 
     /// Number of UserRoles created since initialization. Used for deriving all created UserRole PDAs.
     pub user_roles_count: u64,

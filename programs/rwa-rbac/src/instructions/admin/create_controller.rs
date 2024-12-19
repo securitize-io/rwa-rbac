@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use crate::state::*;
 
 #[derive(Accounts)]
-#[instruction(unique_seed: u64)]
+#[instruction(unique_seed: Pubkey)]
 pub struct CreateAssetAccessController<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -11,7 +11,7 @@ pub struct CreateAssetAccessController<'info> {
     #[account(
         init,
         seeds = [
-            &unique_seed.to_le_bytes(),
+            &unique_seed.key().as_ref(),
             b"AssetAccessController".as_ref(),
         ],
         bump,
@@ -22,7 +22,7 @@ pub struct CreateAssetAccessController<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<CreateAssetAccessController>, unique_seed: u64) -> Result<()> {
+pub fn handler(ctx: Context<CreateAssetAccessController>, unique_seed: Pubkey) -> Result<()> {
     let key = ctx.accounts.asset_access_controller.key();
     let (controller_authority, controller_authority_bump) =
         Pubkey::find_program_address(&[key.as_ref()], ctx.program_id);

@@ -18,7 +18,7 @@ import {
 } from "@solana/spl-token";
 
 import { setupTests, sleep } from "./utils";
-import { generateUniqueSeed, RwaRbacClient } from "../client/src/index";
+import { RwaRbacClient } from "../client/src/index";
 import {
   CreateAssetControllerIx,
   getAssetControllerPda,
@@ -58,7 +58,7 @@ describe("Token Locks End to End Tests", () => {
   const ISSUE_AMT2 = 2_000_000;
 
   before(async () => {
-    setup = await setupTests(generateUniqueSeed());
+    setup = await setupTests();
     connection = setup.config.connection;
     rwaRbacClient = new RwaRbacClient(setup.config, new Wallet(setup.payerKp));
 

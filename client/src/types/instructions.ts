@@ -6,7 +6,7 @@ import { BN } from "@coral-xyz/anchor";
 export type CreateControllerArgs = {
   payer: PublicKey;
   admin: PublicKey;
-  uniqueSeed: number;
+  uniqueSeed: PublicKey;
 };
 
 /** Args used to update admin on AssetAccessController  */

@@ -8,7 +8,7 @@ import {
 import { pdas, RBAC_PROGRAM } from "../client/src";
 import { Config } from "@bridgesplit/rwa-token-sdk/dist/classes/types";
 
-export async function setupTests(uniqueSeed: number) {
+export async function setupTests() {
   const payerKp = new Keypair();
   const signer1Kp = new Keypair();
   const signer2Kp = new Keypair();
@@ -33,7 +33,8 @@ export async function setupTests(uniqueSeed: number) {
     txns.map((txn) => provider.connection.confirmTransaction(txn, "finalized"))
   );
 
-  const controller = pdas.deriveAssetAccessControllerPda(new BN(uniqueSeed));
+  const uniqueSeed = Keypair.generate().publicKey;
+  const controller = pdas.deriveAssetAccessControllerPda(uniqueSeed);
   const roleId1 = new BN(1);
   const roleId2 = new BN(2);
   const userRole1 = pdas.deriveUserRolePda(roleId1, controller);

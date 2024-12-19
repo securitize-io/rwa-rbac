@@ -45,14 +45,11 @@ export const deriveIdentityToOwnerPda = (
 };
 
 export const deriveAssetAccessControllerPda = (
-  uniqueSeed: BN,
+  uniqueSeed: PublicKey,
   programId = RBAC_PROGRAM
 ) => {
   return PublicKey.findProgramAddressSync(
-    [
-      uniqueSeed.toArrayLike(Buffer, "le", 8),
-      Buffer.from("AssetAccessController"),
-    ],
+    [uniqueSeed.toBuffer(), Buffer.from("AssetAccessController")],
     programId
   )[0];
 };

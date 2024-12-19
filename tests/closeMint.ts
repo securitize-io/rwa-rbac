@@ -10,7 +10,7 @@ import {
 } from "@solana/web3.js";
 
 import { setupTests } from "./utils";
-import { generateUniqueSeed, RwaRbacClient } from "../client/src/index";
+import { RwaRbacClient } from "../client/src/index";
 import { CreateAssetControllerIx } from "../deps/rwa-token/clients/rwa-token-sdk/src";
 import { ComputeBudgetProgram } from "@solana/web3.js";
 
@@ -24,7 +24,7 @@ describe("CloseMint Ixs Test", () => {
   let connection: Connection;
 
   before(async () => {
-    setup = await setupTests(generateUniqueSeed());
+    setup = await setupTests();
     connection = setup.config.connection;
     rwaRbacClient = new RwaRbacClient(setup.config, new Wallet(setup.payerKp));
 

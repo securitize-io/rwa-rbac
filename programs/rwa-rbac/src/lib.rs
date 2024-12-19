@@ -21,7 +21,7 @@ pub mod rwa_rbac {
 
     pub fn create_controller(
         ctx: Context<CreateAssetAccessController>,
-        unique_seed: u64,
+        unique_seed: Pubkey,
     ) -> Result<()> {
         instructions::create_controller::handler(ctx, unique_seed)
     }

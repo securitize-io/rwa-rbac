@@ -7,7 +7,6 @@ import {
 } from "@solana/web3.js";
 import { setupTests } from "./utils";
 import {
-  generateUniqueSeed,
   RwaRbacClient,
   AdminFlags,
   MediciFlags,
@@ -24,7 +23,7 @@ describe("Admin Ixs Test", () => {
   let connection: Connection;
 
   before(async () => {
-    setup = await setupTests(generateUniqueSeed());
+    setup = await setupTests();
     connection = setup.config.connection;
     rwaRbacClient = new RwaRbacClient(setup.config, new Wallet(setup.payerKp));
   });
@@ -51,16 +50,14 @@ describe("Admin Ixs Test", () => {
       setup.controllerAuthorityBump
     );
     assert(controllerAccount.admin.equals(setup.signer1));
-    assert(controllerAccount.uniqueSeed.eq(new anchor.BN(setup.uniqueSeed)));
+    assert(controllerAccount.uniqueSeed.equals(setup.uniqueSeed));
     assert(controllerAccount.userRolesCount.eqn(0));
   });
 
   it("Create UserRole 1 successfully", async () => {
     const name = "Role1";
     const allowedAdminIxs = computeFlags(AdminFlags.CREATE_OR_DELETE_USER_ROLE);
-    const allowedMediciIxs = computeFlags(
-      MediciFlags.ADD_LEVEL_TO_IDENTITY_ACCOUNT
-    );
+    const allowedMediciIxs = computeFlags(MediciFlags.ADD_LEVELS);
 
     const ix = await rwaRbacClient.createUserRoleIxn({
       name,
@@ -398,7 +395,7 @@ describe("Admin Ixs Test", () => {
       setup.controllerAuthorityBump
     );
     assert(controllerAccount.admin.equals(setup.signer2));
-    assert(controllerAccount.uniqueSeed.eq(new anchor.BN(setup.uniqueSeed)));
+    assert(controllerAccount.uniqueSeed.equals(setup.uniqueSeed));
     assert(controllerAccount.userRolesCount.eqn(2));
   });
 });
