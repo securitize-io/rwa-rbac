@@ -16,16 +16,27 @@ pub struct RemoveUserRole<'info> {
 }
 
 pub fn handler(ctx: Context<RemoveUserRole>, users_to_remove: Vec<Pubkey>) -> Result<()> {
-    // Verify that signer is either a controller admin or has authorized user role.
+    let user_role = &mut ctx.accounts.user_role;
+
+    // Apply the following rules if signer is not the controller admin:
+    // If authorized_user_role is same as user_role, user_role needs to contain either
+    // ASSIGN_OR_REMOVE_ANY_USER_ROLE or ASSIGN_OR_REMOVE_CURRENT_ROLE.
+    // If authorized_user_role is not provided or is different from user_role, user_role must contain
+    // ASSIGN_OR_REMOVE_ANY_USER_ROLE.
+    let mut matching_flag = AdminFlags::ASSIGN_OR_REMOVE_ANY_USER_ROLE;
+    if let Some(authorized_role) = &ctx.accounts.authorized_user_role {
+        if authorized_role.id == user_role.id {
+            matching_flag = matching_flag.union(AdminFlags::ASSIGN_OR_REMOVE_CURRENT_USER_ROLE)
+        }
+    }
     verify_admin_signer(
         ctx.accounts.user.key(),
         &ctx.accounts.asset_access_controller,
         ctx.accounts.authorized_user_role.clone(),
-        AdminFlags::ASSIGN_OR_REMOVE_USER_ROLE,
+        matching_flag,
     )?;
 
     // Remove users from role.
-    let user_role = &mut ctx.accounts.user_role;
     user_role.remove_users(users_to_remove);
 
     Ok(())

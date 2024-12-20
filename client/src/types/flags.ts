@@ -2,8 +2,9 @@ export enum AdminFlags {
   NONE = 0,
   CREATE_OR_DELETE_USER_ROLE = 1 << 0,
   MODIFY_USER_ROLE = 1 << 1,
-  ASSIGN_OR_REMOVE_USER_ROLE = 1 << 2,
-  ALL = (1 << 3) - 1,
+  ASSIGN_OR_REMOVE_ANY_USER_ROLE = 1 << 2,
+  ASSIGN_OR_REMOVE_CURRENT_ROLE = 1 << 3,
+  ALL = (1 << 4) - 1,
 }
 
 export enum MediciFlags {

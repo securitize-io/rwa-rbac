@@ -19,16 +19,27 @@ pub struct AssignUserRole<'info> {
 }
 
 pub fn handler(ctx: Context<AssignUserRole>, users_to_assign: Vec<Pubkey>) -> Result<()> {
-    // Verify that signer is either a controller admin or has authorized user role.
+    let user_role = &mut ctx.accounts.user_role;
+
+    // Apply the following rules if signer is not the controller admin:
+    // If authorized_user_role is same as user_role, user_role needs to contain either
+    // ASSIGN_OR_REMOVE_ANY_USER_ROLE or ASSIGN_OR_REMOVE_CURRENT_ROLE.
+    // If authorized_user_role is not provided or is different from user_role, user_role must contain
+    // ASSIGN_OR_REMOVE_ANY_USER_ROLE.
+    let mut matching_flag = AdminFlags::ASSIGN_OR_REMOVE_ANY_USER_ROLE;
+    if let Some(authorized_role) = &ctx.accounts.authorized_user_role {
+        if authorized_role.id == user_role.id {
+            matching_flag = matching_flag.union(AdminFlags::ASSIGN_OR_REMOVE_CURRENT_USER_ROLE)
+        }
+    }
     verify_admin_signer(
         ctx.accounts.user.key(),
         &ctx.accounts.asset_access_controller,
         ctx.accounts.authorized_user_role.clone(),
-        AdminFlags::ASSIGN_OR_REMOVE_USER_ROLE,
+        matching_flag,
     )?;
 
     // Check if there's sufficient space to add new users.
-    let user_role = &ctx.accounts.user_role;
     let user_role_info = user_role.to_account_info();
     let data_len = user_role_info.data_len();
     let to_add = users_to_assign.len();
@@ -46,7 +57,6 @@ pub fn handler(ctx: Context<AssignUserRole>, users_to_assign: Vec<Pubkey>) -> Re
     }
 
     // Assign users to role.
-    let user_role = &mut ctx.accounts.user_role;
     user_role.assign_users(users_to_assign);
 
     Ok(())

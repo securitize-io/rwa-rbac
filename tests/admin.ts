@@ -2,6 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { Wallet } from "@coral-xyz/anchor";
 import {
   Connection,
+  Keypair,
   sendAndConfirmTransaction,
   Transaction,
 } from "@solana/web3.js";
@@ -54,7 +55,7 @@ describe("Admin Ixs Test", () => {
     assert(controllerAccount.userRolesCount.eqn(0));
   });
 
-  it("Create UserRole 1 successfully", async () => {
+  it("Create UserRole 1 successfully with Admin", async () => {
     const name = "Role1";
     const allowedAdminIxs = computeFlags(AdminFlags.CREATE_OR_DELETE_USER_ROLE);
     const allowedMediciIxs = computeFlags(MediciFlags.ADD_LEVELS);
@@ -120,7 +121,7 @@ describe("Admin Ixs Test", () => {
     }
   });
 
-  it("Assign users to UserRole 1 successfully", async () => {
+  it("Assign users to UserRole 1 successfully with Admin", async () => {
     const userRoleDataLenPre = (
       await connection.getAccountInfo(setup.userRole1, "processed")
     ).data.length;
@@ -148,7 +149,7 @@ describe("Admin Ixs Test", () => {
     assert(userRoleAccount.users[2].equals(setup.payer));
   });
 
-  it("Assign repeated users to UserRole 1 successfully", async () => {
+  it("Assign repeated users to UserRole 1 successfully with Admin", async () => {
     const userRoleDataLenPre = (
       await connection.getAccountInfo(setup.userRole1, "processed")
     ).data.length;
@@ -188,41 +189,7 @@ describe("Admin Ixs Test", () => {
     assert(userRoleAccount.users[2].equals(setup.payer));
   });
 
-  it("Remove users from UserRole 1 successfully", async () => {
-    const ix = await rwaRbacClient.removeUserRoleIxn({
-      user: setup.signer1, // Admin Key
-      assetAccessController: setup.assetAccessController,
-      userRole: setup.userRole1,
-      usersToRemove: [setup.payer, setup.signer3],
-    });
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
-      setup.signer1Kp,
-    ]);
-
-    let userRoleAccount =
-      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
-    assert.equal(userRoleAccount.users.length, 1);
-    assert(userRoleAccount.users[0].equals(setup.signer2));
-
-    // Removing same users again doesn't result in change in state.
-    const ix2 = await rwaRbacClient.removeUserRoleIxn({
-      user: setup.signer1, // Admin Key
-      assetAccessController: setup.assetAccessController,
-      userRole: setup.userRole1,
-      usersToRemove: [setup.payer, setup.signer3, setup.payer],
-    });
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix2), [
-      setup.signer1Kp,
-    ]);
-
-    userRoleAccount = await rwaRbacClient.rbacProgram.account.userRole.fetch(
-      setup.userRole1
-    );
-    assert.equal(userRoleAccount.users.length, 1);
-    assert(userRoleAccount.users[0].equals(setup.signer2));
-  });
-
-  it("Create UserRole 2 successfully with authorized UserRole", async () => {
+  it("Create UserRole 2 successfully with UserRole 1", async () => {
     const name = "Role2";
     const allowedAdminIxs = AdminFlags.NONE;
     const allowedMediciIxs = MediciFlags.NONE;
@@ -259,11 +226,12 @@ describe("Admin Ixs Test", () => {
     assert(controllerAccount.userRolesCount.eqn(2));
   });
 
-  it("Modify User Role 1 successfully", async () => {
+  it("Modify User Role 1 successfully with Admin", async () => {
     const name = ""; // Empty string is allowed.
     const allowedAdminIxs = computeFlags(
       AdminFlags.MODIFY_USER_ROLE,
-      AdminFlags.CREATE_OR_DELETE_USER_ROLE
+      AdminFlags.CREATE_OR_DELETE_USER_ROLE,
+      AdminFlags.ASSIGN_OR_REMOVE_CURRENT_ROLE
     );
     const allowedMediciIxs = computeFlags(MediciFlags.ATTACH_TO_POLICY_ACCOUNT);
 
@@ -280,7 +248,7 @@ describe("Admin Ixs Test", () => {
       setup.signer1Kp,
     ]);
 
-    const userRoleAccount =
+    let userRoleAccount =
       await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
     assert(
       userRoleAccount.assetAccessController.equals(setup.assetAccessController)
@@ -289,10 +257,30 @@ describe("Admin Ixs Test", () => {
     assert.equal(userRoleAccount.name, name);
     assert(userRoleAccount.allowedAdminIxs.eqn(allowedAdminIxs));
     assert(userRoleAccount.allowedMediciIxs.eqn(allowedMediciIxs));
-    assert.equal(userRoleAccount.users.length, 1);
+    assert.equal(userRoleAccount.users.length, 3);
+
+    const ix2 = await rwaRbacClient.modifyUserRoleIxn({
+      name: "hello world",
+      allowedAdminIxs,
+      allowedMediciIxs,
+      user: setup.signer1, // Admin Key
+      assetAccessController: setup.assetAccessController,
+      userRole: setup.userRole1,
+    });
+
+    // Check assignment of name
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix2), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+
+    userRoleAccount = await rwaRbacClient.rbacProgram.account.userRole.fetch(
+      setup.userRole1
+    );
+    assert.equal(userRoleAccount.name, "hello world");
   });
 
-  it("Fail to Modify User Role with Invalid Name", async () => {
+  it("Fail to Modify User Role with Invalid Name length", async () => {
     try {
       // Test that error is thrown if name exceeds 64 chars.
       const ix = await rwaRbacClient.modifyUserRoleIxn({
@@ -330,27 +318,291 @@ describe("Admin Ixs Test", () => {
     } catch (err) {
       assert(err.toString().includes("InvalidName"));
     }
+  });
 
-    // Test that name under length of 64 chars is allowed.
-    const name = "x".repeat(64);
-    const ix = await rwaRbacClient.modifyUserRoleIxn({
-      name,
-      allowedAdminIxs: AdminFlags.NONE,
-      allowedMediciIxs: AdminFlags.NONE,
+  it("Assign user to same role succeeds with ASSIGN_OR_REMOVE_CURRENT_ROLE", async () => {
+    const newUser = Keypair.generate();
+    const ix = await rwaRbacClient.assignUserRoleIxn({
+      usersToAssign: [newUser.publicKey],
+      userRole: setup.userRole1,
+      payer: setup.payer,
+      user: setup.signer2,
+      assetAccessController: setup.assetAccessController,
+      authorizedUserRole: setup.userRole1,
+    });
+
+    // Assignment of a new user to UserRole 1 is successful since signer2 is
+    // part of UserRole 1, which has ASSIGN_OR_REMOVE_CURRENT_ROLE flag.
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer2Kp,
+    ]);
+
+    const userRoleAccount =
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
+    assert.equal(userRoleAccount.users.length, 4);
+    assert(userRoleAccount.users[3].equals(newUser.publicKey));
+  });
+
+  it("Assign user to different role fails with ASSIGN_OR_REMOVE_CURRENT_ROLE", async () => {
+    const newUser = Keypair.generate();
+    const ix = await rwaRbacClient.assignUserRoleIxn({
+      usersToAssign: [newUser.publicKey],
+      userRole: setup.userRole2,
+      payer: setup.payer,
+      user: setup.signer2,
+      assetAccessController: setup.assetAccessController,
+      authorizedUserRole: setup.userRole1,
+    });
+
+    // Assignment of a new user to UserRole 2 fails since signer2 is
+    // part of UserRole 1, which only has ASSIGN_OR_REMOVE_CURRENT_ROLE flag.
+    try {
+      await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+        setup.payerKp,
+        setup.signer2Kp,
+      ]);
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("InvalidUserRole"));
+    }
+  });
+
+  it("Assign user to different role succeeds with ASSIGN_OR_REMOVE_ANY_USER_ROLE", async () => {
+    // Change UserRole1 to ASSIGN_OR_REMOVE_ANY_USER_ROLE flag.
+    const ix1 = await rwaRbacClient.modifyUserRoleIxn({
+      name: "",
+      allowedAdminIxs: computeFlags(
+        AdminFlags.MODIFY_USER_ROLE,
+        AdminFlags.CREATE_OR_DELETE_USER_ROLE,
+        AdminFlags.ASSIGN_OR_REMOVE_ANY_USER_ROLE
+      ),
+      allowedMediciIxs: computeFlags(MediciFlags.ATTACH_TO_POLICY_ACCOUNT),
       user: setup.signer1, // Admin Key
       assetAccessController: setup.assetAccessController,
       userRole: setup.userRole1,
     });
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix1), [
       setup.payerKp,
       setup.signer1Kp,
     ]);
+
+    const newUser1 = Keypair.generate();
+    const newUser2 = Keypair.generate();
+    const ix2 = await rwaRbacClient.assignUserRoleIxn({
+      usersToAssign: [newUser1.publicKey, newUser2.publicKey],
+      userRole: setup.userRole2,
+      payer: setup.payer,
+      user: setup.signer2,
+      assetAccessController: setup.assetAccessController,
+      authorizedUserRole: setup.userRole1,
+    });
+
+    // Assignment of a new user to UserRole 2 succeeds since signer2 is
+    // part of UserRole 1, which has ASSIGN_OR_REMOVE_ANY_USER_ROLE flag.
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix2), [
+      setup.payerKp,
+      setup.signer2Kp,
+    ]);
+
     const userRoleAccount =
-      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
-    assert.equal(userRoleAccount.name, name);
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole2);
+    assert.equal(userRoleAccount.users.length, 2);
+    assert(userRoleAccount.users[0].equals(newUser1.publicKey));
+    assert(userRoleAccount.users[1].equals(newUser2.publicKey));
   });
 
-  it("Delete User Role 1 successfully", async () => {
+  it("Assign user to different role succeeds with both assign flags", async () => {
+    // Change UserRole1 to have both assign flags.
+    const ix1 = await rwaRbacClient.modifyUserRoleIxn({
+      name: "",
+      allowedAdminIxs: computeFlags(
+        AdminFlags.MODIFY_USER_ROLE,
+        AdminFlags.CREATE_OR_DELETE_USER_ROLE,
+        AdminFlags.ASSIGN_OR_REMOVE_CURRENT_ROLE,
+        AdminFlags.ASSIGN_OR_REMOVE_ANY_USER_ROLE
+      ),
+      allowedMediciIxs: computeFlags(MediciFlags.ATTACH_TO_POLICY_ACCOUNT),
+      user: setup.signer1, // Admin Key
+      assetAccessController: setup.assetAccessController,
+      userRole: setup.userRole1,
+    });
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix1), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+
+    const newUser1 = Keypair.generate();
+    const newUser2 = Keypair.generate();
+    const ix2 = await rwaRbacClient.assignUserRoleIxn({
+      usersToAssign: [newUser1.publicKey, newUser2.publicKey],
+      userRole: setup.userRole2,
+      payer: setup.payer,
+      user: setup.signer2,
+      assetAccessController: setup.assetAccessController,
+      authorizedUserRole: setup.userRole1,
+    });
+
+    // Assignment of a new user to UserRole 2 succeeds since signer2 is
+    // part of UserRole 1, which has ASSIGN_OR_REMOVE_ANY_USER_ROLE flag.
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix2), [
+      setup.payerKp,
+      setup.signer2Kp,
+    ]);
+
+    const userRoleAccountPost =
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole2);
+    assert.equal(userRoleAccountPost.users.length, 4);
+    assert(userRoleAccountPost.users[2].equals(newUser1.publicKey));
+    assert(userRoleAccountPost.users[3].equals(newUser2.publicKey));
+  });
+
+  it("Assign user to same role succeeds with both assign flags", async () => {
+    const newUser = Keypair.generate();
+    const ix = await rwaRbacClient.assignUserRoleIxn({
+      usersToAssign: [newUser.publicKey],
+      userRole: setup.userRole1,
+      payer: setup.payer,
+      user: setup.signer2,
+      assetAccessController: setup.assetAccessController,
+      authorizedUserRole: setup.userRole1,
+    });
+
+    // Assignment of a new user to UserRole 1 succeeds since signer2 is
+    // part of UserRole 1, which has both assign flags.
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer2Kp,
+    ]);
+
+    const userRoleAccountPost =
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
+    assert.equal(userRoleAccountPost.users.length, 5);
+    assert(userRoleAccountPost.users[4].equals(newUser.publicKey));
+  });
+
+  it("Remove user from different role succeeds with ASSIGN_OR_REMOVE_ANY_USER_ROLE", async () => {
+    const userRoleAccountPre =
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole2);
+
+    const ix = await rwaRbacClient.removeUserRoleIxn({
+      user: setup.signer2,
+      assetAccessController: setup.assetAccessController,
+      userRole: setup.userRole2,
+      authorizedUserRole: setup.userRole1,
+      usersToRemove: [userRoleAccountPre.users[0]],
+    });
+
+    // Removal of a user from UserRole 2 succeeds since signer2 is
+    // part of UserRole 1, which has ASSIGN_OR_REMOVE_ANY_USER_ROLE flag.
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.signer2Kp,
+    ]);
+
+    const userRoleAccountPost =
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole2);
+    assert.equal(userRoleAccountPost.users.length, 3);
+    assert(userRoleAccountPost.users[0].equals(userRoleAccountPre.users[1]));
+    assert(userRoleAccountPost.users[1].equals(userRoleAccountPre.users[2]));
+    assert(userRoleAccountPost.users[2].equals(userRoleAccountPre.users[3]));
+  });
+
+  it("Remove user from different role fails with ASSIGN_OR_REMOVE_CURRENT_ROLE", async () => {
+    // Change UserRole1 to ASSIGN_OR_REMOVE_CURRENT_ROLE flag.
+    const ix1 = await rwaRbacClient.modifyUserRoleIxn({
+      name: "",
+      allowedAdminIxs: computeFlags(
+        AdminFlags.MODIFY_USER_ROLE,
+        AdminFlags.CREATE_OR_DELETE_USER_ROLE,
+        AdminFlags.ASSIGN_OR_REMOVE_CURRENT_ROLE
+      ),
+      allowedMediciIxs: computeFlags(MediciFlags.ATTACH_TO_POLICY_ACCOUNT),
+      user: setup.signer1, // Admin Key
+      assetAccessController: setup.assetAccessController,
+      userRole: setup.userRole1,
+    });
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix1), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+
+    const userRoleAccountPre =
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole2);
+    const ix2 = await rwaRbacClient.removeUserRoleIxn({
+      user: setup.signer2,
+      assetAccessController: setup.assetAccessController,
+      userRole: setup.userRole2,
+      authorizedUserRole: setup.userRole1,
+      usersToRemove: [userRoleAccountPre.users[0]],
+    });
+
+    // Removal of a user from UserRole 2 fails since signer2 is
+    // part of UserRole 1, which has ASSIGN_OR_REMOVE_CURRENT_ROLE flag.
+    try {
+      await sendAndConfirmTransaction(connection, new Transaction().add(ix2), [
+        setup.signer2Kp,
+      ]);
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("InvalidUserRole"));
+    }
+  });
+
+  it("Remove user from same role succeeds with ASSIGN_OR_REMOVE_CURRENT_ROLE", async () => {
+    const userRoleAccountPre =
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
+    const ix = await rwaRbacClient.removeUserRoleIxn({
+      user: setup.signer2,
+      assetAccessController: setup.assetAccessController,
+      userRole: setup.userRole1,
+      authorizedUserRole: setup.userRole1,
+      usersToRemove: [userRoleAccountPre.users[0]],
+    });
+
+    // Removal of a user from UserRole 1 succeeds since signer2 is
+    // part of UserRole 1, which has ASSIGN_OR_REMOVE_CURRENT_ROLE flag.
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.signer2Kp,
+    ]);
+
+    const userRoleAccountPost =
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
+    assert.equal(userRoleAccountPost.users.length, 4);
+  });
+
+  it("Remove users from UserRole 1 successfully with Admin", async () => {
+    const ix = await rwaRbacClient.removeUserRoleIxn({
+      user: setup.signer1, // Admin Key
+      assetAccessController: setup.assetAccessController,
+      userRole: setup.userRole1,
+      usersToRemove: [setup.payer, setup.signer3],
+    });
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.signer1Kp,
+    ]);
+
+    let userRoleAccount =
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
+    assert.equal(userRoleAccount.users.length, 2);
+
+    // Removing same users again doesn't result in change in state.
+    const ix2 = await rwaRbacClient.removeUserRoleIxn({
+      user: setup.signer1, // Admin Key
+      assetAccessController: setup.assetAccessController,
+      userRole: setup.userRole1,
+      usersToRemove: [setup.payer, setup.signer3, setup.payer],
+    });
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix2), [
+      setup.signer1Kp,
+    ]);
+
+    userRoleAccount = await rwaRbacClient.rbacProgram.account.userRole.fetch(
+      setup.userRole1
+    );
+    assert.equal(userRoleAccount.users.length, 2);
+  });
+
+  it("Delete User Role 1 successfully with Admin", async () => {
     const preBalance = await connection.getBalance(setup.payer);
     const ix = await rwaRbacClient.deleteUserRoleIxn({
       receiver: setup.payer,

@@ -6,7 +6,7 @@ use sha256::digest;
 
 use crate::{error::ErrorCode, AdminFlags, AssetAccessController, MediciFlags, UserRole};
 
-/// Check if user matches controller admin or has role with matching admin flag.
+/// Check if user matches controller admin or has role with that matches ANY admin matching_flag.
 pub fn verify_admin_signer(
     user: Pubkey,
     asset_access_controller: &AssetAccessController,
@@ -16,7 +16,7 @@ pub fn verify_admin_signer(
     if user != asset_access_controller.admin {
         let user_role = user_role.ok_or(ErrorCode::InvalidUserRole)?;
         let is_authorized =
-            user_role.has_admin_flag(matching_flag) && user_role.users.contains(&user);
+            user_role.has_any_admin_flag(matching_flag) && user_role.users.contains(&user);
         if !is_authorized {
             return err!(ErrorCode::InvalidUserRole);
         }
@@ -24,7 +24,7 @@ pub fn verify_admin_signer(
     Ok(())
 }
 
-/// Check if user matches controller admin or has role with matching medici flag.
+/// Check if user matches controller admin or has role with that matches ALL medici matching_flag.
 pub fn verify_medici_signer(
     user: Pubkey,
     asset_access_controller: &AssetAccessController,

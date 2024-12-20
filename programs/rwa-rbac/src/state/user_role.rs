@@ -27,12 +27,14 @@ impl UserRole {
     /// Assume name has max size of 64 bytes and includes 8 byte discriminator.
     pub const BASE_SIZE: usize = 152;
 
-    pub fn has_admin_flag(&self, flag: AdminFlags) -> bool {
+    /// Returns true if the user role contains ANY of the admin flags.
+    pub fn has_any_admin_flag(&self, flag: AdminFlags) -> bool {
         AdminFlags::from_bits(self.allowed_admin_ixs)
             .unwrap()
-            .contains(flag)
+            .intersects(flag)
     }
 
+    /// Returns true if the user role contains all of the medici flags.
     pub fn has_medici_flag(&self, flag: MediciFlags) -> bool {
         MediciFlags::from_bits(self.allowed_medici_ixs)
             .unwrap()
@@ -83,7 +85,8 @@ bitflags::bitflags! {
   pub struct AdminFlags: u64 {
       const CREATE_OR_DELETE_USER_ROLE = 1 << 0;
       const MODIFY_USER_ROLE = 1 << 1;
-      const ASSIGN_OR_REMOVE_USER_ROLE = 1 << 2;
+      const ASSIGN_OR_REMOVE_ANY_USER_ROLE = 1 << 2;
+      const ASSIGN_OR_REMOVE_CURRENT_USER_ROLE = 1 << 3;
   }
 
   // CPI Instructions
