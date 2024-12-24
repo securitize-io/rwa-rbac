@@ -119,7 +119,7 @@ describe("Token Locks End to End Tests", () => {
           assetMint: mint,
           investorId: INVESTOR_ID,
           collisionHash: PLACEHOLDER_HASH2,
-          levels: [1, 2],
+          levels: [1],
           expiries: [
             new BN(Date.now() / 1000 + 24 * 60 * 60),
             new BN(Date.now() / 1000 + 30 * 60 * 60),

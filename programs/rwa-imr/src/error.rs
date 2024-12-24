@@ -10,4 +10,16 @@ pub enum ErrorCode {
 
     #[msg("Invalid levels")]
     InvalidLevels,
+
+    #[msg("Invalid country level")]
+    InvalidCountryLevel,
+
+    #[msg("Invalid region level")]
+    InvalidRegionLevel,
+
+    #[msg("Invalid attribute level")]
+    InvalidAttribute,
+
+    #[msg("Unknown level")]
+    UnknownLevel,
 }

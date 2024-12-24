@@ -354,6 +354,26 @@
       "code": 6002,
       "name": "InvalidLevels",
       "msg": "Invalid levels"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidCountryLevel",
+      "msg": "Invalid country level"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidRegionLevel",
+      "msg": "Invalid region level"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidAttribute",
+      "msg": "Invalid attribute level"
+    },
+    {
+      "code": 6006,
+      "name": "UnknownLevel",
+      "msg": "Unknown level"
     }
   ],
   "types": [

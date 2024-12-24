@@ -265,7 +265,7 @@ describe("CPI End to End Tests", () => {
       assetMint: mint,
       investorId: INVESTOR_ID,
       collisionHash: PLACEHOLDER_HASH2,
-      levels: [1, 2],
+      levels: [1, 5],
       expiries: [
         new BN(Date.now() / 1000 + 24 * 60 * 60),
         new BN(Date.now() / 1000 + 30 * 60 * 60),
@@ -338,7 +338,7 @@ describe("CPI End to End Tests", () => {
       signer: setup.signer1.toString(), // User Account
       owner: setup.user2.toString(), // Target Account
       assetMint: mint,
-      levels: [1, 2],
+      levels: [1, 5],
       expiry: [
         new BN(Date.now() / 1000 + 24 * 60 * 60),
         new BN(Date.now() / 1000 + 30 * 60 * 60),
@@ -377,7 +377,7 @@ describe("CPI End to End Tests", () => {
       owner: setup.user1.toString(), // Target Account
       authority: setup.controllerAuthority,
       assetMint: mint,
-      level: 3,
+      level: 10,
       expiry: new BN(Date.now() / 1000 + 24 * 60 * 60),
     };
     const ix =
@@ -405,7 +405,7 @@ describe("CPI End to End Tests", () => {
       owner: setup.user2.toString(), // Target Account
       authority: setup.controllerAuthority,
       assetMint: mint,
-      level: 3,
+      level: 10,
       expiry: new BN(Date.now() / 1000 + 24 * 60 * 60),
     };
     const ix =
@@ -438,7 +438,7 @@ describe("CPI End to End Tests", () => {
       owner: setup.user1.toString(), // Target Account
       assetMint: mint,
       investorId: INVESTOR_ID,
-      levels: [5, 3, 4],
+      levels: [6, 7, 8],
       expiries: [
         new BN(Date.now() / 1000 + 24 * 60 * 60),
         new BN(Date.now() / 1000 + 24 * 60 * 60),
@@ -552,7 +552,7 @@ describe("CPI End to End Tests", () => {
       owner: setup.user1.toString(), // Target Account
       assetMint: mint,
       investorId: INVESTOR_ID,
-      levels: [2, 3, 4, 5],
+      levels: [6, 7, 8],
     };
     const ix = await rwaRbacClient.identityMetadataRegistry.removeLevels(
       args,
@@ -574,16 +574,18 @@ describe("CPI End to End Tests", () => {
         investorPda
       );
     assert.equal(investorAccount.lastUpdatedBy.toString(), args.payer);
-    assert.equal(investorAccount.levels.length, 1);
+    assert.equal(investorAccount.levels.length, 2);
     assert.equal(investorAccount.levels[0].level, 1);
+    assert.equal(investorAccount.levels[1].level, 5);
 
     const identityAccount = await getIdentityAccount(
       mint,
       setup.user1,
       rwaRbacClient.provider
     );
-    assert.equal(identityAccount.levels.length, 1);
+    assert.equal(identityAccount.levels.length, 2);
     assert.equal(identityAccount.levels[0].level, 1);
+    assert.equal(identityAccount.levels[1].level, 5);
   });
 
   it("CPI: Refresh Level To Identity Account", async () => {

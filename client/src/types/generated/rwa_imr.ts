@@ -360,6 +360,26 @@ export type RwaImr = {
       "code": 6002,
       "name": "invalidLevels",
       "msg": "Invalid levels"
+    },
+    {
+      "code": 6003,
+      "name": "invalidCountryLevel",
+      "msg": "Invalid country level"
+    },
+    {
+      "code": 6004,
+      "name": "invalidRegionLevel",
+      "msg": "Invalid region level"
+    },
+    {
+      "code": 6005,
+      "name": "invalidAttribute",
+      "msg": "Invalid attribute level"
+    },
+    {
+      "code": 6006,
+      "name": "unknownLevel",
+      "msg": "Unknown level"
     }
   ],
   "types": [
