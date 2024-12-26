@@ -23,7 +23,9 @@ pub enum Level {
     QUALIFIED_REJECTED = 26,
     PROFESSIONAL_REJECTED = 27,
     KYC_APPROVED_REJECTED = 28,
-    PlatformWallet = 255,
+    PLATFORM_WALLET = 30,
+    EXCHANGE_WALLET = 31,
+    ISSUER_WALLET = 32,
 
     // Countries starting at 50
     Afghanistan = 50,
@@ -286,5 +288,12 @@ pub const PROFESSIONAL_ATTRIBUTES: [u8; 3] = [
     Level::PROFESSIONAL_REJECTED as u8,
 ];
 
+/// Levels containing special wallet types.
+pub const SPECIAL_WALLETS: [u8; 3] = [
+    Level::PLATFORM_WALLET as u8,
+    Level::EXCHANGE_WALLET as u8,
+    Level::ISSUER_WALLET as u8,
+];
+
 /// Levels not included in regions, countries or attributes.
-pub const OTHER_LEVELS: [u8; 2] = [Level::Investor as u8, Level::PlatformWallet as u8];
+pub const OTHER_LEVELS: [u8; 1] = [Level::Investor as u8];

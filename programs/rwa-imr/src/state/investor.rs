@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 
 use crate::constants::{
     Level, ACCREDITED_ATTRIBUTES, EU_COUNTRIES, KYC_ATTRIBUTES, OTHER_LEVELS,
-    PROFESSIONAL_ATTRIBUTES, QUALIFIED_ATTRIBUTES, REGIONS,
+    PROFESSIONAL_ATTRIBUTES, QUALIFIED_ATTRIBUTES, REGIONS, SPECIAL_WALLETS,
 };
 use crate::error::ErrorCode;
 use crate::helper::is_valid_hash;
@@ -68,6 +68,7 @@ impl Investor {
         let mut qualified = vec![];
         let mut professional = vec![];
         let mut kyc = vec![];
+        let mut special = vec![];
 
         // Group levels into vec based on its category.
         for level_data in &self.levels {
@@ -84,11 +85,16 @@ impl Investor {
                 qualified.push(level);
             } else if PROFESSIONAL_ATTRIBUTES.contains(&level) {
                 professional.push(level);
+            } else if SPECIAL_WALLETS.contains(&level) {
+                special.push(level);
             } else if !OTHER_LEVELS.contains(&level) {
                 msg!("Level {} is not supported", level);
                 return err!(ErrorCode::UnknownLevel);
             }
         }
+
+        // Check that user isn't a special wallet.
+        require!(special.is_empty(), ErrorCode::InvalidLevels);
 
         // Check that there's at most 1 region level.
         require!(regions.len() <= 1, ErrorCode::InvalidRegionLevel);
@@ -164,6 +170,15 @@ mod tests {
         let investor = build_investor(vec![Level::KYC_APPROVED, Level::KYC_APPROVED], None);
         assert!(investor.validate_levels().is_err());
     }
+
+
+    #[test]
+    fn test_special_wallets() {
+        // Should fail since investor is not allowed to be a special wallet.
+        let investor = build_investor(vec![Level::PLATFORM_WALLET, Level::EXCHANGE_WALLET], None);
+        assert!(investor.validate_levels().is_err());
+    }
+
 
     #[test]
     fn test_invalid_proof_hashes() {
@@ -273,7 +288,6 @@ mod tests {
                 Level::PROFESSIONAL,
                 Level::QUALIFIED_PENDING,
                 Level::Investor,
-                Level::PlatformWallet,
                 Level::US,
                 Level::UnitedStates,
             ],
