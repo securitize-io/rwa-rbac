@@ -13,7 +13,7 @@ pub use state::*;
 
 use anchor_lang::prelude::*;
 
-declare_id!("9gUXb1jJ4wmwht3G6mMaHdWbo2gf7faHYyM6ryVGy4ae");
+declare_id!("AzGap3q8fXV1gHPWpAuMFqkpCewvuEY5GrkhCz86ZkDb");
 
 #[program]
 pub mod rwa_rbac {
@@ -122,6 +122,20 @@ pub mod rwa_rbac {
         cpi_data: Vec<u8>,
     ) -> Result<()> {
         instructions::attach_to_policy_engine::handler(ctx, cpi_data)
+    }
+
+    pub fn change_counters(
+        ctx: Context<ChangeCounters>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::change_counters::handler(ctx, cpi_data)
+    }
+
+    pub fn change_counter_limits(
+        ctx: Context<ChangeCounterLimits>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::change_counter_limits::handler(ctx, cpi_data)
     }
 
     pub fn detach_from_policy_engine(

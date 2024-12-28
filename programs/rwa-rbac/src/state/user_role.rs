@@ -115,5 +115,7 @@ bitflags::bitflags! {
       const CLOSE_INVESTOR_LOCKS = 1 << 21;
       const ADD_TOKEN_LOCK = 1 << 22;
       const REMOVE_TOKEN_LOCK = 1 << 23;
+      const CHANGE_COUNTERS = 1 << 24;
+      const CHANGE_COUNTER_LIMITS = 1 << 25;
   }
 }

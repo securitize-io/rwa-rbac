@@ -15,6 +15,7 @@ import {
   getAssociatedTokenAddressSync,
   TOKEN_2022_PROGRAM_ID,
   createAssociatedTokenAccount,
+  getOrCreateAssociatedTokenAccount,
 } from "@solana/spl-token";
 
 import { setupTests, sleep } from "./utils";
@@ -122,40 +123,21 @@ describe("Token Locks End to End Tests", () => {
           levels: [1],
           expiries: [
             new BN(Date.now() / 1000 + 24 * 60 * 60),
-            new BN(Date.now() / 1000 + 30 * 60 * 60),
           ],
           proofHashes: [PLACEHOLDER_HASH1, PLACEHOLDER_HASH2],
         },
         setup.assetAccessController
       );
-    await sendAndConfirmTransaction(
-      connection,
-      new Transaction().add(...createIxs),
-      [setup.payerKp, setup.signer1Kp]
-    );
 
-    // Issue token to Investor's attached wallet
-    const issueTokenIxns2 = await rwaRbacClient.assetController.issueTokenIxns(
-      {
-        authority: setup.controllerAuthority.toString(), // ControllerAuthority
-        payer: setup.payer.toString(), // Payer Account
-        signer: setup.signer1.toString(), // RBAC Signer
-        owner: setup.user1.toString(), // Investor Owner
-        assetMint: mint,
-        amount: ISSUE_AMT2,
-      },
-      setup.assetAccessController,
-      null,
-      setup.user2 // Recipient wallet
-    );
-    await sendAndConfirmTransaction(
-      connection,
-      new Transaction().add(...issueTokenIxns2),
-      [setup.payerKp, setup.signer1Kp]
-    );
+    // Sending in separate transactions as workaround to an unexplained local websocket error.
+    const tx1 = new Transaction().add(...createIxs);
+    await sendAndConfirmTransaction(connection, tx1, [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
 
     lockedTokenAccount1 = await createAccount(
-      rwaRbacClient.provider.connection,
+      connection,
       setup.payerKp,
       new PublicKey(mint),
       new PublicKey(setup.user1),
@@ -164,7 +146,7 @@ describe("Token Locks End to End Tests", () => {
       TOKEN_2022_PROGRAM_ID
     );
     lockedTokenAccount2 = await createAccount(
-      rwaRbacClient.provider.connection,
+      connection,
       setup.payerKp,
       new PublicKey(mint),
       new PublicKey(setup.user2),
@@ -178,10 +160,13 @@ describe("Token Locks End to End Tests", () => {
       false,
       TOKEN_2022_PROGRAM_ID
     );
-    unlockedTokenAccount2 = getAssociatedTokenAddressSync(
+
+    unlockedTokenAccount2 = await createAssociatedTokenAccount(
+      connection,
+      setup.user2Kp,
       new PublicKey(args.assetMint),
       setup.user2,
-      false,
+      null,
       TOKEN_2022_PROGRAM_ID
     );
   });
@@ -403,6 +388,26 @@ describe("Token Locks End to End Tests", () => {
       [setup.payerKp, setup.signer1Kp]
     );
 
+    // Issue token to Investor's attached wallet
+    const issueTokenIxns2 = await rwaRbacClient.assetController.issueTokenIxns(
+      {
+        authority: setup.controllerAuthority.toString(), // ControllerAuthority
+        payer: setup.payer.toString(), // Payer Account
+        signer: setup.signer1.toString(), // RBAC Signer
+        owner: setup.user1.toString(), // Investor Owner
+        assetMint: mint,
+        amount: ISSUE_AMT2,
+        wallet: setup.user2.toString(),
+      },
+      setup.assetAccessController,
+      null
+    );
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(...issueTokenIxns2),
+      [setup.payerKp, setup.signer1Kp]
+    );
+
     const args = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // RBAC Signer
@@ -489,7 +494,7 @@ describe("Token Locks End to End Tests", () => {
   it("Create InvestorLocks with new locked token account for main owner", async () => {
     // Create a new locked token account to replace closed account.
     lockedTokenAccount1 = await createAccount(
-      rwaRbacClient.provider.connection,
+      connection,
       setup.payerKp,
       new PublicKey(mint),
       new PublicKey(setup.user1),
@@ -989,7 +994,7 @@ describe("Token Locks End to End Tests", () => {
       );
 
     // Check that lock has expired.
-    await sleep(2000);
+    await sleep(3000);
     assert(
       Number(investorLocks.locks[args.index.toNumber()].releaseTime) <
         Date.now() / 1000

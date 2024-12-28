@@ -11,7 +11,7 @@ pub use state::*;
 
 use anchor_lang::prelude::*;
 
-declare_id!("6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9");
+declare_id!("6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5");
 
 #[program]
 pub mod rwa_imr {
@@ -46,11 +46,16 @@ pub mod rwa_imr {
         levels: Vec<u8>,
         expiries: Vec<i64>,
         proof_hashes: Vec<String>,
+        enforce_limits: bool,
     ) -> Result<()> {
-        instructions::add_levels::handler(ctx, levels, expiries, proof_hashes)
+        instructions::add_levels::handler(ctx, levels, expiries, proof_hashes, enforce_limits)
     }
 
-    pub fn remove_levels(ctx: Context<RemoveLevels>, levels_to_remove: Vec<u8>) -> Result<()> {
-        instructions::remove_levels::handler(ctx, levels_to_remove)
+    pub fn remove_levels(
+        ctx: Context<RemoveLevels>,
+        levels_to_remove: Vec<u8>,
+        enforce_limits: bool,
+    ) -> Result<()> {
+        instructions::remove_levels::handler(ctx, levels_to_remove, enforce_limits)
     }
 }

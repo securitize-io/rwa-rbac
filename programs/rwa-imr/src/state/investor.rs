@@ -44,7 +44,7 @@ pub struct Investor {
     pub last_updated_by: Pubkey,
 
     /// Levels assigned to investor.
-    #[max_len(5)]
+    #[max_len(10)]
     pub levels: Vec<LevelData>,
 }
 

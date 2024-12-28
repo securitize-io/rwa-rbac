@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/rwa_rbac.json`.
  */
 export type RwaRbac = {
-  "address": "9gUXb1jJ4wmwht3G6mMaHdWbo2gf7faHYyM6ryVGy4ae",
+  "address": "AzGap3q8fXV1gHPWpAuMFqkpCewvuEY5GrkhCz86ZkDb",
   "metadata": {
     "name": "rwaRbac",
     "version": "0.1.0",
@@ -53,7 +53,7 @@ export type RwaRbac = {
         },
         {
           "name": "identityRegistryProgram",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "identityRegistry"
@@ -100,38 +100,38 @@ export type RwaRbac = {
             "program": {
               "kind": "const",
               "value": [
-                83,
-                215,
-                73,
-                31,
-                32,
-                170,
-                244,
-                103,
-                61,
-                117,
-                168,
-                187,
-                57,
-                229,
-                199,
-                137,
-                186,
-                255,
-                123,
-                48,
-                175,
-                161,
-                231,
-                23,
-                103,
-                146,
-                178,
-                241,
                 84,
+                79,
+                22,
                 26,
-                120,
-                76
+                69,
+                114,
+                48,
+                253,
+                80,
+                11,
+                87,
+                127,
+                72,
+                189,
+                126,
+                53,
+                195,
+                65,
+                123,
+                145,
+                75,
+                54,
+                27,
+                26,
+                107,
+                146,
+                233,
+                196,
+                61,
+                5,
+                80,
+                50
               ]
             }
           }
@@ -139,6 +139,19 @@ export type RwaRbac = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "policyEngineProgram"
+        },
+        {
+          "name": "policyEngine",
+          "writable": true
+        },
+        {
+          "name": "trackerAccount"
+        },
+        {
+          "name": "assetMint"
         }
       ],
       "args": [
@@ -188,7 +201,7 @@ export type RwaRbac = {
         },
         {
           "name": "identityMetadataRegistryProgram",
-          "address": "6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9"
+          "address": "6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5"
         },
         {
           "name": "investor",
@@ -196,7 +209,7 @@ export type RwaRbac = {
         },
         {
           "name": "identityRegistryProgram",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "identityRegistry"
@@ -208,6 +221,19 @@ export type RwaRbac = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "policyEngineProgram"
+        },
+        {
+          "name": "policyEngine",
+          "writable": true
+        },
+        {
+          "name": "trackerAccount"
+        },
+        {
+          "name": "assetMint"
         }
       ],
       "args": [
@@ -288,7 +314,7 @@ export type RwaRbac = {
         },
         {
           "name": "assetControllerProgram",
-          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
         },
         {
           "name": "tokenProgram",
@@ -397,7 +423,7 @@ export type RwaRbac = {
         },
         {
           "name": "policyEngineProgram",
-          "address": "po1cPf1eyUJJPqULw4so3T4JU9pdFn83CDyuLEKFAau"
+          "address": "4wyusm2nxncvNyiVej5mZ1k1mVPhfG41oNvHx4BWiYMq"
         },
         {
           "name": "policyEngine",
@@ -455,7 +481,7 @@ export type RwaRbac = {
         },
         {
           "name": "identityRegistryProgram",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "walletIdentity",
@@ -470,6 +496,125 @@ export type RwaRbac = {
         },
         {
           "name": "assetMint"
+        },
+        {
+          "name": "newWalletIdentityAccount"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpiData",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "changeCounterLimits",
+      "discriminator": [
+        200,
+        2,
+        8,
+        102,
+        43,
+        168,
+        141,
+        139
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "policyEngineProgram",
+          "address": "4wyusm2nxncvNyiVej5mZ1k1mVPhfG41oNvHx4BWiYMq"
+        },
+        {
+          "name": "policyEngine",
+          "writable": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpiData",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "changeCounters",
+      "discriminator": [
+        156,
+        107,
+        88,
+        204,
+        113,
+        131,
+        241,
+        192
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "policyEngineProgram",
+          "address": "4wyusm2nxncvNyiVej5mZ1k1mVPhfG41oNvHx4BWiYMq"
+        },
+        {
+          "name": "policyEngine",
+          "writable": true
         },
         {
           "name": "systemProgram",
@@ -575,7 +720,7 @@ export type RwaRbac = {
         },
         {
           "name": "assetControllerProgram",
-          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
         },
         {
           "name": "assetMint",
@@ -708,7 +853,7 @@ export type RwaRbac = {
         },
         {
           "name": "identityRegistryProgram",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "identityRegistry"
@@ -794,7 +939,7 @@ export type RwaRbac = {
         },
         {
           "name": "assetControllerProgram",
-          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
         },
         {
           "name": "tokenProgram",
@@ -952,7 +1097,7 @@ export type RwaRbac = {
         },
         {
           "name": "policyEngineProgram",
-          "address": "po1cPf1eyUJJPqULw4so3T4JU9pdFn83CDyuLEKFAau"
+          "address": "4wyusm2nxncvNyiVej5mZ1k1mVPhfG41oNvHx4BWiYMq"
         },
         {
           "name": "policyEngine",
@@ -1011,7 +1156,7 @@ export type RwaRbac = {
         },
         {
           "name": "identityRegistryProgram",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "walletIdentity",
@@ -1067,7 +1212,7 @@ export type RwaRbac = {
         },
         {
           "name": "assetControllerProgram",
-          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
         },
         {
           "name": "assetMint",
@@ -1128,7 +1273,7 @@ export type RwaRbac = {
         },
         {
           "name": "assetControllerProgram",
-          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
         },
         {
           "name": "assetMint",
@@ -1168,11 +1313,14 @@ export type RwaRbac = {
         },
         {
           "name": "policyEngineProgram",
-          "address": "po1cPf1eyUJJPqULw4so3T4JU9pdFn83CDyuLEKFAau"
+          "address": "4wyusm2nxncvNyiVej5mZ1k1mVPhfG41oNvHx4BWiYMq"
         },
         {
           "name": "policyEngine",
           "writable": true
+        },
+        {
+          "name": "walletIdentityAccount"
         }
       ],
       "args": [
@@ -1270,7 +1418,7 @@ export type RwaRbac = {
         },
         {
           "name": "identityRegistryProgram",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "identityRegistry"
@@ -1327,7 +1475,7 @@ export type RwaRbac = {
         },
         {
           "name": "identityMetadataRegistryProgram",
-          "address": "6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9"
+          "address": "6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5"
         },
         {
           "name": "investor",
@@ -1339,7 +1487,7 @@ export type RwaRbac = {
         },
         {
           "name": "identityRegistryProgram",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "identityRegistry"
@@ -1400,7 +1548,7 @@ export type RwaRbac = {
         },
         {
           "name": "identityMetadataRegistryProgram",
-          "address": "6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9"
+          "address": "6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5"
         },
         {
           "name": "investor",
@@ -1412,7 +1560,7 @@ export type RwaRbac = {
         },
         {
           "name": "identityRegistryProgram",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "identityRegistry"
@@ -1469,7 +1617,7 @@ export type RwaRbac = {
         },
         {
           "name": "identityRegistryProgram",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "identityRegistry"
@@ -1516,38 +1664,38 @@ export type RwaRbac = {
             "program": {
               "kind": "const",
               "value": [
-                83,
-                215,
-                73,
-                31,
-                32,
-                170,
-                244,
-                103,
-                61,
-                117,
-                168,
-                187,
-                57,
-                229,
-                199,
-                137,
-                186,
-                255,
-                123,
-                48,
-                175,
-                161,
-                231,
-                23,
-                103,
-                146,
-                178,
-                241,
                 84,
+                79,
+                22,
                 26,
-                120,
-                76
+                69,
+                114,
+                48,
+                253,
+                80,
+                11,
+                87,
+                127,
+                72,
+                189,
+                126,
+                53,
+                195,
+                65,
+                123,
+                145,
+                75,
+                54,
+                27,
+                26,
+                107,
+                146,
+                233,
+                196,
+                61,
+                5,
+                80,
+                50
               ]
             }
           }
@@ -1555,6 +1703,19 @@ export type RwaRbac = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "policyEngineProgram"
+        },
+        {
+          "name": "policyEngine",
+          "writable": true
+        },
+        {
+          "name": "trackerAccount"
+        },
+        {
+          "name": "assetMint"
         }
       ],
       "args": [
@@ -1604,7 +1765,7 @@ export type RwaRbac = {
         },
         {
           "name": "identityMetadataRegistryProgram",
-          "address": "6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9"
+          "address": "6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5"
         },
         {
           "name": "investor",
@@ -1612,7 +1773,7 @@ export type RwaRbac = {
         },
         {
           "name": "identityRegistryProgram",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "identityRegistry"
@@ -1624,6 +1785,19 @@ export type RwaRbac = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "policyEngineProgram"
+        },
+        {
+          "name": "policyEngine",
+          "writable": true
+        },
+        {
+          "name": "trackerAccount"
+        },
+        {
+          "name": "assetMint"
         }
       ],
       "args": [
@@ -1699,7 +1873,7 @@ export type RwaRbac = {
         },
         {
           "name": "assetControllerProgram",
-          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
         },
         {
           "name": "tokenProgram",
@@ -1791,7 +1965,7 @@ export type RwaRbac = {
         },
         {
           "name": "assetControllerProgram",
-          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
         },
         {
           "name": "assetMint",
@@ -1864,7 +2038,7 @@ export type RwaRbac = {
         },
         {
           "name": "assetControllerProgram",
-          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
         },
         {
           "name": "assetMint"
@@ -1927,7 +2101,7 @@ export type RwaRbac = {
         },
         {
           "name": "assetControllerProgram",
-          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
         },
         {
           "name": "assetMint",
@@ -1997,7 +2171,7 @@ export type RwaRbac = {
         },
         {
           "name": "assetControllerProgram",
-          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
         },
         {
           "name": "assetMint",
@@ -2092,7 +2266,7 @@ export type RwaRbac = {
         },
         {
           "name": "assetControllerProgram",
-          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
         },
         {
           "name": "assetMint",

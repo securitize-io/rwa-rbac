@@ -12,10 +12,13 @@ import {
   getIdentityAccountPda,
   getIdentityRegistryPda,
   getIdentityRegistryProgram,
+  getPolicyEnginePda,
   getRemoveLevelFromIdentityAccount,
+  getTrackerAccountPda,
   getWalletIdentityAccountPda,
   identityRegistryProgramId,
   IxReturn,
+  policyEngineProgramId,
   RemoveLevelFromIdentityAccountArgs,
   RwaClient,
   SetupUserArgs,
@@ -57,8 +60,8 @@ export class IdentityRegistry {
     const returnIxs = [];
 
     const identityAccountIx = ixs[0];
-    const addLevelIxs = ixs.slice(1, -1);
-    const trackerAccountIx = ixs[ixs.length - 1];
+    const addLevelIx = ixs[2];
+    const trackerAccountIx = ixs[1];
     const controllerAuthority = deriveControllerAuthorityPda(
       assetAccessController
     );
@@ -80,12 +83,13 @@ export class IdentityRegistry {
         .instruction()
     );
 
+    returnIxs.push(trackerAccountIx);
+
     if (args.levels.length > 1) {
-      for (let i = 1; i < args.levels.length; i++) {
-        returnIxs.push(
-          await this.rbacProgram.methods
-            .addLevelToIdentityAccount(addLevelIxs[i - 1].data)
-            .accountsStrict({
+      returnIxs.push(
+        await this.rbacProgram.methods
+          .addLevelToIdentityAccount(addLevelIx.data)
+          .accountsStrict({
               payer: args.payer,
               user: args.signer,
               controllerAuthority,
@@ -96,14 +100,17 @@ export class IdentityRegistry {
               identityAccount,
               identityToInvestor: deriveIdentityToOwnerPda(identityAccount),
               systemProgram: SystemProgram.programId,
+              policyEngineProgram: policyEngineProgramId,
+              policyEngine: getPolicyEnginePda(args.assetMint),
+              trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+              assetMint: args.assetMint,
             })
             .instruction()
-        );
-      }
+      );
     }
 
     return {
-      ixs: [...returnIxs, trackerAccountIx],
+      ixs: returnIxs,
       signers: [],
     };
   }
@@ -142,6 +149,11 @@ export class IdentityRegistry {
         identityAccount,
         identityToInvestor: deriveIdentityToOwnerPda(identityAccount),
         systemProgram: SystemProgram.programId,
+        policyEngineProgram: policyEngineProgramId,
+        policyEngine: getPolicyEnginePda(args.assetMint),
+        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        assetMint: args.assetMint,
+
       })
       .instruction();
   }
@@ -180,6 +192,10 @@ export class IdentityRegistry {
         identityAccount,
         identityToInvestor: deriveIdentityToOwnerPda(identityAccount),
         systemProgram: SystemProgram.programId,
+        policyEngineProgram: policyEngineProgramId,
+        policyEngine: getPolicyEnginePda(args.assetMint),
+        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        assetMint: args.assetMint,
       })
       .instruction();
   }
@@ -244,13 +260,14 @@ export class IdentityRegistry {
     const identityProgram = getIdentityRegistryProgram(this.rwaClient.provider);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
+    const newWalletIdentityAccount = getIdentityAccountPda(args.assetMint, args.wallet);
     const walletIdentity = getWalletIdentityAccountPda(
       args.assetMint,
       args.wallet.toString()
     );
 
     const ix = await identityProgram.methods
-      .attachWalletToIdentity(args.wallet)
+      .attachWalletToIdentity(new PublicKey(args.wallet))
       .accountsStrict({
         payer: args.payer,
         authority: controllerAuthority,
@@ -259,6 +276,7 @@ export class IdentityRegistry {
         assetMint: args.assetMint,
         walletIdentity,
         systemProgram: SystemProgram.programId,
+        newWalletIdentityAccount
       })
       .instruction();
     return this.rbacProgram.methods
@@ -275,6 +293,7 @@ export class IdentityRegistry {
         assetMint: args.assetMint,
         walletIdentity,
         systemProgram: SystemProgram.programId,
+        newWalletIdentityAccount
       })
       .instruction();
   }

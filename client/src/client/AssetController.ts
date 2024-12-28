@@ -113,7 +113,6 @@ export class AssetController {
     args: IssueTokenArgs,
     assetAccessController: PublicKey,
     authorizedUserRole?: PublicKey,
-    recipientWallet?: PublicKey
   ): Promise<TransactionInstruction[]> {
     const issueTokensIxs = await getIssueTokensIx(
       args,
@@ -122,7 +121,7 @@ export class AssetController {
     const ixData = issueTokensIxs[0].data;
     const tokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
-      new PublicKey(recipientWallet || args.owner),
+      new PublicKey(args.wallet || args.owner),
       false,
       TOKEN_2022_PROGRAM_ID
     );
@@ -137,7 +136,7 @@ export class AssetController {
       const createAtaIx = createAssociatedTokenAccountInstruction(
         new PublicKey(args.payer),
         tokenAccount,
-        new PublicKey(recipientWallet || args.owner),
+        new PublicKey(args.wallet || args.owner),
         new PublicKey(args.assetMint),
         TOKEN_2022_PROGRAM_ID
       );
@@ -155,7 +154,7 @@ export class AssetController {
           assetControllerProgram: assetControllerProgramId,
           assetMint: args.assetMint,
           assetController: getAssetControllerPda(args.assetMint),
-          to: recipientWallet || args.owner,
+          to: args.wallet || args.owner,
           tokenAccount,
           policyEngine: getPolicyEnginePda(args.assetMint),
           policyEngineProgram: policyEngineProgramId,
@@ -165,6 +164,7 @@ export class AssetController {
           tokenProgram: TOKEN_2022_PROGRAM_ID,
           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
           systemProgram: SystemProgram.programId,
+          walletIdentityAccount: args.wallet ? getWalletIdentityAccountPda(args.assetMint, args.wallet) : assetControllerProgramId,
         })
         .instruction()
     );

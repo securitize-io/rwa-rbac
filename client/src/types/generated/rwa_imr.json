@@ -1,5 +1,5 @@
 {
-  "address": "6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9",
+  "address": "6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5",
   "metadata": {
     "name": "rwa_imr",
     "version": "0.1.0",
@@ -38,7 +38,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "identity_registry"
@@ -50,6 +50,19 @@
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "policy_engine_program"
+        },
+        {
+          "name": "policy_engine",
+          "writable": true
+        },
+        {
+          "name": "tracker_account"
+        },
+        {
+          "name": "asset_mint"
         }
       ],
       "args": [
@@ -68,6 +81,10 @@
           "type": {
             "vec": "string"
           }
+        },
+        {
+          "name": "enforce_limits",
+          "type": "bool"
         }
       ]
     },
@@ -162,7 +179,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "identity_registry"
@@ -241,7 +258,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "identity_registry"
@@ -289,7 +306,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "identity_registry"
@@ -301,12 +318,29 @@
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "policy_engine_program"
+        },
+        {
+          "name": "policy_engine",
+          "writable": true
+        },
+        {
+          "name": "tracker_account"
+        },
+        {
+          "name": "asset_mint"
         }
       ],
       "args": [
         {
           "name": "levels_to_remove",
           "type": "bytes"
+        },
+        {
+          "name": "enforce_limits",
+          "type": "bool"
         }
       ]
     }

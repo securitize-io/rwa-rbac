@@ -21,6 +21,15 @@ pub struct AddLevels<'info> {
     #[account(mut)]
     pub identity_account: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
+    /// CHECK: checked in cpi
+    pub policy_engine_program: UncheckedAccount<'info>,
+    /// CHECK: checked in cpi
+    #[account(mut)]
+    pub policy_engine: UncheckedAccount<'info>,
+    /// CHECK: checked in cpi
+    pub tracker_account: UncheckedAccount<'info>,
+    /// CHECK: checked in cpi
+    pub asset_mint: UncheckedAccount<'info>,
 }
 
 pub fn handler(
@@ -28,6 +37,7 @@ pub fn handler(
     levels: Vec<u8>,
     expiries: Vec<i64>,
     proof_hashes: Vec<String>,
+    enforce_limits: bool,
 ) -> Result<()> {
     require_eq!(levels.len(), expiries.len());
     require_eq!(expiries.len(), proof_hashes.len());
@@ -44,35 +54,50 @@ pub fn handler(
     // Check that updated investor.levels is still valid.
     investor.validate_levels()?;
 
-    // Add each level to IdentityAccount via CPI.
-    for i in 0..levels.len() {
-        let cpi_data: Vec<u8> = [
-            &get_discriminator("add_level_to_identity_account"),
-            &[levels[i]][..],
-            &expiries[i].to_le_bytes(),
-        ]
-        .concat();
+    let mut data: Vec<u8> = Vec::with_capacity(8 + 4 + levels.len() + 4 + expiries.len() * 8 + 1);
+    data.resize(8 + 4 + levels.len() + 4 + expiries.len() * 8 + 1, 0);
 
-        invoke(
-            &Instruction {
-                program_id: ctx.accounts.identity_registry_program.key(),
-                accounts: vec![
-                    AccountMeta::new(ctx.accounts.payer.key(), true),
-                    AccountMeta::new_readonly(ctx.accounts.authority.key(), true),
-                    AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
-                    AccountMeta::new(ctx.accounts.identity_account.key(), false),
-                    AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
-                ],
-                data: cpi_data,
-            },
-            &vec![
-                ctx.accounts.payer.to_account_info(),
-                ctx.accounts.authority.to_account_info(),
-                ctx.accounts.identity_registry.to_account_info(),
-                ctx.accounts.identity_account.to_account_info(),
-                ctx.accounts.system_program.to_account_info(),
-            ],
-        )?;
+    data[0..8].copy_from_slice(&get_discriminator("add_level_to_identity_account"));
+
+    let mut offset = 12 + levels.len();
+    data[8..12].copy_from_slice(&(levels.len() as u32).to_le_bytes());
+    data[12..offset].copy_from_slice(&levels);
+
+    data[offset..offset + 4].copy_from_slice(&(expiries.len() as u32).to_le_bytes());
+    offset += 4;
+    for i in 0..expiries.len() {
+        data[offset + i * 8..offset + (i + 1) * 8].copy_from_slice(&expiries[i].to_le_bytes());
     }
+    data[offset + expiries.len() * 8..].copy_from_slice(&[enforce_limits as u8]);
+
+
+    invoke(
+        &Instruction {
+            program_id: ctx.accounts.identity_registry_program.key(),
+            accounts: vec![
+                AccountMeta::new(ctx.accounts.payer.key(), true),
+                AccountMeta::new_readonly(ctx.accounts.authority.key(), true),
+                AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
+                AccountMeta::new(ctx.accounts.identity_account.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.policy_engine_program.key(), false),
+                AccountMeta::new(ctx.accounts.policy_engine.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.tracker_account.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.asset_mint.key(), false),
+            ],
+            data: data,
+        },
+        &vec![
+            ctx.accounts.payer.to_account_info(),
+            ctx.accounts.authority.to_account_info(),
+            ctx.accounts.identity_registry.to_account_info(),
+            ctx.accounts.identity_account.to_account_info(),
+            ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.policy_engine_program.to_account_info(),
+            ctx.accounts.policy_engine.to_account_info(),
+            ctx.accounts.tracker_account.to_account_info(),
+            ctx.accounts.asset_mint.to_account_info(),
+        ],
+    )?;
     Ok(())
 }

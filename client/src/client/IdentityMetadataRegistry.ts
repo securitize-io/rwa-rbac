@@ -16,8 +16,11 @@ import {
   getCreateTrackerAccountIx,
   getIdentityAccountPda,
   getIdentityRegistryPda,
+  getPolicyEnginePda,
+  getTrackerAccountPda,
   identityRegistryProgramId,
   IxReturn,
+  policyEngineProgramId,
   RwaClient,
 } from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
 import { IMR_PROGRAM } from "../constants";
@@ -112,6 +115,17 @@ export class IdentityMetadataRegistry {
         .instruction()
     );
 
+    returnIxs.push(
+      await getCreateTrackerAccountIx(
+        {
+          payer: args.payer,
+          owner: args.owner,
+          assetMint: args.assetMint,
+        },
+        this.rwaClient.provider
+      )
+    );
+
     if (args.levels.length > 1) {
       returnIxs.push(
         await this.addLevels(
@@ -124,6 +138,7 @@ export class IdentityMetadataRegistry {
             levels: args.levels.slice(1),
             expiries: args.expiries.slice(1),
             proofHashes: args.proofHashes.slice(1),
+            enforceLimits: args.enforceLimits,
           },
           assetAccessController,
           authorizedUserRole
@@ -131,16 +146,6 @@ export class IdentityMetadataRegistry {
       );
     }
 
-    returnIxs.push(
-      await getCreateTrackerAccountIx(
-        {
-          payer: args.payer,
-          owner: args.owner,
-          assetMint: args.assetMint,
-        },
-        this.rwaClient.provider
-      )
-    );
     return {
       ixs: returnIxs,
       signers: [],
@@ -167,7 +172,12 @@ export class IdentityMetadataRegistry {
     const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
 
     const ix = await this.imrProgram.methods
-      .addLevels(Buffer.from(args.levels), args.expiries, args.proofHashes)
+      .addLevels(
+        Buffer.from(args.levels),
+        args.expiries,
+        args.proofHashes,
+        args.enforceLimits ?? false
+      )
       .accountsStrict({
         payer: args.payer,
         authority: controllerAuthority,
@@ -176,6 +186,10 @@ export class IdentityMetadataRegistry {
         identityRegistry,
         identityAccount,
         systemProgram: SystemProgram.programId,
+        policyEngineProgram: policyEngineProgramId,
+        policyEngine: getPolicyEnginePda(args.assetMint),
+        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        assetMint: args.assetMint,
       })
       .instruction();
 
@@ -193,6 +207,10 @@ export class IdentityMetadataRegistry {
         identityRegistry,
         identityAccount,
         systemProgram: SystemProgram.programId,
+        policyEngineProgram: policyEngineProgramId,
+        policyEngine: getPolicyEnginePda(args.assetMint),
+        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        assetMint: args.assetMint,
       })
       .instruction();
   }
@@ -217,7 +235,7 @@ export class IdentityMetadataRegistry {
     const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
 
     const ix = await this.imrProgram.methods
-      .removeLevels(Buffer.from(args.levels))
+      .removeLevels(Buffer.from(args.levels), args.enforceLimits ?? false)
       .accountsStrict({
         payer: args.payer,
         authority: controllerAuthority,
@@ -226,6 +244,10 @@ export class IdentityMetadataRegistry {
         identityRegistry,
         identityAccount,
         systemProgram: SystemProgram.programId,
+        policyEngineProgram: policyEngineProgramId,
+        policyEngine: getPolicyEnginePda(args.assetMint),
+        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        assetMint: args.assetMint,
       })
       .instruction();
 
@@ -243,6 +265,10 @@ export class IdentityMetadataRegistry {
         identityRegistry,
         identityAccount,
         systemProgram: SystemProgram.programId,
+        policyEngineProgram: policyEngineProgramId,
+        policyEngine: getPolicyEnginePda(args.assetMint),
+        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        assetMint: args.assetMint,
       })
       .instruction();
   }

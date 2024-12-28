@@ -38,6 +38,15 @@ pub struct RemoveLevels<'info> {
     #[account(mut)]
     pub identity_account: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
+    /// CHECK: checked in cpi
+    pub policy_engine_program: UncheckedAccount<'info>,
+    /// CHECK: checked in cpi
+    #[account(mut)]
+    pub policy_engine: UncheckedAccount<'info>,
+    /// CHECK: checked in cpi
+    pub tracker_account: UncheckedAccount<'info>,
+    /// CHECK: checked in cpi
+    pub asset_mint: UncheckedAccount<'info>,
 }
 
 pub fn handler(ctx: Context<RemoveLevels>, cpi_data: Vec<u8>) -> Result<()> {
@@ -72,6 +81,10 @@ pub fn handler(ctx: Context<RemoveLevels>, cpi_data: Vec<u8>) -> Result<()> {
                 AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
                 AccountMeta::new(ctx.accounts.identity_account.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.policy_engine_program.key(), false),
+                AccountMeta::new(ctx.accounts.policy_engine.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.tracker_account.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.asset_mint.key(), false),
             ],
             data: cpi_data,
         },
@@ -83,6 +96,10 @@ pub fn handler(ctx: Context<RemoveLevels>, cpi_data: Vec<u8>) -> Result<()> {
             ctx.accounts.identity_registry.to_account_info(),
             ctx.accounts.identity_account.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.policy_engine_program.to_account_info(),
+            ctx.accounts.policy_engine.to_account_info(),
+            ctx.accounts.tracker_account.to_account_info(),
+            ctx.accounts.asset_mint.to_account_info(),
         ],
         signers_seeds,
     )?;

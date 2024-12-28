@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/rwa_imr.json`.
  */
 export type RwaImr = {
-  "address": "6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9",
+  "address": "6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5",
   "metadata": {
     "name": "rwaImr",
     "version": "0.1.0",
@@ -44,7 +44,7 @@ export type RwaImr = {
         },
         {
           "name": "identityRegistryProgram",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "identityRegistry"
@@ -56,6 +56,19 @@ export type RwaImr = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "policyEngineProgram"
+        },
+        {
+          "name": "policyEngine",
+          "writable": true
+        },
+        {
+          "name": "trackerAccount"
+        },
+        {
+          "name": "assetMint"
         }
       ],
       "args": [
@@ -74,6 +87,10 @@ export type RwaImr = {
           "type": {
             "vec": "string"
           }
+        },
+        {
+          "name": "enforceLimits",
+          "type": "bool"
         }
       ]
     },
@@ -168,7 +185,7 @@ export type RwaImr = {
         },
         {
           "name": "identityRegistryProgram",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "identityRegistry"
@@ -247,7 +264,7 @@ export type RwaImr = {
         },
         {
           "name": "identityRegistryProgram",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "identityRegistry"
@@ -295,7 +312,7 @@ export type RwaImr = {
         },
         {
           "name": "identityRegistryProgram",
-          "address": "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
         {
           "name": "identityRegistry"
@@ -307,12 +324,29 @@ export type RwaImr = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "policyEngineProgram"
+        },
+        {
+          "name": "policyEngine",
+          "writable": true
+        },
+        {
+          "name": "trackerAccount"
+        },
+        {
+          "name": "assetMint"
         }
       ],
       "args": [
         {
           "name": "levelsToRemove",
           "type": "bytes"
+        },
+        {
+          "name": "enforceLimits",
+          "type": "bool"
         }
       ]
     }

@@ -11,6 +11,8 @@ import {
   DetachPolicyArgs,
   getPolicyEnginePda,
   policyEngineProgramId,
+  ChangeCountersArgs,
+  ChangeCounterLimitsArgs,
   RwaClient,
 } from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
 
@@ -75,6 +77,69 @@ export class PolicyEngine {
     const ixData = policyIx.ixs[0].data;
     return this.rbacProgram.methods
       .detachFromPolicyEngine(ixData)
+      .accountsStrict({
+        payer: args.payer,
+        user: signer,
+        controllerAuthority: args.authority,
+        assetAccessController,
+        authorizedUserRole: authorizedUserRole || null,
+        policyEngineProgram: policyEngineProgramId,
+        policyEngine: getPolicyEnginePda(args.assetMint),
+        systemProgram: SystemProgram.programId,
+      })
+      .instruction();
+  }
+
+  
+  /**
+   * Asynchronously changes counters on the policy account.
+   * @param args - {@link ChangeCountersArgs}
+   * @param signer - User signer public key.
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @returns A Promise that resolves to the instructions to change the counters.
+   * */
+  async changeCounters(
+    args: ChangeCountersArgs,
+    signer: PublicKey,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const policyIx = await this.rwaClient.policyEngine.changeCounters(args);
+    const ixData = policyIx.ixs[0].data;
+    return this.rbacProgram.methods
+      .changeCounters(ixData)
+      .accountsStrict({
+        payer: args.payer,
+        user: signer,
+        controllerAuthority: args.authority,
+        assetAccessController,
+        authorizedUserRole: authorizedUserRole || null,
+        policyEngineProgram: policyEngineProgramId,
+        policyEngine: getPolicyEnginePda(args.assetMint),
+        systemProgram: SystemProgram.programId,
+      })
+      .instruction();
+  }
+  
+  /**
+   * Asynchronously changes counters limits on the policy account.
+   * @param args - {@link ChangeCounterLimitsArgs}
+   * @param signer - User signer public key.
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @returns A Promise that resolves to the instructions to change the counters limits.
+   * */
+  async changeCounterLimits(
+    args: ChangeCounterLimitsArgs,
+    signer: PublicKey,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const policyIx = await this.rwaClient.policyEngine.changeCounterLimits(args);
+    const ixData = policyIx.ixs[0].data;
+    return this.rbacProgram.methods
+      .changeCounterLimits(ixData)
       .accountsStrict({
         payer: args.payer,
         user: signer,

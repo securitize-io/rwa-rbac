@@ -1,6 +1,6 @@
-import { CommonArgs } from "@bridgesplit/rwa-token-sdk/dist";
 import { PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
+import { CommonArgs } from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
 
 /** Args used to setup a AssetAccessController  */
 export type CreateControllerArgs = {
@@ -131,6 +131,7 @@ export type SetupInvestorArgs = {
   levels: number[];
   expiries: BN[];
   proofHashes: string[];
+  enforceLimits?: boolean;
 };
 
 /** Args used to add levels to Investor  */
@@ -143,6 +144,7 @@ export type AddLevelsArgs = {
   levels: number[];
   expiries: BN[];
   proofHashes: string[];
+  enforceLimits?: boolean;
 };
 
 /** Args used to remove levels to Investor  */
@@ -153,6 +155,7 @@ export type RemoveLevelsArgs = {
   assetMint: string;
   owner: string;
   levels: number[];
+  enforceLimits?: boolean;
 };
 
 /** Args used to remove an Investor  */
@@ -170,7 +173,7 @@ export type AttachDetachWalletArgs = {
   signer: string;
   owner: string;
   assetMint: string;
-  wallet: PublicKey;
+  wallet: string;
 };
 
 /** Args used to create InvestorLocks */

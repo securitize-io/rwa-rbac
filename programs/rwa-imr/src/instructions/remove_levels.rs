@@ -21,43 +21,61 @@ pub struct RemoveLevels<'info> {
     #[account(mut)]
     pub identity_account: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
+    /// CHECK: checked in cpi
+    pub policy_engine_program: UncheckedAccount<'info>,
+    /// CHECK: checked in cpi
+    #[account(mut)]
+    pub policy_engine: UncheckedAccount<'info>,
+    /// CHECK: checked in cpi
+    pub tracker_account: UncheckedAccount<'info>,
+    /// CHECK: checked in cpi
+    pub asset_mint: UncheckedAccount<'info>,
 }
 
-pub fn handler(ctx: Context<RemoveLevels>, levels_to_remove: Vec<u8>) -> Result<()> {
+pub fn handler(ctx: Context<RemoveLevels>, levels_to_remove: Vec<u8>, enforce_limits: bool) -> Result<()> {
     let investor = &mut ctx.accounts.investor;
     investor.last_updated_by = ctx.accounts.payer.key();
     investor
         .levels
         .retain(|x| !levels_to_remove.contains(&x.level));
 
-    // Remove each level from IdentityAccount via CPI.
-    for level in levels_to_remove {
-        let cpi_data: Vec<u8> = [
-            &get_discriminator("remove_level_from_identity_account"),
-            &[level][..],
-        ]
-        .concat();
+    let mut data: Vec<u8> = Vec::with_capacity(8 + 4 + levels_to_remove.len() + 1);
+    data.resize(8 + 4 + levels_to_remove.len() + 1, 0);
 
-        invoke(
-            &Instruction {
-                program_id: ctx.accounts.identity_registry_program.key(),
-                accounts: vec![
-                    AccountMeta::new(ctx.accounts.payer.key(), true),
-                    AccountMeta::new_readonly(ctx.accounts.authority.key(), true),
-                    AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
-                    AccountMeta::new(ctx.accounts.identity_account.key(), false),
-                    AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
-                ],
-                data: cpi_data,
-            },
-            &vec![
-                ctx.accounts.payer.to_account_info(),
-                ctx.accounts.authority.to_account_info(),
-                ctx.accounts.identity_registry.to_account_info(),
-                ctx.accounts.identity_account.to_account_info(),
-                ctx.accounts.system_program.to_account_info(),
+    data[0..8].copy_from_slice(&get_discriminator("remove_level_from_identity_account"));
+
+    data[8..12].copy_from_slice(&(levels_to_remove.len() as u32).to_le_bytes());
+    data[12..12 + levels_to_remove.len()].copy_from_slice(&levels_to_remove);
+
+    data[12 + levels_to_remove.len()..12 + levels_to_remove.len() + 1].copy_from_slice(&[enforce_limits as u8]);
+
+    invoke(
+        &Instruction {
+            program_id: ctx.accounts.identity_registry_program.key(),
+            accounts: vec![
+                AccountMeta::new(ctx.accounts.payer.key(), true),
+                AccountMeta::new_readonly(ctx.accounts.authority.key(), true),
+                AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
+                AccountMeta::new(ctx.accounts.identity_account.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.policy_engine_program.key(), false),
+                AccountMeta::new(ctx.accounts.policy_engine.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.tracker_account.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.asset_mint.key(), false),
             ],
-        )?;
-    }
+            data,
+        },
+        &vec![
+            ctx.accounts.payer.to_account_info(),
+            ctx.accounts.authority.to_account_info(),
+            ctx.accounts.identity_registry.to_account_info(),
+            ctx.accounts.identity_account.to_account_info(),
+            ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.policy_engine_program.to_account_info(),
+            ctx.accounts.policy_engine.to_account_info(),
+            ctx.accounts.tracker_account.to_account_info(),
+            ctx.accounts.asset_mint.to_account_info(),
+        ],
+    )?;
     Ok(())
 }

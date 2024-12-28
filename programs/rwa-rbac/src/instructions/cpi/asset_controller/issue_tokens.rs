@@ -52,6 +52,8 @@ pub struct IssueTokens<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub policy_engine: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub wallet_identity_account: UncheckedAccount<'info>,
 }
 
 pub fn handler(ctx: Context<IssueTokens>, cpi_data: Vec<u8>) -> Result<()> {
@@ -92,6 +94,7 @@ pub fn handler(ctx: Context<IssueTokens>, cpi_data: Vec<u8>) -> Result<()> {
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.policy_engine_program.key(), false),
                 AccountMeta::new(ctx.accounts.policy_engine.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.wallet_identity_account.key(), false),
             ],
             data: cpi_data,
         },
@@ -109,6 +112,7 @@ pub fn handler(ctx: Context<IssueTokens>, cpi_data: Vec<u8>) -> Result<()> {
             ctx.accounts.system_program.to_account_info(),
             ctx.accounts.policy_engine_program.to_account_info(),
             ctx.accounts.policy_engine.to_account_info(),
+            ctx.accounts.wallet_identity_account.to_account_info(),
         ],
         signers_seeds,
     )?;

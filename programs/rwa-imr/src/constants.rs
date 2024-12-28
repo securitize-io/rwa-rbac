@@ -1,6 +1,6 @@
 use anchor_lang::{prelude::Pubkey, pubkey};
 
-pub const IDENTITY_REGISTRY_ID: Pubkey = pubkey!("idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf");
+pub const IDENTITY_REGISTRY_ID: Pubkey = pubkey!("7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ");
 
 #[allow(non_camel_case_types)]
 #[derive(PartialEq, Clone, Copy)]

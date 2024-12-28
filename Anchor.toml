@@ -5,8 +5,8 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-rwa_imr = "6eHEqiCNFvZWxZg1dkkSKRABwTcoJ51JYbt692Adu7F9"
-rwa_rbac = "9gUXb1jJ4wmwht3G6mMaHdWbo2gf7faHYyM6ryVGy4ae"
+rwa_rbac = "AzGap3q8fXV1gHPWpAuMFqkpCewvuEY5GrkhCz86ZkDb"
+rwa_imr = "6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5"
 token_locks = "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5"
 
 [registry]
@@ -25,17 +25,17 @@ shutdown_wait = 2000
 upgradeable = false
 
 [[test.genesis]]
-address = "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+address = "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
 program = "./deps/asset_controller.so"
 
 [[test.genesis]]
-address = "dataeP5X1e7XsWN1ovDSEDP5cqaEUnKBmHE5iZhXPVw"
+address = "8Bp1xoRscjuHoG1KT41zAaujGTx2fyB2uzTt8GTeWZX8"
 program = "./deps/data_registry.so"
 
 [[test.genesis]]
-address = "idtynCMYbdisCTv4FrCWPSQboZb1uM4TV2cPi79yxQf"
+address = "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
 program = "./deps/identity_registry.so"
 
 [[test.genesis]]
-address = "po1cPf1eyUJJPqULw4so3T4JU9pdFn83CDyuLEKFAau"
+address = "4wyusm2nxncvNyiVej5mZ1k1mVPhfG41oNvHx4BWiYMq"
 program = "./deps/policy_engine.so"

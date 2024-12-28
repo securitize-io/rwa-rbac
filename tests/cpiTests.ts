@@ -19,7 +19,7 @@ import { AdminFlags, MediciFlags, RwaRbacClient } from "../client/src/index";
 import {
   CreateAssetControllerIx,
   getAssetControllerPda,
-  getIdentityAccount,
+  getIdentityAccountFromOwner,
   getIdentityAccountPda,
   getIdentityRegistryPda,
   getPolicyEngineAccount,
@@ -237,7 +237,6 @@ describe("CPI End to End Tests", () => {
         {
           authority: setup.controllerAuthority.toString(), // ControllerAuthority
           payer: setup.payer.toString(), // Payer Account
-          owner: setup.user1.toString(), // Target Account
           assetMint: mint,
           hash: policy.hash,
         },
@@ -278,8 +277,14 @@ describe("CPI End to End Tests", () => {
       setup.userRole1
     );
 
-    const tx = new Transaction().add(...ixReturn.ixs);
-    await sendAndConfirmTransaction(connection, tx, [
+    // Sending in separate transactions as workaround to an unexplained local websocket error.
+    const tx1 = new Transaction().add(...ixReturn.ixs.slice(0, -1));
+    await sendAndConfirmTransaction(connection, tx1, [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+    const tx2 = new Transaction().add(...ixReturn.ixs.slice(-1));
+    await sendAndConfirmTransaction(connection, tx2, [
       setup.payerKp,
       setup.signer1Kp,
     ]);
@@ -319,7 +324,7 @@ describe("CPI End to End Tests", () => {
       assert.equal(x.proofHash, args.proofHashes[idx]);
     });
 
-    const identityAccount = await getIdentityAccount(
+    const identityAccount = await getIdentityAccountFromOwner(
       mint,
       setup.user1,
       rwaRbacClient.provider
@@ -350,14 +355,20 @@ describe("CPI End to End Tests", () => {
       setup.userRole1
     );
 
-    const tx = new Transaction().add(...ixReturn.ixs);
-    await sendAndConfirmTransaction(connection, tx, [
+    // Sending in separate transactions as workaround to an unexplained local websocket error.
+    const tx1 = new Transaction().add(...ixReturn.ixs.slice(0, -1));
+    await sendAndConfirmTransaction(connection, tx1, [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+    const tx2 = new Transaction().add(...ixReturn.ixs.slice(-1));
+    await sendAndConfirmTransaction(connection, tx2, [
       setup.payerKp,
       setup.signer1Kp,
     ]);
 
     // Validate IdentityAccount
-    const identityAccount = await getIdentityAccount(
+    const identityAccount = await getIdentityAccountFromOwner(
       mint,
       setup.user2,
       rwaRbacClient.provider
@@ -377,8 +388,8 @@ describe("CPI End to End Tests", () => {
       owner: setup.user1.toString(), // Target Account
       authority: setup.controllerAuthority,
       assetMint: mint,
-      level: 10,
-      expiry: new BN(Date.now() / 1000 + 24 * 60 * 60),
+      levels: [3],
+      expiries: [new BN(Date.now() / 1000 + 24 * 60 * 60)],
     };
     const ix =
       await rwaRbacClient.identityRegistry.addIdentityLevelToUserAccount(
@@ -405,8 +416,8 @@ describe("CPI End to End Tests", () => {
       owner: setup.user2.toString(), // Target Account
       authority: setup.controllerAuthority,
       assetMint: mint,
-      level: 10,
-      expiry: new BN(Date.now() / 1000 + 24 * 60 * 60),
+      levels: [3],
+      expiries: [new BN(Date.now() / 1000 + 24 * 60 * 60)],
     };
     const ix =
       await rwaRbacClient.identityRegistry.addIdentityLevelToUserAccount(
@@ -421,14 +432,14 @@ describe("CPI End to End Tests", () => {
     ]);
 
     // Validate IdentityAccount
-    const identityAccount = await getIdentityAccount(
+    const identityAccount = await getIdentityAccountFromOwner(
       mint,
       setup.user2,
       rwaRbacClient.provider
     );
     assert.equal(identityAccount.owner.toString(), args.owner);
     assert.equal(identityAccount.levels.length, 3);
-    assert(identityAccount.levels[2].expiry.eq(args.expiry));
+    assert(identityAccount.levels[2].expiry.eq(args.expiries[0]));
   });
 
   it("CPI: Add Levels through Investor", async () => {
@@ -451,7 +462,8 @@ describe("CPI End to End Tests", () => {
       setup.assetAccessController,
       setup.userRole1
     );
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+    const cb = ComputeBudgetProgram.setComputeUnitLimit({ units: 300_000 });
+    await sendAndConfirmTransaction(connection, new Transaction().add(cb, ix), [
       setup.payerKp,
       setup.signer1Kp,
     ]);
@@ -475,7 +487,7 @@ describe("CPI End to End Tests", () => {
       assert.equal(v.proofHash, args.proofHashes[idx]);
     });
 
-    const identityAccount = await getIdentityAccount(
+    const identityAccount = await getIdentityAccountFromOwner(
       mint,
       setup.user1,
       rwaRbacClient.provider
@@ -494,7 +506,7 @@ describe("CPI End to End Tests", () => {
       owner: setup.user1.toString(), // Target Account
       authority: setup.controllerAuthority,
       assetMint: mint,
-      level: 1,
+      levels: [1],
     };
     const ix =
       await rwaRbacClient.identityRegistry.removeIdentityLevelFromUserAccount(
@@ -521,7 +533,8 @@ describe("CPI End to End Tests", () => {
       owner: setup.user2.toString(), // Target Account
       authority: setup.controllerAuthority,
       assetMint: mint,
-      level: 1,
+      levels: [1],
+      enforceLimits: true,
     };
     const ix =
       await rwaRbacClient.identityRegistry.removeIdentityLevelFromUserAccount(
@@ -530,13 +543,17 @@ describe("CPI End to End Tests", () => {
         setup.userRole1
       );
 
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
-      setup.payerKp,
-      setup.signer1Kp,
-    ]);
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(ix),
+      [setup.payerKp, setup.signer1Kp],
+      {
+        skipPreflight: true,
+      }
+    );
 
     // Validate IdentityAccount has only 2 levels remaining.
-    const identityAccount = await getIdentityAccount(
+    const identityAccount = await getIdentityAccountFromOwner(
       mint,
       setup.user2,
       rwaRbacClient.provider
@@ -553,16 +570,22 @@ describe("CPI End to End Tests", () => {
       assetMint: mint,
       investorId: INVESTOR_ID,
       levels: [6, 7, 8],
+      enforceLimits: true,
     };
     const ix = await rwaRbacClient.identityMetadataRegistry.removeLevels(
       args,
       setup.assetAccessController,
       setup.userRole1
     );
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
-      setup.payerKp,
-      setup.signer1Kp,
-    ]);
+    const cb = ComputeBudgetProgram.setComputeUnitLimit({ units: 300_000 });
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(cb, ix),
+      [setup.payerKp, setup.signer1Kp],
+      {
+        skipPreflight: true,
+      }
+    );
 
     // Validate Investor and IdentityAccount
     const investorPda = deriveInvestorPda(
@@ -578,7 +601,7 @@ describe("CPI End to End Tests", () => {
     assert.equal(investorAccount.levels[0].level, 1);
     assert.equal(investorAccount.levels[1].level, 5);
 
-    const identityAccount = await getIdentityAccount(
+    const identityAccount = await getIdentityAccountFromOwner(
       mint,
       setup.user1,
       rwaRbacClient.provider
@@ -609,7 +632,7 @@ describe("CPI End to End Tests", () => {
       setup.signer1Kp,
     ]);
 
-    const identityAccountPost = await getIdentityAccount(
+    const identityAccountPost = await getIdentityAccountFromOwner(
       refreshArgs.assetMint,
       refreshArgs.owner,
       rwaRbacClient.provider
@@ -624,7 +647,7 @@ describe("CPI End to End Tests", () => {
       signer: setup.signer1.toString(), // User Account
       owner: setup.user1.toString(), // Target Account
       assetMint: mint,
-      wallet: setup.user2,
+      wallet: setup.user3,
     };
     const ix = await rwaRbacClient.identityRegistry.attachWalletToIdentityIxn(
       args,
@@ -637,7 +660,7 @@ describe("CPI End to End Tests", () => {
     ]);
 
     // Check wallet count
-    const identityAccount = await getIdentityAccount(
+    const identityAccount = await getIdentityAccountFromOwner(
       mint,
       args.owner,
       rwaRbacClient.provider
@@ -651,7 +674,7 @@ describe("CPI End to End Tests", () => {
       signer: setup.signer1.toString(), // User Account
       owner: setup.user1.toString(), // Target Account
       assetMint: mint,
-      wallet: setup.user2,
+      wallet: setup.user3,
     };
     const ix = await rwaRbacClient.identityRegistry.detachWalletFromIdentityIxn(
       args,
@@ -664,7 +687,7 @@ describe("CPI End to End Tests", () => {
     ]);
 
     // Check wallet count
-    const identityAccount = await getIdentityAccount(
+    const identityAccount = await getIdentityAccountFromOwner(
       mint,
       args.owner,
       rwaRbacClient.provider

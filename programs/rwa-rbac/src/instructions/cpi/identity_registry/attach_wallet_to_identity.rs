@@ -32,6 +32,8 @@ pub struct AttachWalletToIdentity<'info> {
     pub identity_registry: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     pub asset_mint: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub new_wallet_identity_account: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 }
 
@@ -66,6 +68,7 @@ pub fn handler(ctx: Context<AttachWalletToIdentity>, cpi_data: Vec<u8>) -> Resul
                 AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.asset_mint.key(), false),
                 AccountMeta::new(ctx.accounts.wallet_identity.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.new_wallet_identity_account.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
             ],
             data: cpi_data,
@@ -77,6 +80,7 @@ pub fn handler(ctx: Context<AttachWalletToIdentity>, cpi_data: Vec<u8>) -> Resul
             ctx.accounts.identity_registry.to_account_info(),
             ctx.accounts.asset_mint.to_account_info(),
             ctx.accounts.wallet_identity.to_account_info(),
+            ctx.accounts.new_wallet_identity_account.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
         ],
         signers_seeds,

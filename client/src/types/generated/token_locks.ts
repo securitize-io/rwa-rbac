@@ -133,7 +133,7 @@ export type TokenLocks = {
         },
         {
           "name": "assetControllerProgram",
-          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
         },
         {
           "name": "tokenProgram",
@@ -292,7 +292,7 @@ export type TokenLocks = {
         },
         {
           "name": "assetControllerProgram",
-          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
         },
         {
           "name": "tokenProgram",
@@ -433,7 +433,7 @@ export type TokenLocks = {
         },
         {
           "name": "assetControllerProgram",
-          "address": "acpcFrzEYKjVLvZGWueTV8vyDjhu3oKC7sN38QELLan"
+          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
         },
         {
           "name": "tokenProgram",

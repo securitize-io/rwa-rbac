@@ -74,6 +74,7 @@ There are 4 instructions provided by the TL program:
 1. Clone dependency with: `git submodule update --init --recursive`
 2. Run `yarn install` in `deps/rwa-token/clients/rwa-token-sdk`
 3. Run `yarn install` root directory.
+4. Run `yarn install` in `/client` directory.
 
 ## Testing
 

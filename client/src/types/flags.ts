@@ -33,5 +33,7 @@ export enum MediciFlags {
   CLOSE_INVESTOR_LOCKS = 1 << 21,
   ADD_TOKEN_LOCK = 1 << 22,
   REMOVE_TOKEN_LOCK = 1 << 23,
-  ALL = (1 << 24) - 1,
+  CHANGE_COUNTERS = 1 << 24,
+  CHANGE_COUNTER_LIMITS = 1 << 25,
+  ALL = (1 << 26) - 1,
 }
