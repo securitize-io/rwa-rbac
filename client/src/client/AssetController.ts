@@ -51,6 +51,7 @@ import {
   deriveInvestorLocks,
   deriveControllerAuthorityPda,
   deriveInvestorPda,
+  deriveLockedTokenAccount,
 } from "../pdas";
 
 /**
@@ -152,8 +153,8 @@ export class AssetController {
         .issueTokens(
           args.amount,
           args.issuanceTimestamp,
-          args.reasonCode,
-          args.reasonString
+          args.reasonCode || null,
+          args.reasonString || null
         )
         .accountsStrict({
           payer: args.payer,
@@ -166,7 +167,7 @@ export class AssetController {
           assetControllerProgram: assetControllerProgramId,
           assetMint: args.assetMint,
           assetController: getAssetControllerPda(args.assetMint),
-          to: args.wallet,
+          to: args.wallet || args.owner,
           tokenAccount: unlockedTokenAccount,
           policyEngine: getPolicyEnginePda(args.assetMint),
           policyEngineProgram: policyEngineProgramId,
@@ -176,17 +177,17 @@ export class AssetController {
           tokenProgram: TOKEN_2022_PROGRAM_ID,
           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
           systemProgram: SystemProgram.programId,
-          walletIdentityAccount: args.wallet
-            ? getWalletIdentityAccountPda(args.assetMint, args.wallet)
-            : assetControllerProgramId,
-          tokenLocksProgram: TL_PROGRAM,
-          investorLocks: deriveInvestorLocks(
-            args.investorId,
-            identityRegistry,
-            new PublicKey(args.wallet)
+          walletIdentityAccount: getWalletIdentityAccountPda(
+            args.assetMint,
+            args.wallet || args.owner
           ),
+          tokenLocksProgram: TL_PROGRAM,
+          investorLocks: deriveInvestorLocks(args.investorId, identityRegistry),
           investor: deriveInvestorPda(args.investorId, identityRegistry),
-          lockedTokenAccount: args.lockedTokenAccount || null,
+          lockedTokenAccount: deriveLockedTokenAccount(
+            args.investorId,
+            identityRegistry
+          ),
         })
         .remainingAccounts([
           {
@@ -212,16 +213,13 @@ export class AssetController {
           {
             pubkey: getIdentityAccountPda(
               args.assetMint,
-              args.wallet.toString()
+              args.owner.toString()
             ),
             isWritable: false,
             isSigner: false,
           },
           {
-            pubkey: getTrackerAccountPda(
-              args.assetMint,
-              args.wallet.toString()
-            ),
+            pubkey: getTrackerAccountPda(args.assetMint, args.owner.toString()),
             isWritable: true,
             isSigner: false,
           },
@@ -233,7 +231,7 @@ export class AssetController {
           {
             pubkey: getWalletIdentityAccountPda(
               args.assetMint,
-              args.wallet.toString()
+              args.owner.toString()
             ),
             isWritable: false,
             isSigner: false,
@@ -350,16 +348,10 @@ export class AssetController {
     signer: PublicKey,
     assetAccessController: PublicKey,
     authorizedUserRole?: PublicKey
-  ): Promise<TransactionInstruction[]> {
+  ): Promise<TransactionInstruction> {
     const revokeIx = await getRevokeTokensIx(args, this.rwaClient.provider);
     const ixData = revokeIx[1].data;
     const assetController = getAssetControllerPda(args.assetMint);
-    const authorityAta = getAssociatedTokenAddressSync(
-      new PublicKey(args.assetMint),
-      assetController,
-      true,
-      TOKEN_2022_PROGRAM_ID
-    );
     const revokeTokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
       new PublicKey(args.owner),
@@ -367,113 +359,93 @@ export class AssetController {
       TOKEN_2022_PROGRAM_ID
     );
 
-    // Check if token account exists.
-    const tokenAccountData =
-      await this.rbacProgram.provider.connection.getAccountInfo(authorityAta);
-
-    const ixs = [];
-    if (!tokenAccountData) {
-      // ATA needs to be created separately as controller_pda cannot be payer.
-      const createAtaIx = createAssociatedTokenAccountInstruction(
-        payer,
-        authorityAta,
+    return await this.rbacProgram.methods
+      .revokeTokens(ixData)
+      .accountsStrict({
+        user: signer,
+        controllerAuthority: args.authority,
+        assetAccessController: assetAccessController,
+        authorizedUserRole: authorizedUserRole || null,
+        assetControllerProgram: assetControllerProgramId,
+        assetMint: args.assetMint,
         assetController,
-        new PublicKey(args.assetMint),
-        TOKEN_2022_PROGRAM_ID
-      );
-      ixs.push(createAtaIx);
-    }
-    ixs.push(
-      await this.rbacProgram.methods
-        .revokeTokens(ixData)
-        .accountsStrict({
-          user: signer,
-          controllerAuthority: args.authority,
-          assetAccessController: assetAccessController,
-          authorizedUserRole: authorizedUserRole || null,
-          assetControllerProgram: assetControllerProgramId,
-          assetMint: args.assetMint,
-          assetController,
-          authorityTokenAccount: authorityAta,
-          revokeTokenAccount,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
-          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-          systemProgram: SystemProgram.programId,
-        })
-        .remainingAccounts([
-          {
-            pubkey: getPolicyEnginePda(args.assetMint),
-            isWritable: true,
-            isSigner: false,
-          },
-          {
-            pubkey: identityRegistryProgramId,
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: policyEngineProgramId,
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: getIdentityRegistryPda(args.assetMint),
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: getIdentityAccountPda(
-              args.assetMint,
-              assetController.toString()
-            ),
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: getIdentityAccountPda(args.assetMint, args.owner),
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: getTrackerAccountPda(
-              args.assetMint,
-              assetController.toString()
-            ),
-            isWritable: true,
-            isSigner: false,
-          },
-          {
-            pubkey: getTrackerAccountPda(args.assetMint, args.owner),
-            isWritable: true,
-            isSigner: false,
-          },
-          {
-            pubkey: SYSVAR_INSTRUCTIONS_PUBKEY,
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: getExtraMetasListPda(args.assetMint),
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: getWalletIdentityAccountPda(
-              args.assetMint,
-              assetController.toString()
-            ),
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: getWalletIdentityAccountPda(args.assetMint, args.owner),
-            isWritable: false,
-            isSigner: false,
-          },
-        ])
-        .instruction()
-    );
-    return ixs;
+        revokeTokenAccount,
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        systemProgram: SystemProgram.programId,
+      })
+      .remainingAccounts([
+        {
+          pubkey: getPolicyEnginePda(args.assetMint),
+          isWritable: true,
+          isSigner: false,
+        },
+        {
+          pubkey: identityRegistryProgramId,
+          isWritable: false,
+          isSigner: false,
+        },
+        {
+          pubkey: policyEngineProgramId,
+          isWritable: false,
+          isSigner: false,
+        },
+        {
+          pubkey: getIdentityRegistryPda(args.assetMint),
+          isWritable: false,
+          isSigner: false,
+        },
+        {
+          pubkey: getIdentityAccountPda(
+            args.assetMint,
+            assetController.toString()
+          ),
+          isWritable: false,
+          isSigner: false,
+        },
+        {
+          pubkey: getIdentityAccountPda(args.assetMint, args.owner),
+          isWritable: false,
+          isSigner: false,
+        },
+        {
+          pubkey: getTrackerAccountPda(
+            args.assetMint,
+            assetController.toString()
+          ),
+          isWritable: true,
+          isSigner: false,
+        },
+        {
+          pubkey: getTrackerAccountPda(args.assetMint, args.owner),
+          isWritable: true,
+          isSigner: false,
+        },
+        {
+          pubkey: SYSVAR_INSTRUCTIONS_PUBKEY,
+          isWritable: false,
+          isSigner: false,
+        },
+        {
+          pubkey: getExtraMetasListPda(args.assetMint),
+          isWritable: false,
+          isSigner: false,
+        },
+        {
+          pubkey: getWalletIdentityAccountPda(
+            args.assetMint,
+            assetController.toString()
+          ),
+          isWritable: false,
+          isSigner: false,
+        },
+        {
+          pubkey: getWalletIdentityAccountPda(args.assetMint, args.owner),
+          isWritable: false,
+          isSigner: false,
+        },
+      ])
+      .instruction();
   }
 
   /**

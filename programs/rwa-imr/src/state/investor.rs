@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 
 use crate::constants::{
     Country, ACCREDITED_ATTRIBUTES, KYC_ATTRIBUTES, OTHER_LEVELS, PROFESSIONAL_ATTRIBUTES,
-    QUALIFIED_ATTRIBUTES, SPECIAL_WALLETS,
+    QUALIFIED_ATTRIBUTES, SPECIAL_WALLETS, INVESTOR_LOCKED
 };
 use crate::error::ErrorCode;
 use crate::helper::is_valid_hash;
@@ -77,6 +77,7 @@ impl Investor {
         let mut professional = vec![];
         let mut kyc = vec![];
         let mut special = vec![];
+        let mut investor_locked = vec![];
 
         // Group levels into vec based on its category.
         for level_data in &self.levels {
@@ -91,6 +92,8 @@ impl Investor {
                 professional.push(level);
             } else if SPECIAL_WALLETS.contains(&level) {
                 special.push(level);
+            } else if INVESTOR_LOCKED.contains(&level) {
+                investor_locked.push(level);
             } else if !OTHER_LEVELS.contains(&level) {
                 msg!("Level {} is not supported", level);
                 return err!(ErrorCode::UnknownLevel);
@@ -105,7 +108,8 @@ impl Investor {
         require!(kyc.len() <= 1, ErrorCode::InvalidAttribute);
         require!(qualified.len() <= 1, ErrorCode::InvalidAttribute);
         require!(professional.len() <= 1, ErrorCode::InvalidAttribute);
-
+        require!(investor_locked.len() <= 1, ErrorCode::InvalidAttribute);
+        
         // Check that all proof hashes are valid (ascii and <= 32 chars).
         require!(
             self.levels.iter().all(|x| is_valid_hash(&x.proof_hash)),

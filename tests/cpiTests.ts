@@ -31,6 +31,7 @@ import {
   deriveIdentityToOwnerPda,
   deriveInvestorPda,
 } from "../client/src/pdas";
+import { IssueTokensWithLockArgs } from "../client/src/types/instructions";
 
 describe("CPI End to End Tests", () => {
   // Configure the client to use the local cluster.
@@ -675,7 +676,7 @@ describe("CPI End to End Tests", () => {
       args.owner,
       rwaRbacClient.provider
     );
-    assert.equal(identityAccount.numWallets, 1);
+    assert.equal(identityAccount.numWallets, 2);
   });
 
   it("CPI: Detach Wallet from Identity", async () => {
@@ -702,17 +703,19 @@ describe("CPI End to End Tests", () => {
       args.owner,
       rwaRbacClient.provider
     );
-    assert.equal(identityAccount.numWallets, 0);
+    assert.equal(identityAccount.numWallets, 1);
   });
 
   it("CPI: Issue Tokens", async () => {
-    const issueArgs: IssueTokenArgs = {
-      authority: setup.controllerAuthority.toString(), // ControllerAuthority
+    const issueArgs: IssueTokensWithLockArgs = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // User Account
       owner: setup.user1.toString(), // Target Account
       assetMint: mint,
-      amount: 1000000,
+      amount: new BN(1000000),
+      investorId: INVESTOR_ID,
+      wallet: setup.user1,
+      issuanceTimestamp: new BN(Date.now() / 1000),
     };
     const issueTokenIxns = await rwaRbacClient.assetController.issueTokenIxns(
       issueArgs,
@@ -722,7 +725,10 @@ describe("CPI End to End Tests", () => {
     await sendAndConfirmTransaction(
       connection,
       new Transaction().add(...issueTokenIxns),
-      [setup.payerKp, setup.signer1Kp]
+      [setup.payerKp, setup.signer1Kp],
+      {
+        skipPreflight: true,
+      }
     );
   });
 
@@ -840,7 +846,7 @@ describe("CPI End to End Tests", () => {
   });
 
   it("CPI: Revoke Tokens", async () => {
-    const revokeIxs = await rwaRbacClient.assetController.revokeTokenIxn(
+    const revokeIx = await rwaRbacClient.assetController.revokeTokenIxn(
       {
         owner: setup.user1.toString(), // Target Account
         assetMint: mint,
@@ -854,7 +860,7 @@ describe("CPI End to End Tests", () => {
     );
     await sendAndConfirmTransaction(
       connection,
-      new Transaction().add(...revokeIxs),
+      new Transaction().add(revokeIx),
       [setup.payerKp, setup.signer1Kp]
     );
   });

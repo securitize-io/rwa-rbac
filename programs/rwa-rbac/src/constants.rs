@@ -6,7 +6,7 @@ pub const DATA_REGISTRY_ID: Pubkey = pubkey!("8Bp1xoRscjuHoG1KT41zAaujGTx2fyB2uz
 pub const IDENTITY_METADATA_REGISTRY_ID: Pubkey =
     pubkey!("6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5");
 pub const IDENTITY_REGISTRY_ID: Pubkey = pubkey!("7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ");
-pub const TOKEN_LOCKS_ID: Pubkey = pubkey!("DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5");
+pub const TOKEN_LOCKS_ID: Pubkey = pubkey!("HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz");
 
 #[allow(non_camel_case_types)]
 #[derive(PartialEq, Clone, Copy)]

@@ -220,6 +220,10 @@ export type RwaImr = {
           writable: true;
         },
         {
+          name: "walletIdentity";
+          writable: true;
+        },
+        {
           name: "systemProgram";
           address: "11111111111111111111111111111111";
         }

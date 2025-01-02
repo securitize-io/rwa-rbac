@@ -9,5 +9,5 @@ export const RBAC_PROGRAM = new PublicKey(
 );
 
 export const TL_PROGRAM = new PublicKey(
-  "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5"
+  "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz"
 );

@@ -18,6 +18,7 @@ import {
   getIdentityRegistryPda,
   getPolicyEnginePda,
   getTrackerAccountPda,
+  getWalletIdentityAccountPda,
   identityRegistryProgramId,
   IxReturn,
   policyEngineProgramId,
@@ -93,6 +94,7 @@ export class IdentityMetadataRegistry {
         identityRegistryProgram: identityRegistryProgramId,
         identityRegistry,
         identityAccount,
+        walletIdentity: getWalletIdentityAccountPda(args.assetMint, args.owner),
         systemProgram: SystemProgram.programId,
       })
       .instruction();
@@ -112,6 +114,10 @@ export class IdentityMetadataRegistry {
           identityRegistryProgram: identityRegistryProgramId,
           identityRegistry,
           identityAccount,
+          walletIdentity: getWalletIdentityAccountPda(
+            args.assetMint,
+            args.owner
+          ),
           systemProgram: SystemProgram.programId,
         })
         .instruction()

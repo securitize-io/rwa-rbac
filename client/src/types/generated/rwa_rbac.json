@@ -194,7 +194,7 @@
         },
         {
           "name": "token_locks_program",
-          "address": "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5"
+          "address": "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz"
         },
         {
           "name": "investor_locks",
@@ -202,6 +202,12 @@
         },
         {
           "name": "investor"
+        },
+        {
+          "name": "wallet_identity_account"
+        },
+        {
+          "name": "identity_account"
         },
         {
           "name": "asset_mint",
@@ -648,7 +654,7 @@
         },
         {
           "name": "token_locks_program",
-          "address": "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5"
+          "address": "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz"
         },
         {
           "name": "investor_locks",
@@ -656,6 +662,16 @@
         },
         {
           "name": "investor"
+        },
+        {
+          "name": "locked_token_account",
+          "writable": true
+        },
+        {
+          "name": "wallet"
+        },
+        {
+          "name": "token_program"
         },
         {
           "name": "system_program",
@@ -789,6 +805,10 @@
           "writable": true
         },
         {
+          "name": "wallet_identity",
+          "writable": true
+        },
+        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
@@ -827,7 +847,10 @@
         },
         {
           "name": "token_locks_program",
-          "address": "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5"
+          "address": "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz"
+        },
+        {
+          "name": "wallet"
         },
         {
           "name": "investor_locks",
@@ -859,20 +882,11 @@
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
         },
         {
-          "name": "wallet_identity",
-          "optional": true
-        },
-        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": [
-        {
-          "name": "wallet",
-          "type": "pubkey"
-        }
-      ]
+      "args": []
     },
     {
       "name": "create_user_role",
@@ -1169,7 +1183,7 @@
         {
           "name": "token_locks_program",
           "optional": true,
-          "address": "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5"
+          "address": "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz"
         },
         {
           "name": "investor_locks",
@@ -1335,6 +1349,10 @@
         },
         {
           "name": "identity_account",
+          "writable": true
+        },
+        {
+          "name": "wallet_identity",
           "writable": true
         },
         {
@@ -1587,7 +1605,7 @@
         },
         {
           "name": "token_locks_program",
-          "address": "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5"
+          "address": "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz"
         },
         {
           "name": "investor_locks",
@@ -1595,6 +1613,12 @@
         },
         {
           "name": "investor"
+        },
+        {
+          "name": "wallet_identity_account"
+        },
+        {
+          "name": "identity_account"
         },
         {
           "name": "asset_mint",
@@ -1692,10 +1716,6 @@
         },
         {
           "name": "asset_controller"
-        },
-        {
-          "name": "authority_token_account",
-          "writable": true
         },
         {
           "name": "revoke_token_account",

@@ -7,6 +7,7 @@ pub const IDENTITY_REGISTRY_ID: Pubkey = pubkey!("7Zis9Cg1pa3PMRCMfJBgzoQThoBA21
 #[repr(u8)]
 pub enum Level {
     Investor = 1,
+    InvestorLocked = 2,
     KYC_APPROVED = 5,
     ACCREDITED = 6,
     QUALIFIED = 7,
@@ -265,3 +266,6 @@ pub const SPECIAL_WALLETS: [u8; 3] = [
 
 /// Levels not included in regions, countries or attributes.
 pub const OTHER_LEVELS: [u8; 1] = [Level::Investor as u8];
+
+/// Levels that are locked.
+pub const INVESTOR_LOCKED: [u8; 1] = [Level::InvestorLocked as u8];

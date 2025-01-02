@@ -16,6 +16,7 @@ import {
   deriveControllerAuthorityPda,
   deriveInvestorLocks,
   deriveInvestorPda,
+  deriveLockedTokenAccount,
 } from "../pdas";
 import {
   assetControllerProgramId,
@@ -70,10 +71,11 @@ export class TokenLocks {
   ): Promise<TransactionInstruction> {
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     return this.rbacProgram.methods
-      .createInvestorLocks(args.wallet)
+      .createInvestorLocks()
       .accountsStrict({
         payer: args.payer,
         user: args.signer,
+        wallet: args.owner,
         controllerAuthority: deriveControllerAuthorityPda(
           assetAccessController
         ),
@@ -83,16 +85,14 @@ export class TokenLocks {
         investorLocks: deriveInvestorLocks(
           args.investorId,
           identityRegistry,
-          args.wallet
         ),
         investor: deriveInvestorPda(args.investorId, identityRegistry),
-        identityAccount: getIdentityAccountPda(args.assetMint, args.owner),
+        identityAccount: getIdentityAccountPda(args.assetMint, args.owner.toString()),
         assetMint: args.assetMint,
-        lockedTokenAccount: args.lockedTokenAccount,
+        lockedTokenAccount: deriveLockedTokenAccount(args.investorId, identityRegistry),
         assetController: getAssetControllerPda(args.assetMint),
         assetControllerProgram: assetControllerProgramId,
         tokenProgram: TOKEN_2022_PROGRAM_ID,
-        walletIdentity: args.walletIdentity || null,
         systemProgram: SystemProgram.programId,
       })
       .instruction();
@@ -126,10 +126,12 @@ export class TokenLocks {
         investorLocks: deriveInvestorLocks(
           args.investorId,
           identityRegistry,
-          args.wallet
         ),
         investor: deriveInvestorPda(args.investorId, identityRegistry),
         systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
+        wallet: args.owner,
+        lockedTokenAccount: deriveLockedTokenAccount(args.investorId, identityRegistry),
       })
       .instruction();
   }
@@ -151,7 +153,6 @@ export class TokenLocks {
     const investorLocks = deriveInvestorLocks(
       args.investorId,
       identityRegistry,
-      args.wallet
     );
     const investor = deriveInvestorPda(args.investorId, identityRegistry);
     const unlockedTokenAccount = getAssociatedTokenAddressSync(
@@ -176,13 +177,18 @@ export class TokenLocks {
         investorLocks,
         investor,
         assetMint: args.assetMint,
+        identityAccount: getIdentityAccountPda(args.assetMint, args.owner.toString()),
         unlockedTokenAccount,
-        lockedTokenAccount: args.lockedTokenAccount,
+        lockedTokenAccount: deriveLockedTokenAccount(args.investorId, identityRegistry),
         assetController,
         assetControllerProgram: assetControllerProgramId,
         tokenProgram: TOKEN_2022_PROGRAM_ID,
         identityRegistry: getIdentityRegistryPda(args.assetMint),
         systemProgram: SystemProgram.programId,
+        walletIdentityAccount: getWalletIdentityAccountPda(
+          args.assetMint,
+          args.wallet.toString()
+        ),
       })
       .instruction();
 
@@ -199,12 +205,17 @@ export class TokenLocks {
         investor,
         assetMint: args.assetMint,
         unlockedTokenAccount,
-        lockedTokenAccount: args.lockedTokenAccount,
+        lockedTokenAccount: deriveLockedTokenAccount(args.investorId, identityRegistry),
         assetController,
         identityRegistry: getIdentityRegistryPda(args.assetMint),
         assetControllerProgram: assetControllerProgramId,
         tokenProgram: TOKEN_2022_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
+        identityAccount: getIdentityAccountPda(args.assetMint, args.owner.toString()),
+        walletIdentityAccount: getWalletIdentityAccountPda(
+          args.assetMint,
+          args.wallet.toString()
+        ),
       })
       .remainingAccounts([
         {
@@ -228,12 +239,12 @@ export class TokenLocks {
           isSigner: false,
         },
         {
-          pubkey: getIdentityAccountPda(args.assetMint, args.wallet.toString()),
+          pubkey: getIdentityAccountPda(args.assetMint, args.owner.toString()),
           isWritable: false,
           isSigner: false,
         },
         {
-          pubkey: getTrackerAccountPda(args.assetMint, args.wallet.toString()),
+          pubkey: getTrackerAccountPda(args.assetMint, args.owner.toString()),
           isWritable: true,
           isSigner: false,
         },
@@ -245,7 +256,7 @@ export class TokenLocks {
         {
           pubkey: getWalletIdentityAccountPda(
             args.assetMint,
-            args.wallet.toString()
+            args.owner.toString()
           ),
           isWritable: false,
           isSigner: false,
@@ -271,7 +282,6 @@ export class TokenLocks {
     const investorLocks = deriveInvestorLocks(
       args.investorId,
       identityRegistry,
-      args.wallet
     );
     const investor = deriveInvestorPda(args.investorId, identityRegistry);
     const unlockedTokenAccount = getAssociatedTokenAddressSync(
@@ -294,9 +304,14 @@ export class TokenLocks {
         tokenLocksProgram: TL_PROGRAM,
         investorLocks,
         investor,
+        identityAccount: getIdentityAccountPda(args.assetMint, args.owner.toString()),
+        walletIdentityAccount: getWalletIdentityAccountPda(
+          args.assetMint,
+          args.wallet.toString()
+        ),
         assetMint: args.assetMint,
         unlockedTokenAccount,
-        lockedTokenAccount: args.lockedTokenAccount,
+        lockedTokenAccount: deriveLockedTokenAccount(args.investorId, identityRegistry),
         assetController,
         identityRegistry: getIdentityRegistryPda(args.assetMint),
         assetControllerProgram: assetControllerProgramId,
@@ -324,12 +339,12 @@ export class TokenLocks {
           isSigner: false,
         },
         {
-          pubkey: getIdentityAccountPda(args.assetMint, args.wallet.toString()),
+          pubkey: getIdentityAccountPda(args.assetMint, args.owner.toString()),
           isWritable: false,
           isSigner: false,
         },
         {
-          pubkey: getTrackerAccountPda(args.assetMint, args.wallet.toString()),
+          pubkey: getTrackerAccountPda(args.assetMint, args.owner.toString()),
           isWritable: true,
           isSigner: false,
         },
@@ -341,7 +356,7 @@ export class TokenLocks {
         {
           pubkey: getWalletIdentityAccountPda(
             args.assetMint,
-            args.wallet.toString()
+            args.owner.toString()
           ),
           isWritable: false,
           isSigner: false,

@@ -32,6 +32,10 @@ pub struct AddTokenLock<'info> {
     /// CHECK: Verified in CPI.
     pub investor: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
+    pub wallet_identity_account: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub identity_account: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
     #[account(mut)]
     pub asset_mint: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
@@ -75,6 +79,8 @@ pub fn handler<'info>(
         AccountMeta::new(ctx.accounts.controller_authority.key(), true),
         AccountMeta::new(ctx.accounts.investor_locks.key(), false),
         AccountMeta::new_readonly(ctx.accounts.investor.key(), false),
+        AccountMeta::new_readonly(ctx.accounts.wallet_identity_account.key(), false),
+        AccountMeta::new_readonly(ctx.accounts.identity_account.key(), false),
         AccountMeta::new(ctx.accounts.asset_mint.key(), false),
         AccountMeta::new(ctx.accounts.unlocked_token_account.key(), false),
         AccountMeta::new(ctx.accounts.locked_token_account.key(), false),
@@ -89,6 +95,8 @@ pub fn handler<'info>(
         ctx.accounts.controller_authority.to_account_info(),
         ctx.accounts.investor_locks.to_account_info(),
         ctx.accounts.investor.to_account_info(),
+        ctx.accounts.wallet_identity_account.to_account_info(),
+        ctx.accounts.identity_account.to_account_info(),
         ctx.accounts.asset_mint.to_account_info(),
         ctx.accounts.unlocked_token_account.to_account_info(),
         ctx.accounts.locked_token_account.to_account_info(),

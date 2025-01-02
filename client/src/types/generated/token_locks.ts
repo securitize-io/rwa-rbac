@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/token_locks.json`.
  */
 export type TokenLocks = {
-  "address": "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5",
+  "address": "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz",
   "metadata": {
     "name": "tokenLocks",
     "version": "0.1.0",
@@ -53,70 +53,62 @@ export type TokenLocks = {
           ]
         },
         {
+          "name": "walletIdentityAccount"
+        },
+        {
+          "name": "identityAccount",
+          "docs": [
+            "CHECKED: Validated in deserialized_checked."
+          ]
+        },
+        {
           "name": "assetMint",
           "writable": true
         },
         {
           "name": "unlockedTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "lockedTokenAccount",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "investor_locks.wallet",
-                "account": "investorLocks"
+                "path": "investor.investor_id",
+                "account": "investor"
               },
               {
                 "kind": "account",
-                "path": "tokenProgram"
+                "path": "investor.identity_registry",
+                "account": "investor"
               },
               {
-                "kind": "account",
-                "path": "assetMint"
+                "kind": "const",
+                "value": [
+                  76,
+                  111,
+                  99,
+                  107,
+                  101,
+                  100,
+                  84,
+                  111,
+                  107,
+                  101,
+                  110,
+                  65,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
               }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "lockedTokenAccount",
-          "writable": true,
+            ]
+          },
           "relations": [
             "investorLocks"
           ]
@@ -199,6 +191,57 @@ export type TokenLocks = {
           ]
         },
         {
+          "name": "lockedTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "investor.investor_id",
+                "account": "investor"
+              },
+              {
+                "kind": "account",
+                "path": "investor.identity_registry",
+                "account": "investor"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  76,
+                  111,
+                  99,
+                  107,
+                  101,
+                  100,
+                  84,
+                  111,
+                  107,
+                  101,
+                  110,
+                  65,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "wallet",
+          "relations": [
+            "investorLocks"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
@@ -231,6 +274,9 @@ export type TokenLocks = {
           ]
         },
         {
+          "name": "wallet"
+        },
+        {
           "name": "investorLocks",
           "writable": true,
           "pda": {
@@ -244,10 +290,6 @@ export type TokenLocks = {
                 "kind": "account",
                 "path": "investor.identity_registry",
                 "account": "investor"
-              },
-              {
-                "kind": "arg",
-                "path": "wallet"
               },
               {
                 "kind": "const",
@@ -285,7 +327,44 @@ export type TokenLocks = {
         },
         {
           "name": "lockedTokenAccount",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "investor.investor_id",
+                "account": "investor"
+              },
+              {
+                "kind": "account",
+                "path": "investor.identity_registry",
+                "account": "investor"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  76,
+                  111,
+                  99,
+                  107,
+                  101,
+                  100,
+                  84,
+                  111,
+                  107,
+                  101,
+                  110,
+                  65,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              }
+            ]
+          }
         },
         {
           "name": "assetController"
@@ -301,22 +380,9 @@ export type TokenLocks = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "walletIdentity",
-          "docs": [
-            "Optionally lock a specific wallet attached to an Investor, instead of the owner.",
-            "CHECKED: Validated to match identity_account and wallet."
-          ],
-          "optional": true
         }
       ],
-      "args": [
-        {
-          "name": "wallet",
-          "type": "pubkey"
-        }
-      ]
+      "args": []
     },
     {
       "name": "removeTokenLock",
@@ -353,70 +419,62 @@ export type TokenLocks = {
           ]
         },
         {
+          "name": "walletIdentityAccount"
+        },
+        {
+          "name": "identityAccount",
+          "docs": [
+            "CHECKED: Validated in deserialized_checked."
+          ]
+        },
+        {
           "name": "assetMint",
           "writable": true
         },
         {
           "name": "unlockedTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "lockedTokenAccount",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "investor_locks.wallet",
-                "account": "investorLocks"
+                "path": "investor.investor_id",
+                "account": "investor"
               },
               {
                 "kind": "account",
-                "path": "tokenProgram"
+                "path": "investor.identity_registry",
+                "account": "investor"
               },
               {
-                "kind": "account",
-                "path": "assetMint"
+                "kind": "const",
+                "value": [
+                  76,
+                  111,
+                  99,
+                  107,
+                  101,
+                  100,
+                  84,
+                  111,
+                  107,
+                  101,
+                  110,
+                  65,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
               }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
-        },
-        {
-          "name": "lockedTokenAccount",
-          "writable": true,
+            ]
+          },
           "relations": [
             "investorLocks"
           ]

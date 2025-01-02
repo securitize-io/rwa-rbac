@@ -3,30 +3,28 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke},
 };
 use anchor_spl::{
-    associated_token::get_associated_token_address_with_program_id,
-    token_interface::{Mint, Token2022, TokenAccount},
+    token_2022::{set_authority, spl_token_2022::instruction::AuthorityType, SetAuthority}, token_interface::{Mint, Token2022, TokenAccount}
 };
 use rwa_imr::{helper::get_discriminator, Investor};
 
 use crate::{
     constants::{ASSET_CONTROLLER_ID, IDENTITY_REGISTRY_ID},
-    error::ErrorCode,
     external_accounts::*,
     state::*,
 };
 
 #[derive(Accounts)]
-#[instruction(wallet: Pubkey)]
 pub struct CreateInvestorLocks<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub authority: Signer<'info>,
+    /// CHECK: Validated in validate_wallet.
+    pub wallet: AccountInfo<'info>,
     #[account(
         init,
         seeds = [
             &investor.investor_id.as_ref(),
             &investor.identity_registry.as_ref(),
-            &wallet.as_ref(),
             b"InvestorLocks".as_ref(),
         ],
         bump,
@@ -43,9 +41,16 @@ pub struct CreateInvestorLocks<'info> {
     #[account(mut)]
     pub asset_mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(
-        mut,
+        init,
+        payer = payer,
+        seeds = [
+            &investor.investor_id.as_ref(),
+            &investor.identity_registry.as_ref(),
+            b"LockedTokenAccount".as_ref(),
+        ],
+        bump,
         token::mint = asset_mint,
-        token::authority = wallet,
+        token::authority = authority,
         token::token_program = token_program,
     )]
     pub locked_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
@@ -56,9 +61,6 @@ pub struct CreateInvestorLocks<'info> {
     pub asset_controller_program: UncheckedAccount<'info>,
     pub token_program: Program<'info, Token2022>,
     pub system_program: Program<'info, System>,
-    /// Optionally lock a specific wallet attached to an Investor, instead of the owner.
-    /// CHECKED: Validated to match identity_account and wallet.
-    pub wallet_identity: Option<UncheckedAccount<'info>>,
 }
 
 impl<'info> CreateInvestorLocks<'info> {
@@ -80,21 +82,39 @@ impl<'info> CreateInvestorLocks<'info> {
 
     // Verify that wallet being locked matches value in wallet_identity if provided,
     // or owner of identity_account if not provided.
-    fn validate_wallet(&self, ctx: &Context<CreateInvestorLocks>, wallet: Pubkey) -> Result<()> {
+    fn validate_wallet(&self, ctx: &Context<CreateInvestorLocks>) -> Result<()> {
         let identity_account =
             IdentityAccount::deserialize_checked(&ctx.accounts.identity_account)?;
 
-        if let Some(acc) = &ctx.accounts.wallet_identity {
-            let wallet_identity = WalletIdentity::deserialize_checked(acc)?;
-            require_keys_eq!(
-                wallet_identity.identity_account,
-                ctx.accounts.identity_account.key()
-            );
+        require_keys_eq!(ctx.accounts.wallet.key(), identity_account.owner);
+        Ok(())
+    }
 
-            require_keys_eq!(wallet, wallet_identity.wallet);
-        } else {
-            require_keys_eq!(wallet, identity_account.owner);
-        }
+    fn set_close_authority(&self) -> Result<()> {
+
+        let accounts = SetAuthority {
+            account_or_mint: self.locked_token_account.to_account_info(),
+            current_authority: self.authority.to_account_info(),
+        };
+        let cpi_ctx = CpiContext::new(
+            self.token_program.to_account_info(),
+            accounts,
+        );
+        set_authority(cpi_ctx, AuthorityType::CloseAccount, Some(self.authority.key()))?;
+        Ok(())
+    }
+
+    fn set_authority(&self) -> Result<()> {
+
+        let accounts = SetAuthority {
+            account_or_mint: self.locked_token_account.to_account_info(),
+            current_authority: self.authority.to_account_info(),
+        };
+        let cpi_ctx = CpiContext::new(
+            self.token_program.to_account_info(),
+            accounts,
+        );
+        set_authority(cpi_ctx, AuthorityType::AccountOwner, Some(self.wallet.key()))?;
         Ok(())
     }
 
@@ -102,29 +122,7 @@ impl<'info> CreateInvestorLocks<'info> {
     fn validate_and_freeze_token_account(
         &self,
         ctx: &Context<CreateInvestorLocks>,
-        wallet: &Pubkey,
     ) -> Result<()> {
-        let locked_acc = &ctx.accounts.locked_token_account;
-
-        // Check that locked_token_account is not an associated token account (used for storing unlocked tokens).
-        let token_ata = get_associated_token_address_with_program_id(
-            wallet,
-            &ctx.accounts.asset_mint.key(),
-            &ctx.accounts.token_program.key(),
-        );
-        require_keys_neq!(locked_acc.key(), token_ata);
-
-        // Expecting locked_token_account to be newly created with zero tokens, no delegate or close authority.
-        require_eq!(locked_acc.amount, 0, ErrorCode::InvalidTokenAccountState);
-        require!(
-            locked_acc.close_authority.is_none(),
-            ErrorCode::InvalidTokenAccountState
-        );
-        require!(
-            locked_acc.delegate.is_none(),
-            ErrorCode::InvalidTokenAccountState
-        );
-
         invoke(
             &Instruction {
                 program_id: ctx.accounts.asset_controller_program.key(),
@@ -149,15 +147,18 @@ impl<'info> CreateInvestorLocks<'info> {
     }
 }
 
-pub fn handler(ctx: Context<CreateInvestorLocks>, wallet: Pubkey) -> Result<()> {
+pub fn handler(ctx: Context<CreateInvestorLocks>) -> Result<()> {
     ctx.accounts.validate_asset_mint(&ctx)?;
-    ctx.accounts.validate_wallet(&ctx, wallet)?;
+    ctx.accounts.validate_wallet(&ctx)?;
+    ctx.accounts.set_close_authority()?;
+    ctx.accounts.set_authority()?;
     ctx.accounts
-        .validate_and_freeze_token_account(&ctx, &wallet)?;
+        .validate_and_freeze_token_account(&ctx)?;
+
 
     let investor_locks = &mut ctx.accounts.investor_locks;
     investor_locks.investor = ctx.accounts.investor.key();
-    investor_locks.wallet = wallet;
+    investor_locks.wallet = ctx.accounts.wallet.key();
     investor_locks.locked_token_account = ctx.accounts.locked_token_account.key();
 
     Ok(())

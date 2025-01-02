@@ -29,9 +29,6 @@ pub struct RevokeTokens<'info> {
     pub asset_controller: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     #[account(mut)]
-    pub authority_token_account: UncheckedAccount<'info>,
-    /// CHECK: Verified in CPI.
-    #[account(mut)]
     pub revoke_token_account: UncheckedAccount<'info>,
     pub token_program: Program<'info, Token2022>,
     pub associated_token_program: Program<'info, AssociatedToken>,
@@ -66,7 +63,6 @@ pub fn handler<'info>(
         AccountMeta::new(ctx.accounts.controller_authority.key(), true),
         AccountMeta::new(ctx.accounts.asset_mint.key(), false),
         AccountMeta::new_readonly(ctx.accounts.asset_controller.key(), false),
-        AccountMeta::new(ctx.accounts.authority_token_account.key(), false),
         AccountMeta::new(ctx.accounts.revoke_token_account.key(), false),
         AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
         AccountMeta::new_readonly(ctx.accounts.associated_token_program.key(), false),
@@ -76,7 +72,6 @@ pub fn handler<'info>(
         ctx.accounts.controller_authority.to_account_info(),
         ctx.accounts.asset_mint.to_account_info(),
         ctx.accounts.asset_controller.to_account_info(),
-        ctx.accounts.authority_token_account.to_account_info(),
         ctx.accounts.revoke_token_account.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.associated_token_program.to_account_info(),

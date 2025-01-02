@@ -136,6 +136,8 @@ impl<'info> IssueTokens<'info> {
             AccountMeta::new(ctx.accounts.controller_authority.key(), true),
             AccountMeta::new(ctx.accounts.investor_locks.as_ref().unwrap().key(), false),
             AccountMeta::new_readonly(ctx.accounts.investor.as_ref().unwrap().key(), false),
+            AccountMeta::new_readonly(ctx.accounts.wallet_identity_account.as_ref().key(), false),
+            AccountMeta::new_readonly(ctx.accounts.identity_account.as_ref().key(), false),
             AccountMeta::new(ctx.accounts.asset_mint.key(), false),
             AccountMeta::new(ctx.accounts.token_account.key(), false),
             AccountMeta::new(
@@ -157,6 +159,8 @@ impl<'info> IssueTokens<'info> {
                 .unwrap()
                 .to_account_info(),
             ctx.accounts.investor.as_ref().unwrap().to_account_info(),
+            ctx.accounts.wallet_identity_account.as_ref().to_account_info(),
+            ctx.accounts.identity_account.as_ref().to_account_info(),
             ctx.accounts.asset_mint.to_account_info(),
             ctx.accounts.token_account.to_account_info(),
             ctx.accounts
@@ -212,6 +216,20 @@ pub fn handler<'info>(
         MediciFlags::ISSUE_TOKENS,
     )?;
 
+
+    // Get user's token issue lock period.
+    let identity_account = IdentityAccount::deserialize_checked(&ctx.accounts.identity_account)?;
+    let policy_engine_account =
+        PartialPolicyEngineAccount::deserialize_checked(&ctx.accounts.policy_engine)?;
+    let compliance_level = policy_engine_account.mapping[identity_account.country as usize];
+
+    let issuance_timestamp = if policy_engine_account.issuance_policies.disallow_backdating {
+        Clock::get()?.unix_timestamp
+    } else {
+        issuance_timestamp
+    };
+
+    
     let data = [
         &get_discriminator("issue_tokens"),
         &amount.to_le_bytes()[..],
@@ -220,21 +238,16 @@ pub fn handler<'info>(
     .concat();
     ctx.accounts.issue_tokens(&ctx, data)?;
 
-    // Get user's token issue lock period.
-    let identity_account = IdentityAccount::deserialize_checked(&ctx.accounts.identity_account)?;
-    let policy_engine_account =
-        PartialPolicyEngineAccount::deserialize_checked(&ctx.accounts.policy_engine)?;
-    let compliance_level = policy_engine_account.mapping[identity_account.country as usize];
     let lock_period = if compliance_level == Level::US as u8 {
         policy_engine_account.issuance_policies.us_lock_period
     } else {
         policy_engine_account.issuance_policies.non_us_lock_period
     };
 
+
     // Lock issued tokens if lock period is non zero.
     if lock_period > 0 {
-        let release_time = Clock::get()?
-            .unix_timestamp
+        let release_time = issuance_timestamp
             .checked_add(i64::try_from(lock_period).unwrap())
             .unwrap();
 
@@ -244,7 +257,7 @@ pub fn handler<'info>(
             &amount.to_le_bytes()[..],
             &release_time.to_le_bytes()[..],
             &reason_code.unwrap().to_le_bytes()[..],
-            &reason_string.len().to_le_bytes()[..],
+            &(reason_string.len() as u32).to_le_bytes()[..],
             reason_string.as_ref(),
         ]
         .concat();

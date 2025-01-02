@@ -12,14 +12,14 @@ pub use state::*;
 
 use anchor_lang::prelude::*;
 
-declare_id!("DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5");
+declare_id!("HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz");
 
 #[program]
 pub mod token_locks {
     use super::*;
 
-    pub fn create_investor_locks(ctx: Context<CreateInvestorLocks>, wallet: Pubkey) -> Result<()> {
-        instructions::create_investor_locks::handler(ctx, wallet)
+    pub fn create_investor_locks(ctx: Context<CreateInvestorLocks>) -> Result<()> {
+        instructions::create_investor_locks::handler(ctx)
     }
 
     pub fn close_investor_locks(ctx: Context<CloseInvestorLocks>) -> Result<()> {

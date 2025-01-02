@@ -192,8 +192,8 @@ pub mod rwa_rbac {
         instructions::detach_wallet_from_identity::handler(ctx, cpi_data)
     }
 
-    pub fn create_investor_locks(ctx: Context<CreateInvestorLocks>, wallet: Pubkey) -> Result<()> {
-        instructions::create_investor_locks::handler(ctx, wallet)
+    pub fn create_investor_locks(ctx: Context<CreateInvestorLocks>) -> Result<()> {
+        instructions::create_investor_locks::handler(ctx)
     }
 
     pub fn close_investor_locks(ctx: Context<CloseInvestorLocks>) -> Result<()> {

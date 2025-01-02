@@ -80,6 +80,7 @@ export class IdentityRegistry {
           identityRegistryProgram: identityRegistryProgramId,
           identityRegistry: getIdentityRegistryPda(args.assetMint),
           identityAccount,
+          walletIdentity: getWalletIdentityAccountPda(args.assetMint, args.owner),
           systemProgram: SystemProgram.programId,
         })
         .instruction()

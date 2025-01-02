@@ -6,7 +6,7 @@ use anchor_spl::token_interface::{Mint, Token2022, TokenAccount};
 
 use rwa_imr::{helper::get_discriminator, Investor};
 
-use crate::{constants::*, error::ErrorCode, state::*};
+use crate::{constants::*, error::ErrorCode, external_accounts::{IdentityAccount, WalletIdentity}, state::*};
 
 #[derive(Accounts)]
 pub struct RemoveTokenLock<'info> {
@@ -24,21 +24,24 @@ pub struct RemoveTokenLock<'info> {
         has_one = identity_registry,
     )]
     pub investor: Account<'info, Investor>,
+    /// CHECK: Checked by validate_wallet if needed.
+    pub wallet_identity_account: UncheckedAccount<'info>,
+    /// CHECKED: Validated in deserialized_checked.
+    #[account(address = investor.identity_account)]
+    pub identity_account: UncheckedAccount<'info>,
     /// CHECK: Verified by checking against known locked_token_account.
     #[account(mut)]
     pub asset_mint: Box<InterfaceAccount<'info, Mint>>,
-    #[account(
-        mut,
-        associated_token::mint = asset_mint,
-        associated_token::authority = investor_locks.wallet,
-        associated_token::token_program = token_program,
-    )]
+    #[account(mut)]
     pub unlocked_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         mut,
-        token::mint = asset_mint,
-        token::authority = investor_locks.wallet,
-        token::token_program = token_program,
+        seeds = [
+            &investor.investor_id.as_ref(),
+            &investor.identity_registry.as_ref(),
+            b"LockedTokenAccount".as_ref(),
+        ],
+        bump
     )]
     pub locked_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
     /// CHECK: Checked by seize SPI
@@ -68,6 +71,8 @@ impl<'info> RemoveTokenLock<'info> {
             AccountMeta::new(ctx.accounts.unlocked_token_account.key(), false),
             AccountMeta::new(ctx.accounts.locked_token_account.key(), false),
             AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
+            AccountMeta::new_readonly(ctx.accounts.identity_account.key(), false),
+            AccountMeta::new_readonly(ctx.accounts.wallet_identity_account.key(), false),
         ];
 
         let mut account_infos = vec![
@@ -77,6 +82,8 @@ impl<'info> RemoveTokenLock<'info> {
             ctx.accounts.unlocked_token_account.to_account_info(),
             ctx.accounts.locked_token_account.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
+            ctx.accounts.identity_account.to_account_info(),
+            ctx.accounts.wallet_identity_account.to_account_info(),
         ];
 
         // Add remaining accounts to vecs.
@@ -152,6 +159,26 @@ impl<'info> RemoveTokenLock<'info> {
         )?;
         Ok(())
     }
+    
+    // Verify that receiver wallet matches value in identity_account or wallet_identity
+    fn validate_wallet(&self, ctx: &Context<RemoveTokenLock>) -> Result<()> {
+        let identity_account =
+            IdentityAccount::deserialize_checked(&ctx.accounts.identity_account)?;
+
+        if identity_account.owner == ctx.accounts.unlocked_token_account.owner {
+            return Ok(());
+        }
+
+        let wallet_identity = WalletIdentity::deserialize_checked(&ctx.accounts.wallet_identity_account)?;
+
+        require_keys_eq!(
+            wallet_identity.identity_account,
+            ctx.accounts.identity_account.key()
+        );
+
+        require_keys_eq!(ctx.accounts.unlocked_token_account.owner, wallet_identity.wallet);
+        Ok(())
+    }
 }
 
 /// Instruction to remove a lock from InvestorLocks and release locked tokens back to unlocked account.
@@ -170,6 +197,9 @@ pub fn handler<'info>(
     if !lock_to_remove.has_expired()? {
         require!(is_user_authorized, ErrorCode::UnauthorizedUser);
     }
+
+    ctx.accounts.validate_wallet(&ctx)?;
+
     // Thaw locked_token_account first so it can receive tokens from the unlocked_token_account.
     ctx.accounts.thaw_account(&ctx)?;
 

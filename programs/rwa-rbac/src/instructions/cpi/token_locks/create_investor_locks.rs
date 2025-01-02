@@ -25,6 +25,8 @@ pub struct CreateInvestorLocks<'info> {
     /// CHECK: Checked against known program address.
     #[account(address = TOKEN_LOCKS_ID)]
     pub token_locks_program: UncheckedAccount<'info>,
+    /// CHECK: Validated in validate_wallet.
+    pub wallet: AccountInfo<'info>,
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub investor_locks: UncheckedAccount<'info>,
@@ -44,12 +46,10 @@ pub struct CreateInvestorLocks<'info> {
     #[account(address = ASSET_CONTROLLER_ID)]
     pub asset_controller_program: UncheckedAccount<'info>,
     pub token_program: Program<'info, Token2022>,
-    /// CHECK: Verified in CPI.
-    pub wallet_identity: Option<UncheckedAccount<'info>>,
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<CreateInvestorLocks>, wallet: Pubkey) -> Result<()> {
+pub fn handler(ctx: Context<CreateInvestorLocks>) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
     // Verify that signer is either a controller admin or has authorized user role.
@@ -60,15 +60,13 @@ pub fn handler(ctx: Context<CreateInvestorLocks>, wallet: Pubkey) -> Result<()> 
         MediciFlags::CREATE_INVESTOR_LOCKS,
     )?;
 
-    // Build data arg for CPI manually.
-    let cpi_data = [&get_discriminator("create_investor_locks"), wallet.as_ref()].concat();
-
     let seeds = controller_seeds!(controller);
     let signers_seeds = &[&seeds[..]];
 
-    let mut accounts = vec![
+    let accounts = vec![
         AccountMeta::new(ctx.accounts.payer.key(), true),
         AccountMeta::new_readonly(ctx.accounts.controller_authority.key(), true),
+        AccountMeta::new_readonly(ctx.accounts.wallet.key(), false),
         AccountMeta::new(ctx.accounts.investor_locks.key(), false),
         AccountMeta::new_readonly(ctx.accounts.investor.key(), false),
         AccountMeta::new_readonly(ctx.accounts.identity_account.key(), false),
@@ -79,9 +77,10 @@ pub fn handler(ctx: Context<CreateInvestorLocks>, wallet: Pubkey) -> Result<()> 
         AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
         AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
     ];
-    let mut account_infos = vec![
+    let account_infos = vec![
         ctx.accounts.payer.to_account_info(),
         ctx.accounts.controller_authority.to_account_info(),
+        ctx.accounts.wallet.to_account_info(),
         ctx.accounts.investor_locks.to_account_info(),
         ctx.accounts.investor.to_account_info(),
         ctx.accounts.identity_account.to_account_info(),
@@ -93,17 +92,12 @@ pub fn handler(ctx: Context<CreateInvestorLocks>, wallet: Pubkey) -> Result<()> 
         ctx.accounts.system_program.to_account_info(),
     ];
 
-    // Add wallet_identity as an account if provided.
-    if let Some(acc) = ctx.accounts.wallet_identity.clone() {
-        accounts.push(AccountMeta::new_readonly(acc.key(), false));
-        account_infos.push(acc.to_account_info());
-    }
 
     invoke_signed(
         &Instruction {
             program_id: ctx.accounts.token_locks_program.key(),
             accounts,
-            data: cpi_data,
+            data: get_discriminator("create_investor_locks"),
         },
         &account_infos,
         signers_seeds,

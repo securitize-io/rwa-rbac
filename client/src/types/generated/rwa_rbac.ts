@@ -245,7 +245,7 @@ export type RwaRbac = {
         },
         {
           name: "tokenLocksProgram";
-          address: "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5";
+          address: "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz";
         },
         {
           name: "investorLocks";
@@ -253,6 +253,12 @@ export type RwaRbac = {
         },
         {
           name: "investor";
+        },
+        {
+          name: "walletIdentityAccount";
+        },
+        {
+          name: "identityAccount";
         },
         {
           name: "assetMint";
@@ -699,7 +705,7 @@ export type RwaRbac = {
         },
         {
           name: "tokenLocksProgram";
-          address: "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5";
+          address: "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz";
         },
         {
           name: "investorLocks";
@@ -707,6 +713,16 @@ export type RwaRbac = {
         },
         {
           name: "investor";
+        },
+        {
+          name: "lockedTokenAccount";
+          writable: true;
+        },
+        {
+          name: "wallet";
+        },
+        {
+          name: "tokenProgram";
         },
         {
           name: "systemProgram";
@@ -859,6 +875,10 @@ export type RwaRbac = {
           writable: true;
         },
         {
+          name: "walletIdentity";
+          writable: true;
+        },
+        {
           name: "systemProgram";
           address: "11111111111111111111111111111111";
         }
@@ -897,7 +917,10 @@ export type RwaRbac = {
         },
         {
           name: "tokenLocksProgram";
-          address: "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5";
+          address: "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz";
+        },
+        {
+          name: "wallet";
         },
         {
           name: "investorLocks";
@@ -929,20 +952,11 @@ export type RwaRbac = {
           address: "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
         },
         {
-          name: "walletIdentity";
-          optional: true;
-        },
-        {
           name: "systemProgram";
           address: "11111111111111111111111111111111";
         }
       ];
-      args: [
-        {
-          name: "wallet";
-          type: "pubkey";
-        }
-      ];
+      args: [];
     },
     {
       name: "createUserRole";
@@ -1239,7 +1253,7 @@ export type RwaRbac = {
         {
           name: "tokenLocksProgram";
           optional: true;
-          address: "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5";
+          address: "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz";
         },
         {
           name: "investorLocks";
@@ -1405,6 +1419,10 @@ export type RwaRbac = {
         },
         {
           name: "identityAccount";
+          writable: true;
+        },
+        {
+          name: "walletIdentity";
           writable: true;
         },
         {
@@ -1702,7 +1720,7 @@ export type RwaRbac = {
         },
         {
           name: "tokenLocksProgram";
-          address: "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5";
+          address: "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz";
         },
         {
           name: "investorLocks";
@@ -1710,6 +1728,12 @@ export type RwaRbac = {
         },
         {
           name: "investor";
+        },
+        {
+          name: "walletIdentityAccount";
+        },
+        {
+          name: "identityAccount";
         },
         {
           name: "assetMint";
@@ -1807,10 +1831,6 @@ export type RwaRbac = {
         },
         {
           name: "assetController";
-        },
-        {
-          name: "authorityTokenAccount";
-          writable: true;
         },
         {
           name: "revokeTokenAccount";

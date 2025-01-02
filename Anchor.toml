@@ -7,7 +7,7 @@ skip-lint = false
 [programs.localnet]
 rwa_rbac = "AzGap3q8fXV1gHPWpAuMFqkpCewvuEY5GrkhCz86ZkDb"
 rwa_imr = "6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5"
-token_locks = "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5"
+token_locks = "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz"
 
 [registry]
 url = "https://api.apr.dev"
