@@ -10,7 +10,6 @@ import {
 } from "@solana/web3.js";
 import { assert } from "chai";
 import {
-  createAccount,
   getAssociatedTokenAddressSync,
   TOKEN_2022_PROGRAM_ID,
   createAssociatedTokenAccount,

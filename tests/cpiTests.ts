@@ -772,6 +772,72 @@ describe("CPI End to End Tests", () => {
     ]);
   });
 
+  it("CPI: Change Counters", async () => {
+    const args = {
+      authority: setup.controllerAuthority,
+      payer: setup.payer.toString(), // Payer Account
+      assetMint: mint,
+      removedCounters: Buffer.from(""),
+      addedCounters: [],
+    };
+    const ix = await rwaRbacClient.policyEngine.changeCounters(
+      args,
+      setup.signer1,
+      setup.assetAccessController,
+      setup.userRole1
+    );
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+  });
+
+  it("CPI: Change Counter Limits", async () => {
+    const args = {
+      authority: setup.controllerAuthority,
+      payer: setup.payer.toString(), // Payer Account
+      assetMint: mint,
+      removedCounterLimits: Buffer.from(""),
+      addedCounterLimits: [],
+    };
+    const ix = await rwaRbacClient.policyEngine.changeCounterLimits(
+      args,
+      setup.signer1,
+      setup.assetAccessController,
+      setup.userRole1
+    );
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+  });
+
+  it("CPI: Change Mapping", async () => {
+    // Set mapping for country 1 to US region (Level = 10).
+    const changeMappingIx = await rwaRbacClient.policyEngine.changeMapping(
+      {
+        authority: setup.controllerAuthority,
+        payer: setup.payer.toString(), // Payer Account
+        assetMint: mint,
+        mappingSource: [1],
+        mappingValue: [10],
+      },
+      setup.signer1,
+      setup.assetAccessController
+    );
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(changeMappingIx),
+      [setup.payerKp, setup.signer1Kp]
+    );
+
+    const { mapping } = await getPolicyEngineAccount(
+      mint,
+      rwaRbacClient.provider
+    );
+    assert.equal(mapping[1], 10);
+  });
+
   it("CPI: Remove Investor", async () => {
     const args = {
       payer: setup.payer.toString(), // Payer Account
