@@ -13,4 +13,7 @@ pub enum ErrorCode {
 
     #[msg("Data is not empty")]
     DataIsNotEmpty,
+
+    #[msg("Unknown account discriminator")]
+    UnknownAccount,
 }

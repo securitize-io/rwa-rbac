@@ -1163,6 +1163,11 @@ export type RwaRbac = {
       discriminator: [40, 207, 145, 106, 249, 54, 23, 179];
       accounts: [
         {
+          name: "payer";
+          writable: true;
+          signer: true;
+        },
+        {
           name: "user";
           signer: true;
         },
@@ -1199,6 +1204,7 @@ export type RwaRbac = {
         },
         {
           name: "identityRegistry";
+          writable: true;
         },
         {
           name: "identityAccount";
@@ -1229,12 +1235,47 @@ export type RwaRbac = {
         },
         {
           name: "walletIdentityAccount";
+        },
+        {
+          name: "tokenLocksProgram";
+          optional: true;
+          address: "DKexLhcELG3mdqZXdgFsnP5h411VQCqEUvTSqahhsGL5";
+        },
+        {
+          name: "investorLocks";
+          writable: true;
+          optional: true;
+        },
+        {
+          name: "investor";
+          optional: true;
+        },
+        {
+          name: "lockedTokenAccount";
+          writable: true;
+          optional: true;
         }
       ];
       args: [
         {
-          name: "cpiData";
-          type: "bytes";
+          name: "amount";
+          type: "u64";
+        },
+        {
+          name: "issuanceTimestamp";
+          type: "i64";
+        },
+        {
+          name: "reasonCode";
+          type: {
+            option: "u64";
+          };
+        },
+        {
+          name: "reasonString";
+          type: {
+            option: "string";
+          };
         }
       ];
     },
@@ -2079,6 +2120,11 @@ export type RwaRbac = {
       code: 6003;
       name: "dataIsNotEmpty";
       msg: "Data is not empty";
+    },
+    {
+      code: 6004;
+      name: "unknownAccount";
+      msg: "Unknown account discriminator";
     }
   ];
   types: [

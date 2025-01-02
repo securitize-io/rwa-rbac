@@ -2,6 +2,7 @@
 
 pub mod constants;
 pub mod error;
+pub mod external_accounts;
 pub mod helper;
 pub mod instructions;
 pub mod macros;
@@ -73,8 +74,20 @@ pub mod rwa_rbac {
         instructions::remove_user_role::handler(ctx, users_to_remove)
     }
 
-    pub fn issue_tokens(ctx: Context<IssueTokens>, cpi_data: Vec<u8>) -> Result<()> {
-        instructions::issue_tokens::handler(ctx, cpi_data)
+    pub fn issue_tokens<'info>(
+        ctx: Context<'_, '_, '_, 'info, IssueTokens<'info>>,
+        amount: u64,
+        issuance_timestamp: i64,
+        reason_code: Option<u64>,
+        reason_string: Option<String>,
+    ) -> Result<()> {
+        instructions::issue_tokens::handler(
+            ctx,
+            amount,
+            issuance_timestamp,
+            reason_code,
+            reason_string,
+        )
     }
 
     pub fn update_asset_metadata(

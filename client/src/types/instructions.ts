@@ -226,3 +226,17 @@ export type RemoveTokenLockArgs = {
   lockedTokenAccount: PublicKey;
   index: BN;
 };
+
+export type IssueTokensWithLockArgs = {
+  payer: string;
+  signer: string;
+  owner: string;
+  wallet: string; // Same value as owner if owner is to be locked.
+  investorId: string;
+  assetMint: string;
+  amount: BN;
+  issuanceTimestamp: BN;
+  reasonCode?: BN;
+  reasonString?: string;
+  lockedTokenAccount?: PublicKey;
+};
