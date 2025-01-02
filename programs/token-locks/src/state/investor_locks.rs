@@ -50,7 +50,7 @@ pub struct InvestorLocks {
     /// Address of Investor account.
     pub investor: Pubkey,
 
-    /// Wallet (owned by the Investor) that is holding the locked tokens.
+    /// Wallet holding the locked tokens (matches Investor's owner).
     pub wallet: Pubkey,
 
     /// Account storing locked tokens for wallet. Will be frozen upon initialization of

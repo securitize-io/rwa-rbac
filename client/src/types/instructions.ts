@@ -213,7 +213,6 @@ export type AddTokenLockArgs = {
 
 /** Args used to remove a token lock */
 export type RemoveTokenLockArgs = {
-  payer: string;
   signer: string;
   owner: string;
   wallet: PublicKey; // Same value as owner if owner is to be locked.

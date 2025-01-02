@@ -265,7 +265,4 @@ pub const SPECIAL_WALLETS: [u8; 3] = [
 ];
 
 /// Levels not included in regions, countries or attributes.
-pub const OTHER_LEVELS: [u8; 1] = [Level::Investor as u8];
-
-/// Levels that are locked.
-pub const INVESTOR_LOCKED: [u8; 1] = [Level::InvestorLocked as u8];
+pub const OTHER_LEVELS: [u8; 2] = [Level::Investor as u8, Level::InvestorLocked as u8];

@@ -82,6 +82,7 @@ pub fn handler<'info>(
 
     // Prepare account meta and info vec.
     let mut account_metas = vec![
+        AccountMeta::new_readonly(ctx.accounts.user.key(), true),
         AccountMeta::new(ctx.accounts.controller_authority.key(), true),
         AccountMeta::new(ctx.accounts.investor_locks.key(), false),
         AccountMeta::new_readonly(ctx.accounts.investor.key(), false),
@@ -96,6 +97,7 @@ pub fn handler<'info>(
         AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
     ];
     let mut account_infos = vec![
+        ctx.accounts.user.to_account_info(),
         ctx.accounts.controller_authority.to_account_info(),
         ctx.accounts.investor_locks.to_account_info(),
         ctx.accounts.investor.to_account_info(),

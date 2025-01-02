@@ -10,29 +10,28 @@ import {
 } from "@solana/web3.js";
 import { assert } from "chai";
 import {
-  closeAccount,
   createAccount,
   getAssociatedTokenAddressSync,
   TOKEN_2022_PROGRAM_ID,
   createAssociatedTokenAccount,
-  getOrCreateAssociatedTokenAccount,
 } from "@solana/spl-token";
 
 import { setupTests, sleep } from "./utils";
 import { RwaRbacClient } from "../client/src/index";
 import {
-  AttachWalletToIdentityArgs,
   CreateAssetControllerIx,
-  getAssetControllerPda,
   getIdentityRegistryPda,
-  getWalletIdentityAccountPda,
 } from "../deps/rwa-token/clients/rwa-token-sdk/src";
 import {
   AddTokenLockArgs,
   CreateOrCloseInvestorLocksArgs,
   RemoveTokenLockArgs,
 } from "../client/src/types/instructions";
-import { deriveInvestorLocks, deriveInvestorPda, deriveLockedTokenAccount } from "../client/src/pdas";
+import {
+  deriveInvestorLocks,
+  deriveInvestorPda,
+  deriveLockedTokenAccount,
+} from "../client/src/pdas";
 
 describe("Token Locks End to End Tests", () => {
   // Configure the client to use the local cluster.
@@ -44,7 +43,6 @@ describe("Token Locks End to End Tests", () => {
   let connection: Connection;
   let investorLocksKey1: PublicKey;
   let lockedTokenAccount1: PublicKey;
-  let lockedTokenAccount2: PublicKey;
   let unlockedTokenAccount1: PublicKey;
   let unlockedTokenAccount2: PublicKey;
 
@@ -101,7 +99,7 @@ describe("Token Locks End to End Tests", () => {
     mint = args.assetMint;
     investorLocksKey1 = deriveInvestorLocks(
       INVESTOR_ID,
-      getIdentityRegistryPda(mint),
+      getIdentityRegistryPda(mint)
     );
 
     // Create Investor
@@ -129,15 +127,9 @@ describe("Token Locks End to End Tests", () => {
       setup.signer1Kp,
     ]);
 
-    lockedTokenAccount1 = deriveLockedTokenAccount(INVESTOR_ID, getIdentityRegistryPda(mint));
-    lockedTokenAccount2 = await createAccount(
-      connection,
-      setup.payerKp,
-      new PublicKey(mint),
-      new PublicKey(setup.user2),
-      Keypair.generate(),
-      null,
-      TOKEN_2022_PROGRAM_ID
+    lockedTokenAccount1 = deriveLockedTokenAccount(
+      INVESTOR_ID,
+      getIdentityRegistryPda(mint)
     );
     unlockedTokenAccount1 = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
@@ -145,7 +137,6 @@ describe("Token Locks End to End Tests", () => {
       false,
       TOKEN_2022_PROGRAM_ID
     );
-
     unlockedTokenAccount2 = await createAssociatedTokenAccount(
       connection,
       setup.user2Kp,
@@ -155,11 +146,9 @@ describe("Token Locks End to End Tests", () => {
       TOKEN_2022_PROGRAM_ID
     );
   });
-  
-
 
   it("Create InvestorLocks succeeds for main owner", async () => {
-    // Issue token to Investor's main wallet
+    // Issue unlocked token to Investor's main wallet
     const issueTokenIxns = await rwaRbacClient.assetController.issueTokenIxns(
       {
         payer: setup.payer.toString(), // Payer Account
@@ -192,10 +181,12 @@ describe("Token Locks End to End Tests", () => {
       setup.assetAccessController
     );
 
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
-      setup.payerKp,
-      setup.signer1Kp,
-    ], {skipPreflight: true});
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(ix),
+      [setup.payerKp, setup.signer1Kp],
+      { skipPreflight: true }
+    );
 
     const investorLocks =
       await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
@@ -213,10 +204,325 @@ describe("Token Locks End to End Tests", () => {
       deriveLockedTokenAccount(INVESTOR_ID, getIdentityRegistryPda(mint))
     );
     assert(lockedAccount.isFrozen);
+    assert(lockedAccount.owner.equals(args.owner));
+    assert(lockedAccount.mint.equals(new PublicKey(args.assetMint)));
+    assert(lockedAccount.closeAuthority.equals(setup.controllerAuthority));
   });
-  
+
+  it("Fails to issue locked tokens with no reason string or code.", async () => {
+    // Set lock up period.
+    const issuancePoliciesArgs = {
+      payer: setup.payer.toString(), // Payer Account
+      signer: setup.signer1.toString(), // User Account
+      owner: setup.user1.toString(), // Target Account
+      authority: setup.controllerAuthority.toString(), // ControllerAuthority
+      assetMint: mint,
+      issuancePolicies: {
+        disallowBackdating: false,
+        maxSupply: new BN(1000000),
+        usLockPeriod: new BN(60),
+        nonUsLockPeriod: new BN(30),
+      },
+    };
+    const ix1 = await rwaRbacClient.policyEngine.changeIssuancePolicies(
+      issuancePoliciesArgs,
+      setup.signer1,
+      setup.assetAccessController
+    );
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix1), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+
+    try {
+      // Expect error since reason code cannot be null.
+      const issueTokenIxns = await rwaRbacClient.assetController.issueTokenIxns(
+        {
+          payer: setup.payer.toString(), // Payer Account
+          signer: setup.signer1.toString(), // RBAC Signer
+          owner: setup.user1.toString(), // Investor Owner
+          assetMint: mint,
+          amount: new BN(ISSUE_AMT1),
+          investorId: INVESTOR_ID,
+          wallet: setup.user1,
+          issuanceTimestamp: new BN(Date.now() / 1000 - 10000), // Attempt to backdate
+          reasonCode: null,
+          reasonString: "x",
+        },
+        setup.assetAccessController
+      );
+      await sendAndConfirmTransaction(
+        connection,
+        new Transaction().add(...issueTokenIxns),
+        [setup.payerKp, setup.signer1Kp]
+      );
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("Missing reason or code"));
+    }
+
+    try {
+      // Expect error since reason string cannot be null.
+      const issueTokenIxns = await rwaRbacClient.assetController.issueTokenIxns(
+        {
+          payer: setup.payer.toString(), // Payer Account
+          signer: setup.signer1.toString(), // RBAC Signer
+          owner: setup.user1.toString(), // Investor Owner
+          assetMint: mint,
+          amount: new BN(ISSUE_AMT1),
+          investorId: INVESTOR_ID,
+          wallet: setup.user1,
+          issuanceTimestamp: new BN(Date.now() / 1000 - 10000), // Attempt to backdate
+          reasonCode: new BN(1),
+          reasonString: null,
+        },
+        setup.assetAccessController
+      );
+      await sendAndConfirmTransaction(
+        connection,
+        new Transaction().add(...issueTokenIxns),
+        [setup.payerKp, setup.signer1Kp]
+      );
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("Missing reason or code"));
+    }
+  });
+
+  it("Fails to issue locked tokens with backdating if release time is expired", async () => {
+    // Issue unlocked token to Investor's main wallet
+    const args = {
+      payer: setup.payer.toString(), // Payer Account
+      signer: setup.signer1.toString(), // RBAC Signer
+      owner: setup.user1.toString(), // Investor Owner
+      assetMint: mint,
+      amount: new BN(ISSUE_AMT1),
+      investorId: INVESTOR_ID,
+      wallet: setup.user1,
+      issuanceTimestamp: new BN(Date.now() / 1000 - 10000), // Attempt to backdate 10,000 seconds
+      reasonCode: new BN(0),
+      reasonString: "",
+    };
+
+    try {
+      // Should fail to issue since release time (current time - 10,000s + 30s) is
+      // less than current time.
+      const issueTokenIxns = await rwaRbacClient.assetController.issueTokenIxns(
+        args,
+        setup.assetAccessController
+      );
+      await sendAndConfirmTransaction(
+        connection,
+        new Transaction().add(...issueTokenIxns),
+        [setup.payerKp, setup.signer1Kp]
+      );
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("InvalidReleaseTime."));
+    }
+  });
+
+  it("Issue tokens with non-US lock period for main owner", async () => {
+    const unlockedAccountBefore =
+      await rwaRbacClient.tokenLocks.fetchTokenAccount(unlockedTokenAccount1);
+    const lockedAccountBefore =
+      await rwaRbacClient.tokenLocks.fetchTokenAccount(lockedTokenAccount1);
+
+    // Issue unlocked token to Investor's main wallet
+    const args = {
+      payer: setup.payer.toString(), // Payer Account
+      signer: setup.signer1.toString(), // RBAC Signer
+      owner: setup.user1.toString(), // Investor Owner
+      assetMint: mint,
+      amount: new BN(ISSUE_AMT1),
+      investorId: INVESTOR_ID,
+      wallet: setup.user1,
+      issuanceTimestamp: new BN(Date.now() / 1000),
+      reasonCode: new BN(0),
+      reasonString: "",
+    };
+    const issueTokenIxns = await rwaRbacClient.assetController.issueTokenIxns(
+      args,
+      setup.assetAccessController
+    );
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction()
+        .add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }))
+        .add(...issueTokenIxns),
+      [setup.payerKp, setup.signer1Kp]
+    );
+
+    // Check state of InvestorLocks.
+    const investorLocks =
+      await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
+        investorLocksKey1
+      );
+    assert(
+      investorLocks.investor.equals(
+        deriveInvestorPda(INVESTOR_ID, getIdentityRegistryPda(mint))
+      )
+    );
+    assert.equal(investorLocks.locks.length, 1);
+    assert(investorLocks.locks[0].value.eqn(ISSUE_AMT1));
+    assert(
+      investorLocks.locks[0].releaseTime.eq(args.issuanceTimestamp.addn(30))
+    );
+    assert(investorLocks.locks[0].reasonCode.eq(args.reasonCode));
+    assert.equal(investorLocks.locks[0].reasonString, args.reasonString);
+
+    // Check token account balances.
+    const lockedAccountAfter = await rwaRbacClient.tokenLocks.fetchTokenAccount(
+      lockedTokenAccount1
+    );
+    assert.equal(
+      Number(lockedAccountAfter.amount) - Number(lockedAccountBefore.amount),
+      ISSUE_AMT1
+    );
+    const unlockedAccountAfter =
+      await rwaRbacClient.tokenLocks.fetchTokenAccount(unlockedTokenAccount1);
+    assert.equal(
+      Number(unlockedAccountBefore.amount) -
+        Number(unlockedAccountAfter.amount),
+      0
+    );
+  });
+
+  it("Issue tokens with US lock period for main owner", async () => {
+    // Set mapping for country 1 to US region (Level = 10).
+    const changeMappingIx = await rwaRbacClient.policyEngine.changeMapping(
+      {
+        authority: setup.controllerAuthority,
+        payer: setup.payer.toString(), // Payer Account
+        assetMint: mint,
+        mappingSource: [1],
+        mappingValue: [10],
+      },
+      setup.signer1,
+      setup.assetAccessController
+    );
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(changeMappingIx),
+      [setup.payerKp, setup.signer1Kp]
+    );
+
+    const unlockedAccountBefore =
+      await rwaRbacClient.tokenLocks.fetchTokenAccount(unlockedTokenAccount1);
+    const lockedAccountBefore =
+      await rwaRbacClient.tokenLocks.fetchTokenAccount(lockedTokenAccount1);
+
+    // Issue unlocked token to Investor's main wallet
+    const args = {
+      payer: setup.payer.toString(), // Payer Account
+      signer: setup.signer1.toString(), // RBAC Signer
+      owner: setup.user1.toString(), // Investor Owner
+      assetMint: mint,
+      amount: new BN(ISSUE_AMT1),
+      investorId: INVESTOR_ID,
+      wallet: setup.user1,
+      issuanceTimestamp: new BN(Date.now() / 1000),
+      reasonCode: new BN(0),
+      reasonString: "",
+    };
+    const issueTokenIxns = await rwaRbacClient.assetController.issueTokenIxns(
+      args,
+      setup.assetAccessController
+    );
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction()
+        .add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }))
+        .add(...issueTokenIxns),
+      [setup.payerKp, setup.signer1Kp]
+    );
+
+    // Check state of InvestorLocks.
+    const investorLocks =
+      await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
+        investorLocksKey1
+      );
+    assert(
+      investorLocks.investor.equals(
+        deriveInvestorPda(INVESTOR_ID, getIdentityRegistryPda(mint))
+      )
+    );
+    assert.equal(investorLocks.locks.length, 2);
+    assert(investorLocks.locks[1].value.eqn(ISSUE_AMT1));
+    // Expect US lock to be 60s.
+    assert(
+      investorLocks.locks[1].releaseTime.eq(args.issuanceTimestamp.addn(60))
+    );
+    assert(investorLocks.locks[1].reasonCode.eq(args.reasonCode));
+    assert.equal(investorLocks.locks[1].reasonString, args.reasonString);
+
+    // Check token account balances.
+    const lockedAccountAfter = await rwaRbacClient.tokenLocks.fetchTokenAccount(
+      lockedTokenAccount1
+    );
+    assert.equal(
+      Number(lockedAccountAfter.amount) - Number(lockedAccountBefore.amount),
+      ISSUE_AMT1
+    );
+    const unlockedAccountAfter =
+      await rwaRbacClient.tokenLocks.fetchTokenAccount(unlockedTokenAccount1);
+    assert.equal(
+      Number(unlockedAccountBefore.amount) -
+        Number(unlockedAccountAfter.amount),
+      0
+    );
+  });
 
   it("Close InvestorLocks for main owner", async () => {
+    // Set lock up period to zero.
+    const issuancePoliciesArgs = {
+      payer: setup.payer.toString(), // Payer Account
+      signer: setup.signer1.toString(), // User Account
+      owner: setup.user1.toString(), // Target Account
+      authority: setup.controllerAuthority.toString(), // ControllerAuthority
+      assetMint: mint,
+      issuancePolicies: {
+        disallowBackdating: false,
+        maxSupply: new BN(1000000),
+        usLockPeriod: new BN(0),
+        nonUsLockPeriod: new BN(0),
+      },
+    };
+    const ix1 = await rwaRbacClient.policyEngine.changeIssuancePolicies(
+      issuancePoliciesArgs,
+      setup.signer1,
+      setup.assetAccessController
+    );
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix1), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+
+    const investorLocks =
+      await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
+        investorLocksKey1
+      );
+    const tx = new Transaction();
+
+    // Remove all existing locks.
+    for (let i = 0; i < investorLocks.locks.length; i++) {
+      const args: RemoveTokenLockArgs = {
+        signer: setup.signer1.toString(), // RBAC Signer
+        owner: setup.user1.toString(),
+        investorId: INVESTOR_ID,
+        assetMint: mint,
+        wallet: setup.user1, // Wallet to Lock
+        index: new BN(0),
+      };
+      tx.add(
+        await rwaRbacClient.tokenLocks.removeTokenLock(
+          args,
+          setup.assetAccessController
+        )
+      );
+    }
+
+    // Close InvestorLocks after removing all locks.
     const args: CreateOrCloseInvestorLocksArgs = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // RBAC Signer
@@ -224,20 +530,17 @@ describe("Token Locks End to End Tests", () => {
       investorId: INVESTOR_ID,
       assetMint: mint,
     };
-
-    const ix = await rwaRbacClient.tokenLocks.closeInvestorLocks(
+    const closeIx = await rwaRbacClient.tokenLocks.closeInvestorLocks(
       args,
       setup.assetAccessController
     );
-    await sendAndConfirmTransaction(
-      connection,
-      new Transaction().add(
-        ComputeBudgetProgram.setComputeUnitLimit({ units: 400000 }),
-        ix
-      ),
-      [setup.payerKp, setup.signer1Kp]
-    );
+    tx.add(closeIx);
+    tx.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 1000000 }));
 
+    await sendAndConfirmTransaction(connection, tx, [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
     const investorLocksAcc = await connection.getAccountInfo(investorLocksKey1);
     assert.isNull(investorLocksAcc);
   });
@@ -415,8 +718,12 @@ describe("Token Locks End to End Tests", () => {
   });
 
   it("Remove lock for main owner, before expiry", async () => {
+    const unlockedAccountBefore =
+      await rwaRbacClient.tokenLocks.fetchTokenAccount(unlockedTokenAccount1);
+    const lockedAccountBefore =
+      await rwaRbacClient.tokenLocks.fetchTokenAccount(lockedTokenAccount1);
+
     const args: RemoveTokenLockArgs = {
-      payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // RBAC Signer
       owner: setup.user1.toString(),
       investorId: INVESTOR_ID,
@@ -429,10 +736,8 @@ describe("Token Locks End to End Tests", () => {
       await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
         investorLocksKey1
       );
-    assert(
-      Number(investorLocks.locks[args.index.toNumber()].releaseTime) >
-        Date.now() / 1000
-    );
+    const lockedAmount = investorLocks.locks[0].value.toNumber();
+    assert(Number(investorLocks.locks[0].releaseTime) > Date.now() / 1000);
 
     const ix = await rwaRbacClient.tokenLocks.removeTokenLock(
       args,
@@ -463,21 +768,23 @@ describe("Token Locks End to End Tests", () => {
     assert.equal(investorLocks.locks.length, 1);
     assert(investorLocks.locks[0].reasonCode.eq(REASON_CODE2));
 
-    const lockedAmount = Number(investorLocks.locks[0].value);
-
+    // Check token balance changes.
     const unlockedAccountAfter =
       await rwaRbacClient.tokenLocks.fetchTokenAccount(unlockedTokenAccount1);
     assert.equal(
-      Number(unlockedAccountAfter.amount),
-      ISSUE_AMT1 - lockedAmount
+      Number(unlockedAccountAfter.amount - unlockedAccountBefore.amount),
+      lockedAmount
     );
     assert(!unlockedAccountAfter.isFrozen);
 
-    const lockedAccount = await rwaRbacClient.tokenLocks.fetchTokenAccount(
+    const lockedAccountAfter = await rwaRbacClient.tokenLocks.fetchTokenAccount(
       lockedTokenAccount1
     );
-    assert.equal(Number(lockedAccount.amount), lockedAmount);
-    assert(lockedAccount.isFrozen);
+    assert.equal(
+      Number(lockedAccountBefore.amount - lockedAccountAfter.amount),
+      lockedAmount
+    );
+    assert(lockedAccountAfter.isFrozen);
   });
 
   it("Add lock after removal for main owner", async () => {
@@ -583,7 +890,7 @@ describe("Token Locks End to End Tests", () => {
       connection,
       new Transaction().add(...issueTokenIxns2),
       [setup.payerKp, setup.signer1Kp]
-    );      
+    );
 
     const args: AddTokenLockArgs = {
       payer: setup.payer.toString(), // Payer Account
@@ -653,9 +960,8 @@ describe("Token Locks End to End Tests", () => {
     assert.equal(investorLocks.locks[2].reasonString, args.reasonString);
   });
 
-  it("Fails to remove lock permissionlessly before expiry", async () => {
+  it("Fails to remove lock with non-authorized signer before expiry", async () => {
     const args: RemoveTokenLockArgs = {
-      payer: setup.payer.toString(), // Payer Account
       signer: setup.user3.toString(), // Signer is not an AuthorizedUser
       owner: setup.user1.toString(), // Investor Owner
       investorId: INVESTOR_ID,
@@ -697,7 +1003,6 @@ describe("Token Locks End to End Tests", () => {
 
   it("Remove lock for attached wallet, before expiry", async () => {
     const args: RemoveTokenLockArgs = {
-      payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // RBAC Signer
       owner: setup.user1.toString(), // Investor Owner
       investorId: INVESTOR_ID,
@@ -750,10 +1055,9 @@ describe("Token Locks End to End Tests", () => {
     assert(!unlockedAccountAfter.isFrozen);
   });
 
-  it("Remove lock permissionlessly for main owner, after expiry", async () => {
+  it("Fails to remove lock with non-Investor signer, after expiry", async () => {
     const args: RemoveTokenLockArgs = {
-      payer: setup.payer.toString(), // Payer Account
-      signer: setup.user3.toString(), // Signer is not an AuthorizedUser
+      signer: setup.user3.toString(), // Signer is not an AuthorizedUser, nor the Investor Owner
       owner: setup.user1.toString(), // Investor Owner
       investorId: INVESTOR_ID,
       assetMint: mint,
@@ -777,13 +1081,55 @@ describe("Token Locks End to End Tests", () => {
       args,
       setup.assetAccessController
     );
+
+    try {
+      await sendAndConfirmTransaction(
+        connection,
+        new Transaction().add(
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 400000 }),
+          ix
+        ),
+        [setup.payerKp, setup.user3Kp]
+      );
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("UnauthorizedUser."));
+    }
+  });
+
+  it("Remove lock with Investor signer for owner wallet, after expiry", async () => {
+    const args: RemoveTokenLockArgs = {
+      signer: setup.user1.toString(), // Signer is not an AuthorizedUser
+      owner: setup.user1.toString(), // Investor Owner
+      investorId: INVESTOR_ID,
+      assetMint: mint,
+      wallet: setup.user1, // Wallet to Lock
+      index: new BN(0),
+    };
+
+    let investorLocks =
+      await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
+        investorLocksKey1
+      );
+    const lockedAmount = investorLocks.locks[0].value.toNumber();
+    const unlockedAccountBefore =
+      await rwaRbacClient.tokenLocks.fetchTokenAccount(unlockedTokenAccount1);
+
+    // Check that lock has expired.
+    await sleep(3000);
+    assert(Number(investorLocks.locks[0].releaseTime) < Date.now() / 1000);
+
+    const ix = await rwaRbacClient.tokenLocks.removeTokenLock(
+      args,
+      setup.assetAccessController
+    );
     await sendAndConfirmTransaction(
       connection,
       new Transaction().add(
         ComputeBudgetProgram.setComputeUnitLimit({ units: 400000 }),
         ix
       ),
-      [setup.payerKp, setup.user3Kp]
+      [setup.payerKp, setup.user1Kp]
     );
 
     investorLocks =
@@ -792,12 +1138,11 @@ describe("Token Locks End to End Tests", () => {
       );
     assert.equal(investorLocks.locks.length, 1); // Only 1 lock left
 
-    const lockedAmount = Number(investorLocks.locks[0].value);
     const unlockedAccountAfter =
       await rwaRbacClient.tokenLocks.fetchTokenAccount(unlockedTokenAccount1);
     assert.equal(
-      Number(unlockedAccountAfter.amount),
-      ISSUE_AMT1 - lockedAmount
+      Number(unlockedAccountAfter.amount - unlockedAccountBefore.amount),
+      lockedAmount
     );
     assert(!unlockedAccountAfter.isFrozen);
   });
@@ -840,9 +1185,8 @@ describe("Token Locks End to End Tests", () => {
     assert.equal(investorLocks.locks[1].reasonString, args.reasonString);
   });
 
-  it("Fails to remove lock with indefinite expiry permissionlessly", async () => {
+  it("Fails to remove lock with indefinite expiry with non-authorized signer", async () => {
     const args: RemoveTokenLockArgs = {
-      payer: setup.payer.toString(), // Payer Account
       signer: setup.user3.toString(), // Signer is not an AuthorizedUser
       owner: setup.user1.toString(), // Investor Owner
       investorId: INVESTOR_ID,
@@ -881,7 +1225,6 @@ describe("Token Locks End to End Tests", () => {
 
   it("Remove lock with indefinite expiry with authorized user", async () => {
     const args: RemoveTokenLockArgs = {
-      payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // RBAC Signer
       owner: setup.user1.toString(), // Investor Owner
       investorId: INVESTOR_ID,
@@ -956,7 +1299,6 @@ describe("Token Locks End to End Tests", () => {
 
   it("Remove Last Lock", async () => {
     const args: RemoveTokenLockArgs = {
-      payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // RBAC Signer
       owner: setup.user1.toString(), // Investor Owner
       investorId: INVESTOR_ID,
@@ -1016,5 +1358,4 @@ describe("Token Locks End to End Tests", () => {
     const investorLocksAcc = await connection.getAccountInfo(investorLocksKey1);
     assert.isNull(investorLocksAcc);
   });
-
 });

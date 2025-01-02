@@ -30,8 +30,6 @@ pub struct CloseInvestorLocks<'info> {
     #[account(mut)]
     pub locked_token_account: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
-    pub wallet: UncheckedAccount<'info>,
-    /// CHECK: Verified in CPI.
     pub token_program: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 }
@@ -59,7 +57,6 @@ pub fn handler(ctx: Context<CloseInvestorLocks>) -> Result<()> {
                 AccountMeta::new(ctx.accounts.investor_locks.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.investor.key(), false),
                 AccountMeta::new(ctx.accounts.locked_token_account.key(), false),
-                AccountMeta::new_readonly(ctx.accounts.wallet.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
             ],
@@ -71,7 +68,6 @@ pub fn handler(ctx: Context<CloseInvestorLocks>) -> Result<()> {
             ctx.accounts.investor_locks.to_account_info(),
             ctx.accounts.investor.to_account_info(),
             ctx.accounts.locked_token_account.to_account_info(),
-            ctx.accounts.wallet.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
         ],

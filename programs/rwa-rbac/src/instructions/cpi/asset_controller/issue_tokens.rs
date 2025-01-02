@@ -7,6 +7,7 @@ use anchor_spl::{associated_token::AssociatedToken, token_2022::Token2022};
 use crate::{
     constants::{Level, ASSET_CONTROLLER_ID, POLICY_ENGINE_ID, TOKEN_LOCKS_ID},
     controller_seeds,
+    error::ErrorCode,
     external_accounts::{IdentityAccount, PartialPolicyEngineAccount},
     get_discriminator,
     state::*,
@@ -159,7 +160,10 @@ impl<'info> IssueTokens<'info> {
                 .unwrap()
                 .to_account_info(),
             ctx.accounts.investor.as_ref().unwrap().to_account_info(),
-            ctx.accounts.wallet_identity_account.as_ref().to_account_info(),
+            ctx.accounts
+                .wallet_identity_account
+                .as_ref()
+                .to_account_info(),
             ctx.accounts.identity_account.as_ref().to_account_info(),
             ctx.accounts.asset_mint.to_account_info(),
             ctx.accounts.token_account.to_account_info(),
@@ -207,6 +211,7 @@ pub fn handler<'info>(
     reason_string: Option<String>,
 ) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
+    require_gte!(issuance_timestamp, 0);
 
     // Verify that signer is either a controller admin or has authorized user role.
     verify_medici_signer(
@@ -215,7 +220,6 @@ pub fn handler<'info>(
         ctx.accounts.authorized_user_role.clone(),
         MediciFlags::ISSUE_TOKENS,
     )?;
-
 
     // Get user's token issue lock period.
     let identity_account = IdentityAccount::deserialize_checked(&ctx.accounts.identity_account)?;
@@ -229,7 +233,6 @@ pub fn handler<'info>(
         issuance_timestamp
     };
 
-    
     let data = [
         &get_discriminator("issue_tokens"),
         &amount.to_le_bytes()[..],
@@ -244,19 +247,18 @@ pub fn handler<'info>(
         policy_engine_account.issuance_policies.non_us_lock_period
     };
 
-
     // Lock issued tokens if lock period is non zero.
     if lock_period > 0 {
         let release_time = issuance_timestamp
             .checked_add(i64::try_from(lock_period).unwrap())
             .unwrap();
 
-        let reason_string = reason_string.unwrap();
+        let reason_string = reason_string.ok_or(ErrorCode::MissingReason)?;
         let data = [
             &get_discriminator("add_token_lock"),
             &amount.to_le_bytes()[..],
             &release_time.to_le_bytes()[..],
-            &reason_code.unwrap().to_le_bytes()[..],
+            &reason_code.ok_or(ErrorCode::MissingReason)?.to_le_bytes()[..],
             &(reason_string.len() as u32).to_le_bytes()[..],
             reason_string.as_ref(),
         ]

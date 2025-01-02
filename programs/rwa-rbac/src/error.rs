@@ -16,4 +16,7 @@ pub enum ErrorCode {
 
     #[msg("Unknown account discriminator")]
     UnknownAccount,
+
+    #[msg("Missing reason or code")]
+    MissingReason,
 }

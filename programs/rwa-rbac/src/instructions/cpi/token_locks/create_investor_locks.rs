@@ -25,7 +25,7 @@ pub struct CreateInvestorLocks<'info> {
     /// CHECK: Checked against known program address.
     #[account(address = TOKEN_LOCKS_ID)]
     pub token_locks_program: UncheckedAccount<'info>,
-    /// CHECK: Validated in validate_wallet.
+    /// CHECK: Validated in CPI.
     pub wallet: AccountInfo<'info>,
     /// CHECK: Verified in CPI.
     #[account(mut)]
@@ -91,7 +91,6 @@ pub fn handler(ctx: Context<CreateInvestorLocks>) -> Result<()> {
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.system_program.to_account_info(),
     ];
-
 
     invoke_signed(
         &Instruction {

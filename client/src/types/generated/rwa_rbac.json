@@ -668,9 +668,6 @@
           "writable": true
         },
         {
-          "name": "wallet"
-        },
-        {
           "name": "token_program"
         },
         {
@@ -2030,6 +2027,11 @@
       "code": 6004,
       "name": "UnknownAccount",
       "msg": "Unknown account discriminator"
+    },
+    {
+      "code": 6005,
+      "name": "MissingReason",
+      "msg": "Missing reason or code"
     }
   ],
   "types": [

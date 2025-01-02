@@ -122,7 +122,7 @@ export class AssetController {
   ): Promise<TransactionInstruction[]> {
     const unlockedTokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
-      new PublicKey(args.wallet),
+      new PublicKey(args.wallet || args.owner),
       false,
       TOKEN_2022_PROGRAM_ID
     );
@@ -153,8 +153,8 @@ export class AssetController {
         .issueTokens(
           args.amount,
           args.issuanceTimestamp,
-          args.reasonCode || null,
-          args.reasonString || null
+          args.reasonCode == undefined ? null : args.reasonCode,
+          args.reasonString == undefined ? null : args.reasonString
         )
         .accountsStrict({
           payer: args.payer,

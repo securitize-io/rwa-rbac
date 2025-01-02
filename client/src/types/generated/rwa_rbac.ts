@@ -719,9 +719,6 @@ export type RwaRbac = {
           writable: true;
         },
         {
-          name: "wallet";
-        },
-        {
           name: "tokenProgram";
         },
         {
@@ -2145,6 +2142,11 @@ export type RwaRbac = {
       code: 6004;
       name: "unknownAccount";
       msg: "Unknown account discriminator";
+    },
+    {
+      code: 6005;
+      name: "missingReason";
+      msg: "Missing reason or code";
     }
   ];
   types: [

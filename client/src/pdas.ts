@@ -16,6 +16,7 @@ export const deriveInvestorLocks = (
     programId
   )[0];
 };
+
 export const deriveLockedTokenAccount = (
   investorId: string,
   identityRegistry: PublicKey,

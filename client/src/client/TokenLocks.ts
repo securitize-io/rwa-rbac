@@ -82,14 +82,17 @@ export class TokenLocks {
         assetAccessController,
         authorizedUserRole: authorizedUserRole || null,
         tokenLocksProgram: TL_PROGRAM,
-        investorLocks: deriveInvestorLocks(
-          args.investorId,
-          identityRegistry,
-        ),
+        investorLocks: deriveInvestorLocks(args.investorId, identityRegistry),
         investor: deriveInvestorPda(args.investorId, identityRegistry),
-        identityAccount: getIdentityAccountPda(args.assetMint, args.owner.toString()),
+        identityAccount: getIdentityAccountPda(
+          args.assetMint,
+          args.owner.toString()
+        ),
         assetMint: args.assetMint,
-        lockedTokenAccount: deriveLockedTokenAccount(args.investorId, identityRegistry),
+        lockedTokenAccount: deriveLockedTokenAccount(
+          args.investorId,
+          identityRegistry
+        ),
         assetController: getAssetControllerPda(args.assetMint),
         assetControllerProgram: assetControllerProgramId,
         tokenProgram: TOKEN_2022_PROGRAM_ID,
@@ -123,15 +126,14 @@ export class TokenLocks {
         assetAccessController,
         authorizedUserRole: authorizedUserRole || null,
         tokenLocksProgram: TL_PROGRAM,
-        investorLocks: deriveInvestorLocks(
-          args.investorId,
-          identityRegistry,
-        ),
+        investorLocks: deriveInvestorLocks(args.investorId, identityRegistry),
         investor: deriveInvestorPda(args.investorId, identityRegistry),
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_2022_PROGRAM_ID,
-        wallet: args.owner,
-        lockedTokenAccount: deriveLockedTokenAccount(args.investorId, identityRegistry),
+        lockedTokenAccount: deriveLockedTokenAccount(
+          args.investorId,
+          identityRegistry
+        ),
       })
       .instruction();
   }
@@ -152,7 +154,7 @@ export class TokenLocks {
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investorLocks = deriveInvestorLocks(
       args.investorId,
-      identityRegistry,
+      identityRegistry
     );
     const investor = deriveInvestorPda(args.investorId, identityRegistry);
     const unlockedTokenAccount = getAssociatedTokenAddressSync(
@@ -177,9 +179,15 @@ export class TokenLocks {
         investorLocks,
         investor,
         assetMint: args.assetMint,
-        identityAccount: getIdentityAccountPda(args.assetMint, args.owner.toString()),
+        identityAccount: getIdentityAccountPda(
+          args.assetMint,
+          args.owner.toString()
+        ),
         unlockedTokenAccount,
-        lockedTokenAccount: deriveLockedTokenAccount(args.investorId, identityRegistry),
+        lockedTokenAccount: deriveLockedTokenAccount(
+          args.investorId,
+          identityRegistry
+        ),
         assetController,
         assetControllerProgram: assetControllerProgramId,
         tokenProgram: TOKEN_2022_PROGRAM_ID,
@@ -205,13 +213,19 @@ export class TokenLocks {
         investor,
         assetMint: args.assetMint,
         unlockedTokenAccount,
-        lockedTokenAccount: deriveLockedTokenAccount(args.investorId, identityRegistry),
+        lockedTokenAccount: deriveLockedTokenAccount(
+          args.investorId,
+          identityRegistry
+        ),
         assetController,
         identityRegistry: getIdentityRegistryPda(args.assetMint),
         assetControllerProgram: assetControllerProgramId,
         tokenProgram: TOKEN_2022_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
-        identityAccount: getIdentityAccountPda(args.assetMint, args.owner.toString()),
+        identityAccount: getIdentityAccountPda(
+          args.assetMint,
+          args.owner.toString()
+        ),
         walletIdentityAccount: getWalletIdentityAccountPda(
           args.assetMint,
           args.wallet.toString()
@@ -281,7 +295,7 @@ export class TokenLocks {
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investorLocks = deriveInvestorLocks(
       args.investorId,
-      identityRegistry,
+      identityRegistry
     );
     const investor = deriveInvestorPda(args.investorId, identityRegistry);
     const unlockedTokenAccount = getAssociatedTokenAddressSync(
@@ -304,14 +318,20 @@ export class TokenLocks {
         tokenLocksProgram: TL_PROGRAM,
         investorLocks,
         investor,
-        identityAccount: getIdentityAccountPda(args.assetMint, args.owner.toString()),
+        identityAccount: getIdentityAccountPda(
+          args.assetMint,
+          args.owner.toString()
+        ),
         walletIdentityAccount: getWalletIdentityAccountPda(
           args.assetMint,
           args.wallet.toString()
         ),
         assetMint: args.assetMint,
         unlockedTokenAccount,
-        lockedTokenAccount: deriveLockedTokenAccount(args.investorId, identityRegistry),
+        lockedTokenAccount: deriveLockedTokenAccount(
+          args.investorId,
+          identityRegistry
+        ),
         assetController,
         identityRegistry: getIdentityRegistryPda(args.assetMint),
         assetControllerProgram: assetControllerProgramId,
