@@ -32,7 +32,11 @@ pub struct RemoveLevels<'info> {
     pub asset_mint: UncheckedAccount<'info>,
 }
 
-pub fn handler(ctx: Context<RemoveLevels>, levels_to_remove: Vec<u8>, enforce_limits: bool) -> Result<()> {
+pub fn handler(
+    ctx: Context<RemoveLevels>,
+    levels_to_remove: Vec<u8>,
+    enforce_limits: bool,
+) -> Result<()> {
     let investor = &mut ctx.accounts.investor;
     investor.last_updated_by = ctx.accounts.payer.key();
     investor
@@ -47,7 +51,8 @@ pub fn handler(ctx: Context<RemoveLevels>, levels_to_remove: Vec<u8>, enforce_li
     data[8..12].copy_from_slice(&(levels_to_remove.len() as u32).to_le_bytes());
     data[12..12 + levels_to_remove.len()].copy_from_slice(&levels_to_remove);
 
-    data[12 + levels_to_remove.len()..12 + levels_to_remove.len() + 1].copy_from_slice(&[enforce_limits as u8]);
+    data[12 + levels_to_remove.len()..12 + levels_to_remove.len() + 1]
+        .copy_from_slice(&[enforce_limits as u8]);
 
     invoke(
         &Instruction {

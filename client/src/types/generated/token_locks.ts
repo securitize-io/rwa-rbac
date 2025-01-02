@@ -583,6 +583,10 @@ export type TokenLocks = {
                 }
               }
             }
+          },
+          {
+            "name": "country",
+            "type": "u8"
           }
         ]
       }

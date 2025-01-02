@@ -131,6 +131,7 @@ export type SetupInvestorArgs = {
   levels: number[];
   expiries: BN[];
   proofHashes: string[];
+  country: number;
   enforceLimits?: boolean;
 };
 
@@ -144,6 +145,17 @@ export type AddLevelsArgs = {
   levels: number[];
   expiries: BN[];
   proofHashes: string[];
+  enforceLimits?: boolean;
+};
+
+/** Args used to change country of Investor  */
+export type ChangeCountryArgs = {
+  payer: string;
+  signer: string;
+  investorId: string;
+  assetMint: string;
+  owner: string;
+  country: number;
   enforceLimits?: boolean;
 };
 

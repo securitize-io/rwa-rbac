@@ -24,6 +24,7 @@ import {
   getIdentityRegistryPda,
   getPolicyEngineAccount,
   getPolicyEnginePda,
+  getPolicyEngineProgram,
   IssueTokenArgs,
 } from "../deps/rwa-token/clients/rwa-token-sdk/src";
 import {
@@ -45,7 +46,6 @@ describe("CPI End to End Tests", () => {
   let policyEngine: PublicKey;
 
   const INVESTOR_ID = "d1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6";
-  const INVESTOR_ID2 = "d4b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6";
   const PLACEHOLDER_HASH1 = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6";
   const PLACEHOLDER_HASH2 = "b1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6";
 
@@ -201,9 +201,17 @@ describe("CPI End to End Tests", () => {
         payer: setup.payer.toString(), // Payer Account
         assetMint: mint,
         identityFilter: {
-          identityLevels: [1],
-          comparisionType: { or: {} },
-          counterpartyFilter: { both: {} },
+          simple: [
+            {
+              single: [
+                {
+                  target: { bothOr: {} },
+                  mode: { include: {} },
+                  level: { level: [1] },
+                },
+              ],
+            },
+          ],
         },
         policyType: {
           transactionAmountLimit: {
@@ -270,6 +278,7 @@ describe("CPI End to End Tests", () => {
         new BN(Date.now() / 1000 + 30 * 60 * 60),
       ],
       proofHashes: [PLACEHOLDER_HASH1, PLACEHOLDER_HASH2],
+      country: 1,
     };
     const ixReturn = await rwaRbacClient.identityMetadataRegistry.setupUserIxns(
       args,
@@ -348,6 +357,7 @@ describe("CPI End to End Tests", () => {
         new BN(Date.now() / 1000 + 24 * 60 * 60),
         new BN(Date.now() / 1000 + 30 * 60 * 60),
       ],
+      country: 1,
     };
     const ixReturn = await rwaRbacClient.identityRegistry.setupUserIxns(
       args,
@@ -388,7 +398,7 @@ describe("CPI End to End Tests", () => {
       owner: setup.user1.toString(), // Target Account
       authority: setup.controllerAuthority,
       assetMint: mint,
-      levels: [3],
+      levels: [10],
       expiries: [new BN(Date.now() / 1000 + 24 * 60 * 60)],
     };
     const ix =
@@ -416,7 +426,7 @@ describe("CPI End to End Tests", () => {
       owner: setup.user2.toString(), // Target Account
       authority: setup.controllerAuthority,
       assetMint: mint,
-      levels: [3],
+      levels: [10],
       expiries: [new BN(Date.now() / 1000 + 24 * 60 * 60)],
     };
     const ix =
@@ -736,6 +746,26 @@ describe("CPI End to End Tests", () => {
     ]);
   });
 
+  it("CPI: Change Country", async () => {
+    const args = {
+      payer: setup.payer.toString(), // Payer Account
+      signer: setup.signer1.toString(), // User Account
+      owner: setup.user1.toString(), // Target Account
+      assetMint: mint,
+      investorId: INVESTOR_ID,
+      country: 50,
+    };
+    const ix = await rwaRbacClient.identityMetadataRegistry.changeCountry(
+      args,
+      setup.assetAccessController,
+      setup.userRole1
+    );
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+  });
+
   it("CPI: Remove Investor", async () => {
     const args = {
       payer: setup.payer.toString(), // Payer Account
@@ -826,6 +856,49 @@ describe("CPI End to End Tests", () => {
       connection,
       new Transaction().add(...revokeIxs),
       [setup.payerKp, setup.signer1Kp]
+    );
+  });
+
+  it("CPI: Change Issuance Policies", async () => {
+    const args = {
+      payer: setup.payer.toString(), // Payer Account
+      signer: setup.signer1.toString(), // User Account
+      owner: setup.user1.toString(), // Target Account
+      authority: setup.controllerAuthority.toString(), // ControllerAuthority
+      assetMint: mint,
+      issuancePolicies: {
+        disallowBackdating: true,
+        maxSupply: new BN(1000000),
+        usLockPeriod: new BN(60),
+        nonUsLockPeriod: new BN(30),
+      },
+    };
+    const ix = await rwaRbacClient.policyEngine.changeIssuancePolicies(
+      args,
+      setup.signer1,
+      setup.assetAccessController,
+      setup.userRole1
+    );
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+
+    // Verify that issuance policies is updated correctly.
+    const { issuancePolicies } = await getPolicyEngineAccount(
+      mint,
+      rwaRbacClient.provider
+    );
+    assert.equal(
+      issuancePolicies.disallowBackdating,
+      args.issuancePolicies.disallowBackdating
+    );
+    assert(issuancePolicies.maxSupply.eq(args.issuancePolicies.maxSupply));
+    assert(
+      issuancePolicies.usLockPeriod.eq(args.issuancePolicies.usLockPeriod)
+    );
+    assert(
+      issuancePolicies.nonUsLockPeriod.eq(args.issuancePolicies.nonUsLockPeriod)
     );
   });
 });

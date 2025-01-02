@@ -14,6 +14,8 @@ import {
   ChangeCountersArgs,
   ChangeCounterLimitsArgs,
   RwaClient,
+  ChangeMappingArgs,
+  ChangeIssuancePoliciesArgs,
 } from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
 
 /**
@@ -90,7 +92,6 @@ export class PolicyEngine {
       .instruction();
   }
 
-  
   /**
    * Asynchronously changes counters on the policy account.
    * @param args - {@link ChangeCountersArgs}
@@ -121,7 +122,7 @@ export class PolicyEngine {
       })
       .instruction();
   }
-  
+
   /**
    * Asynchronously changes counters limits on the policy account.
    * @param args - {@link ChangeCounterLimitsArgs}
@@ -136,7 +137,9 @@ export class PolicyEngine {
     assetAccessController: PublicKey,
     authorizedUserRole?: PublicKey
   ): Promise<TransactionInstruction> {
-    const policyIx = await this.rwaClient.policyEngine.changeCounterLimits(args);
+    const policyIx = await this.rwaClient.policyEngine.changeCounterLimits(
+      args
+    );
     const ixData = policyIx.ixs[0].data;
     return this.rbacProgram.methods
       .changeCounterLimits(ixData)
@@ -149,6 +152,66 @@ export class PolicyEngine {
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         systemProgram: SystemProgram.programId,
+      })
+      .instruction();
+  }
+
+  /**
+   * Asynchronously changes the levels mapping used in Policy Engine.
+   * @param args - {@link ChangeMappingArgs}
+   * @param signer - User signer public key.
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * */
+  async changeMapping(
+    args: ChangeMappingArgs,
+    signer: PublicKey,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const policyIx = await this.rwaClient.policyEngine.changeMapping(args);
+    const ixData = policyIx.ixs[0].data;
+    return this.rbacProgram.methods
+      .changeMapping(ixData)
+      .accountsStrict({
+        payer: args.payer,
+        user: signer,
+        controllerAuthority: args.authority,
+        assetAccessController,
+        authorizedUserRole: authorizedUserRole || null,
+        policyEngineProgram: policyEngineProgramId,
+        policyEngine: getPolicyEnginePda(args.assetMint),
+      })
+      .instruction();
+  }
+
+  /**
+   * Asynchronously changes the issuance policies enforced by Policy Engine.
+   * @param args - {@link ChangeIssuancePoliciesArgs}
+   * @param signer - User signer public key.
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * */
+  async changeIssuancePolicies(
+    args: ChangeIssuancePoliciesArgs,
+    signer: PublicKey,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const policyIx = await this.rwaClient.policyEngine.changeIssuancePolicies(
+      args
+    );
+    const ixData = policyIx.ixs[0].data;
+    return this.rbacProgram.methods
+      .changeIssuancePolicies(ixData)
+      .accountsStrict({
+        payer: args.payer,
+        user: signer,
+        controllerAuthority: args.authority,
+        assetAccessController,
+        authorizedUserRole: authorizedUserRole || null,
+        policyEngineProgram: policyEngineProgramId,
+        policyEngine: getPolicyEnginePda(args.assetMint),
       })
       .instruction();
   }

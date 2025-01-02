@@ -35,5 +35,8 @@ export enum MediciFlags {
   REMOVE_TOKEN_LOCK = 1 << 23,
   CHANGE_COUNTERS = 1 << 24,
   CHANGE_COUNTER_LIMITS = 1 << 25,
-  ALL = (1 << 26) - 1,
+  CHANGE_COUNTRY = 1 << 26,
+  CHANGE_MAPPING = 1 << 27,
+  CHANGE_ISSUANCE_POLICIES = 1 << 28,
+  ALL = (1 << 29) - 1,
 }

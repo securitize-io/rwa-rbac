@@ -70,7 +70,6 @@ pub fn handler(
     }
     data[offset + expiries.len() * 8..].copy_from_slice(&[enforce_limits as u8]);
 
-
     invoke(
         &Instruction {
             program_id: ctx.accounts.identity_registry_program.key(),

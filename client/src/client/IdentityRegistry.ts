@@ -8,7 +8,9 @@ import {
 } from "../types/instructions";
 import {
   AddLevelToIdentityAccountArgs,
+  ChangeCountryArgs,
   getAddLevelToIdentityAccount,
+  getChangeCountryIx,
   getIdentityAccountPda,
   getIdentityRegistryPda,
   getIdentityRegistryProgram,
@@ -157,7 +159,6 @@ export class IdentityRegistry {
       })
       .instruction();
   }
-
   /**
    * Asynchronously reduces a non-Investor user identity account level.
    * @param args - {@link RemoveLevelFromIdentityAccount}

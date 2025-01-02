@@ -58,6 +58,7 @@ pub fn handler(
     owner: Pubkey,
     level: u8,
     expiry: i64,
+    country: u8,
     proof_hash: String,
 ) -> Result<()> {
     require!(is_valid_hash(&investor_id), ErrorCode::InvalidHash);
@@ -71,6 +72,7 @@ pub fn handler(
     investor.collision_hash = collision_hash;
     investor.last_updated_by = ctx.accounts.payer.key();
     investor.levels = vec![LevelData { level, proof_hash }];
+    investor.country = country;
 
     let identity_to_investor = &mut ctx.accounts.identity_to_investor;
     identity_to_investor.identity_account = ctx.accounts.identity_account.key();
@@ -82,6 +84,7 @@ pub fn handler(
         owner.as_ref(),
         &[level],
         &expiry.to_le_bytes(),
+        &[country],
     ]
     .concat();
 

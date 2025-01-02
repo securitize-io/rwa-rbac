@@ -124,10 +124,7 @@ pub mod rwa_rbac {
         instructions::attach_to_policy_engine::handler(ctx, cpi_data)
     }
 
-    pub fn change_counters(
-        ctx: Context<ChangeCounters>,
-        cpi_data: Vec<u8>,
-    ) -> Result<()> {
+    pub fn change_counters(ctx: Context<ChangeCounters>, cpi_data: Vec<u8>) -> Result<()> {
         instructions::change_counters::handler(ctx, cpi_data)
     }
 
@@ -223,5 +220,20 @@ pub mod rwa_rbac {
         cpi_data: Vec<u8>,
     ) -> Result<()> {
         instructions::remove_level_from_identity_account::handler(ctx, cpi_data)
+    }
+
+    pub fn change_country(ctx: Context<ChangeCountry>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::change_country::handler(ctx, cpi_data)
+    }
+
+    pub fn change_mapping(ctx: Context<ChangeMapping>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::change_mapping::handler(ctx, cpi_data)
+    }
+
+    pub fn change_issuance_policies(
+        ctx: Context<ChangeIssuancePolicies>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::change_issuance_policies::handler(ctx, cpi_data)
     }
 }

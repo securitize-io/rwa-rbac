@@ -6,7 +6,6 @@ pub const IDENTITY_REGISTRY_ID: Pubkey = pubkey!("7Zis9Cg1pa3PMRCMfJBgzoQThoBA21
 #[derive(PartialEq, Clone, Copy)]
 #[repr(u8)]
 pub enum Level {
-    // Special types
     Investor = 1,
     KYC_APPROVED = 5,
     ACCREDITED = 6,
@@ -26,8 +25,11 @@ pub enum Level {
     PLATFORM_WALLET = 30,
     EXCHANGE_WALLET = 31,
     ISSUER_WALLET = 32,
+}
 
-    // Countries starting at 50
+#[repr(u8)]
+pub enum Country {
+    None = 0,
     Afghanistan = 50,
     Albania = 51,
     Algeria = 52,
@@ -225,40 +227,6 @@ pub enum Level {
     Zambia = 244,
     Zimbabwe = 245,
 }
-
-/// Levels classified as special regions.
-pub const REGIONS: [u8; 3] = [Level::US as u8, Level::EU as u8, Level::JP as u8];
-
-/// Levels classified as countries in EU region.
-pub const EU_COUNTRIES: [u8; 27] = [
-    Level::Austria as u8,
-    Level::Belgium as u8,
-    Level::Bulgaria as u8,
-    Level::Croatia as u8,
-    Level::Cyprus as u8,
-    Level::CzechRepublic as u8,
-    Level::Denmark as u8,
-    Level::Estonia as u8,
-    Level::Finland as u8,
-    Level::France as u8,
-    Level::Germany as u8,
-    Level::Greece as u8,
-    Level::Hungary as u8,
-    Level::Ireland as u8,
-    Level::Italy as u8,
-    Level::Latvia as u8,
-    Level::Lithuania as u8,
-    Level::Luxembourg as u8,
-    Level::Malta as u8,
-    Level::Netherlands as u8,
-    Level::Poland as u8,
-    Level::Portugal as u8,
-    Level::Romania as u8,
-    Level::Slovakia as u8,
-    Level::Slovenia as u8,
-    Level::Spain as u8,
-    Level::Sweden as u8,
-];
 
 /// Levels containing various statuses of the accredited attribute.
 pub const ACCREDITED_ATTRIBUTES: [u8; 3] = [

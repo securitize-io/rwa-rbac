@@ -117,5 +117,8 @@ bitflags::bitflags! {
       const REMOVE_TOKEN_LOCK = 1 << 23;
       const CHANGE_COUNTERS = 1 << 24;
       const CHANGE_COUNTER_LIMITS = 1 << 25;
+      const CHANGE_COUNTRY = 1 << 26;
+      const CHANGE_MAPPING = 1 << 27;
+      const CHANGE_ISSUANCE_POLICIES = 1 << 28;
   }
 }

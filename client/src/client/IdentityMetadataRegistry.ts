@@ -26,6 +26,7 @@ import {
 import { IMR_PROGRAM } from "../constants";
 import {
   AddLevelsArgs,
+  ChangeCountryArgs,
   RemoveInvestorArgs,
   RemoveLevelsArgs,
   SetupInvestorArgs,
@@ -81,6 +82,7 @@ export class IdentityMetadataRegistry {
         new PublicKey(args.owner),
         args.levels[0],
         args.expiries[0],
+        args.country,
         args.proofHashes[0]
       )
       .accountsStrict({
@@ -207,6 +209,62 @@ export class IdentityMetadataRegistry {
         identityRegistry,
         identityAccount,
         systemProgram: SystemProgram.programId,
+        policyEngineProgram: policyEngineProgramId,
+        policyEngine: getPolicyEnginePda(args.assetMint),
+        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        assetMint: args.assetMint,
+      })
+      .instruction();
+  }
+
+  /**
+   * Asynchronously change country for the Investor.
+   * @param args - {@link ChangeCountryArgs}
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @returns A Promise that resolves to the instructions to change the country.
+   * */
+  async changeCountry(
+    args: ChangeCountryArgs,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const controllerAuthority = deriveControllerAuthorityPda(
+      assetAccessController
+    );
+    const identityRegistry = getIdentityRegistryPda(args.assetMint);
+    const investor = deriveInvestorPda(args.investorId, identityRegistry);
+    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
+
+    const ix = await this.imrProgram.methods
+      .changeCountry(args.country, args.enforceLimits ?? false)
+      .accountsStrict({
+        payer: args.payer,
+        authority: controllerAuthority,
+        investor,
+        identityRegistryProgram: identityRegistryProgramId,
+        identityRegistry,
+        identityAccount,
+        policyEngineProgram: policyEngineProgramId,
+        policyEngine: getPolicyEnginePda(args.assetMint),
+        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        assetMint: args.assetMint,
+      })
+      .instruction();
+
+    return this.rbacProgram.methods
+      .changeCountry(ix.data)
+      .accountsStrict({
+        payer: args.payer,
+        user: args.signer,
+        controllerAuthority,
+        assetAccessController,
+        authorizedUserRole: authorizedUserRole || null,
+        identityMetadataRegistryProgram: IMR_PROGRAM,
+        investor,
+        identityRegistryProgram: identityRegistryProgramId,
+        identityRegistry,
+        identityAccount,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),

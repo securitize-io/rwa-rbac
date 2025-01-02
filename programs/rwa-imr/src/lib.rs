@@ -24,6 +24,7 @@ pub mod rwa_imr {
         owner: Pubkey,
         level: u8,
         expiry: i64,
+        country: u8,
         proof_hash: String,
     ) -> Result<()> {
         instructions::register_investor::handler(
@@ -33,6 +34,7 @@ pub mod rwa_imr {
             owner,
             level,
             expiry,
+            country,
             proof_hash,
         )
     }
@@ -57,5 +59,13 @@ pub mod rwa_imr {
         enforce_limits: bool,
     ) -> Result<()> {
         instructions::remove_levels::handler(ctx, levels_to_remove, enforce_limits)
+    }
+
+    pub fn change_country(
+        ctx: Context<ChangeCountry>,
+        new_country: u8,
+        enforce_limits: bool,
+    ) -> Result<()> {
+        instructions::change_country::handler(ctx, new_country, enforce_limits)
     }
 }

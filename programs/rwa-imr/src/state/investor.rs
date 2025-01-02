@@ -3,8 +3,8 @@ use std::collections::HashSet;
 use anchor_lang::prelude::*;
 
 use crate::constants::{
-    Level, ACCREDITED_ATTRIBUTES, EU_COUNTRIES, KYC_ATTRIBUTES, OTHER_LEVELS,
-    PROFESSIONAL_ATTRIBUTES, QUALIFIED_ATTRIBUTES, REGIONS, SPECIAL_WALLETS,
+    Country, ACCREDITED_ATTRIBUTES, KYC_ATTRIBUTES, OTHER_LEVELS, PROFESSIONAL_ATTRIBUTES,
+    QUALIFIED_ATTRIBUTES, SPECIAL_WALLETS,
 };
 use crate::error::ErrorCode;
 use crate::helper::is_valid_hash;
@@ -46,6 +46,8 @@ pub struct Investor {
     /// Levels assigned to investor.
     #[max_len(10)]
     pub levels: Vec<LevelData>,
+
+    pub country: u8,
 }
 
 impl Investor {
@@ -58,12 +60,18 @@ impl Investor {
             .all(|level_data| seen_levels.insert(level_data.level))
     }
 
+    pub fn validate_country(&self) -> Result<()> {
+        require!(
+            self.country >= Country::Afghanistan as u8 && self.country <= Country::Zimbabwe as u8,
+            ErrorCode::InvalidCountryLevel
+        );
+        Ok(())
+    }
+
     pub fn validate_levels(&self) -> Result<()> {
         // Check that each level appears only once.
         require!(self.are_levels_unique(), ErrorCode::InvalidLevels);
 
-        let mut countries = vec![];
-        let mut regions = vec![];
         let mut accredited = vec![];
         let mut qualified = vec![];
         let mut professional = vec![];
@@ -73,11 +81,7 @@ impl Investor {
         // Group levels into vec based on its category.
         for level_data in &self.levels {
             let level = level_data.level;
-            if (50..=245).contains(&level) {
-                countries.push(level);
-            } else if REGIONS.contains(&level) {
-                regions.push(level);
-            } else if ACCREDITED_ATTRIBUTES.contains(&level) {
+            if ACCREDITED_ATTRIBUTES.contains(&level) {
                 accredited.push(level);
             } else if KYC_ATTRIBUTES.contains(&level) {
                 kyc.push(level);
@@ -95,34 +99,6 @@ impl Investor {
 
         // Check that user isn't a special wallet.
         require!(special.is_empty(), ErrorCode::InvalidLevels);
-
-        // Check that there's at most 1 region level.
-        require!(regions.len() <= 1, ErrorCode::InvalidRegionLevel);
-
-        // Check that there's at most 1 country level.
-        require!(countries.len() <= 1, ErrorCode::InvalidCountryLevel);
-
-        // Check that country belongs in region (if both are set).
-        if regions.len() == 1 && countries.len() == 1 {
-            let region = regions[0];
-            let country = countries[0];
-            if region == Level::EU as u8 {
-                require!(
-                    EU_COUNTRIES.contains(&country),
-                    ErrorCode::InvalidRegionLevel
-                );
-            } else if region == Level::US as u8 {
-                require_eq!(
-                    country,
-                    Level::UnitedStates as u8,
-                    ErrorCode::InvalidRegionLevel
-                );
-            } else if region == Level::JP as u8 {
-                require_eq!(country, Level::Japan as u8, ErrorCode::InvalidRegionLevel);
-            } else {
-                panic!("Unknown region encountered")
-            }
-        }
 
         // Check that there's at most 1 status per attribute type.
         require!(accredited.len() <= 1, ErrorCode::InvalidAttribute);
@@ -142,6 +118,8 @@ impl Investor {
 
 #[cfg(test)]
 mod tests {
+    use crate::constants::{Country, Level};
+
     use super::*;
 
     fn build_investor(levels: Vec<Level>, proof_hashes: Option<Vec<String>>) -> Investor {
@@ -171,14 +149,12 @@ mod tests {
         assert!(investor.validate_levels().is_err());
     }
 
-
     #[test]
     fn test_special_wallets() {
         // Should fail since investor is not allowed to be a special wallet.
         let investor = build_investor(vec![Level::PLATFORM_WALLET, Level::EXCHANGE_WALLET], None);
         assert!(investor.validate_levels().is_err());
     }
-
 
     #[test]
     fn test_invalid_proof_hashes() {
@@ -227,21 +203,26 @@ mod tests {
 
     #[test]
     fn test_country_region_levels() {
-        // Should fail with two countries.
-        let investor = build_investor(vec![Level::Cambodia, Level::France], None);
+        // Should fail with countries as regular levels.
+        let mut investor = build_investor(vec![], None);
+        investor.levels.push(LevelData {
+            level: Country::Cambodia as u8,
+            proof_hash: String::new(),
+        });
         assert!(investor.validate_levels().is_err());
 
-        // Should fail with two regions.
-        let investor = build_investor(vec![Level::EU, Level::JP], None);
+        // Should fail with regions as levels.
+        let investor = build_investor(vec![Level::EU], None);
         assert!(investor.validate_levels().is_err());
 
-        // Should fail with country and region mismatch.
-        let investor = build_investor(vec![Level::EU, Level::UnitedArabEmirates], None);
-        assert!(investor.validate_levels().is_err());
+        // should fail with invalid country
+        let investor = build_investor(vec![], None);
+        assert!(investor.validate_country().is_err());
 
         // Should succeed with country and region match.
-        let investor = build_investor(vec![Level::EU, Level::France], None);
-        assert!(investor.validate_levels().is_ok());
+        let mut investor = build_investor(vec![], None);
+        investor.country = Country::UnitedStates as u8;
+        assert!(investor.validate_country().is_ok());
     }
 
     #[test]
@@ -281,18 +262,18 @@ mod tests {
     #[test]
     fn test_full_levels_combination() {
         // Generic case with all combinations should pass.
-        let investor = build_investor(
+        let mut investor = build_investor(
             vec![
                 Level::KYC_APPROVED,
                 Level::ACCREDITED,
                 Level::PROFESSIONAL,
                 Level::QUALIFIED_PENDING,
                 Level::Investor,
-                Level::US,
-                Level::UnitedStates,
             ],
             None,
         );
+        investor.country = Country::UnitedStates as u8;
         assert!(investor.validate_levels().is_ok());
+        assert!(investor.validate_country().is_ok());
     }
 }

@@ -121,10 +121,9 @@ describe("Token Locks End to End Tests", () => {
           investorId: INVESTOR_ID,
           collisionHash: PLACEHOLDER_HASH2,
           levels: [1],
-          expiries: [
-            new BN(Date.now() / 1000 + 24 * 60 * 60),
-          ],
+          expiries: [new BN(Date.now() / 1000 + 24 * 60 * 60)],
           proofHashes: [PLACEHOLDER_HASH1, PLACEHOLDER_HASH2],
+          country: 1,
         },
         setup.assetAccessController
       );

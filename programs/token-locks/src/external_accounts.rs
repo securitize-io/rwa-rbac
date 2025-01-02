@@ -28,6 +28,8 @@ pub struct IdentityAccount {
 
     pub num_wallets: u16,
 
+    pub country: u8,
+
     // identity levels corresponding to the user
     pub levels: Vec<IdentityLevel>,
 }
