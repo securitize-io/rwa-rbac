@@ -3,15 +3,14 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke},
 };
 use anchor_spl::token_interface::{Mint, Token2022, TokenAccount};
-
-use rwa_imr::{helper::get_discriminator, Investor};
-
-use crate::{
-    constants::*,
-    error::ErrorCode,
+use rbac_utils::{
+    constants::ASSET_CONTROLLER_ID,
     external_accounts::{IdentityAccount, WalletIdentity},
-    state::*,
+    get_discriminator,
 };
+use rwa_imr::Investor;
+
+use crate::{error::ErrorCode, state::*};
 
 #[derive(Accounts)]
 pub struct RemoveTokenLock<'info> {

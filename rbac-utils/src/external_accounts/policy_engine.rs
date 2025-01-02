@@ -1,8 +1,6 @@
 use anchor_lang::{prelude::*, AnchorSerialize};
 
-use crate::{
-    constants::POLICY_ENGINE_ID, error::ErrorCode, external_accounts::get_acc_discriminator,
-};
+use crate::{constants::POLICY_ENGINE_ID, get_acc_discriminator};
 
 #[derive(InitSpace, AnchorDeserialize, AnchorSerialize)]
 pub struct PartialPolicyEngineAccount {
@@ -33,10 +31,9 @@ impl PartialPolicyEngineAccount {
 
         // Check account discriminator.
         let v = info.data.borrow();
-        require!(
-            v.starts_with(&get_acc_discriminator("PolicyEngineAccount")),
-            ErrorCode::UnknownAccount
-        );
+        if !v.starts_with(&get_acc_discriminator("PolicyEngineAccount")) {
+            return Err(ProgramError::InvalidAccountData.into());
+        }
 
         let end_len = 8 + PartialPolicyEngineAccount::INIT_SPACE;
         let acc = Self::try_from_slice(&v[8..end_len])?;

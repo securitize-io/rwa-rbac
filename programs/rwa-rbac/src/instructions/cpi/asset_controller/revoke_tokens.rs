@@ -3,11 +3,9 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 use anchor_spl::{associated_token::AssociatedToken, token_2022::Token2022};
+use rbac_utils::{constants::ASSET_CONTROLLER_ID, get_discriminator};
 
-use crate::{
-    constants::ASSET_CONTROLLER_ID, controller_seeds, error::ErrorCode, get_discriminator,
-    state::*, verify_medici_signer,
-};
+use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
 
 #[derive(Accounts)]
 pub struct RevokeTokens<'info> {

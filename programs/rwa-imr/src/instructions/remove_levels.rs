@@ -2,8 +2,9 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke},
 };
+use rbac_utils::{constants::IDENTITY_REGISTRY_ID, get_discriminator};
 
-use crate::{constants::IDENTITY_REGISTRY_ID, helper::get_discriminator, state::*};
+use crate::state::*;
 
 #[derive(Accounts)]
 pub struct RemoveLevels<'info> {

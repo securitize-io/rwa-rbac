@@ -6,12 +6,13 @@ use anchor_spl::{
     token_2022::{set_authority, spl_token_2022::instruction::AuthorityType, SetAuthority},
     token_interface::{Mint, Token2022, TokenAccount},
 };
-use rwa_imr::{helper::get_discriminator, Investor};
-
-use crate::{
+use rbac_utils::{
     constants::{ASSET_CONTROLLER_ID, IDENTITY_REGISTRY_ID},
-    state::*,
+    get_discriminator,
 };
+use rwa_imr::Investor;
+
+use crate::state::*;
 
 #[derive(Accounts)]
 pub struct CreateInvestorLocks<'info> {

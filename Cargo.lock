@@ -1699,6 +1699,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rbac-utils"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "hex",
+ "sha256",
+]
+
+[[package]]
 name = "redox_syscall"
 version = "0.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1768,8 +1777,7 @@ name = "rwa-imr"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
- "hex",
- "sha256",
+ "rbac-utils",
 ]
 
 [[package]]
@@ -1779,8 +1787,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "bitflags",
- "hex",
- "sha256",
+ "rbac-utils",
 ]
 
 [[package]]
@@ -2494,9 +2501,8 @@ version = "0.1.0"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
- "hex",
+ "rbac-utils",
  "rwa-imr",
- "sha256",
 ]
 
 [[package]]

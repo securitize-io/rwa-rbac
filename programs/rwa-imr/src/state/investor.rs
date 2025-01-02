@@ -1,13 +1,11 @@
-use std::collections::HashSet;
-
+use crate::error::ErrorCode;
 use anchor_lang::prelude::*;
-
-use crate::constants::{
+use rbac_utils::constants::{
     Country, ACCREDITED_ATTRIBUTES, KYC_ATTRIBUTES, OTHER_LEVELS, PROFESSIONAL_ATTRIBUTES,
     QUALIFIED_ATTRIBUTES, SPECIAL_WALLETS,
 };
-use crate::error::ErrorCode;
-use crate::helper::is_valid_hash;
+use rbac_utils::is_valid_hash;
+use std::collections::HashSet;
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, InitSpace)]
 pub struct LevelData {
@@ -118,7 +116,7 @@ impl Investor {
 
 #[cfg(test)]
 mod tests {
-    use crate::constants::{Country, Level};
+    use rbac_utils::constants::{Country, Level};
 
     use super::*;
 

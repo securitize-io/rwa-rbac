@@ -2,10 +2,9 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
+use rbac_utils::{constants::TOKEN_LOCKS_ID, get_discriminator};
 
-use crate::{
-    constants::TOKEN_LOCKS_ID, controller_seeds, get_discriminator, state::*, verify_medici_signer,
-};
+use crate::{controller_seeds, state::*, verify_medici_signer};
 
 #[derive(Accounts)]
 pub struct CloseInvestorLocks<'info> {

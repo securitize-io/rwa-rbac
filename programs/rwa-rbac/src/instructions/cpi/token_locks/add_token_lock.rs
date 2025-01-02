@@ -3,13 +3,9 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 use anchor_spl::token_2022::Token2022;
+use rbac_utils::constants::{ASSET_CONTROLLER_ID, TOKEN_LOCKS_ID};
 
-use crate::{
-    constants::{ASSET_CONTROLLER_ID, TOKEN_LOCKS_ID},
-    controller_seeds,
-    state::*,
-    verify_medici_signer,
-};
+use crate::{controller_seeds, state::*, verify_medici_signer};
 
 #[derive(Accounts)]
 pub struct AddTokenLock<'info> {

@@ -2,13 +2,9 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke},
 };
+use rbac_utils::{constants::IDENTITY_REGISTRY_ID, get_discriminator, is_valid_hash};
 
-use crate::{
-    constants::IDENTITY_REGISTRY_ID,
-    error::ErrorCode,
-    helper::{get_discriminator, is_valid_hash},
-    state::*,
-};
+use crate::{error::ErrorCode, state::*};
 
 #[derive(Accounts)]
 #[instruction(investor_id: String)]

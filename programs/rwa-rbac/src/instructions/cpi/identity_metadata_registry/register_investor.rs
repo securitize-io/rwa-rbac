@@ -2,15 +2,12 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
-
-use crate::{
+use rbac_utils::{
     constants::{IDENTITY_METADATA_REGISTRY_ID, IDENTITY_REGISTRY_ID},
-    controller_seeds,
-    error::ErrorCode,
     get_discriminator,
-    state::*,
-    verify_medici_signer,
 };
+
+use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
 
 #[derive(Accounts)]
 pub struct RegisterInvestor<'info> {

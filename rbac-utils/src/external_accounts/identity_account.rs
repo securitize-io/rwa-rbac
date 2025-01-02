@@ -1,7 +1,8 @@
-use crate::{
-    constants::IDENTITY_REGISTRY_ID, error::ErrorCode, external_accounts::get_acc_discriminator,
-};
 use anchor_lang::prelude::*;
+use anchor_lang::solana_program::program_error::ProgramError;
+
+use crate::constants::IDENTITY_REGISTRY_ID;
+use crate::get_acc_discriminator;
 
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct IdentityLevel {
@@ -34,10 +35,9 @@ impl IdentityAccount {
 
         // Check account discriminator.
         let v = info.data.borrow();
-        require!(
-            v.starts_with(&get_acc_discriminator("IdentityAccount")),
-            ErrorCode::UnknownAccount
-        );
+        if !v.starts_with(&get_acc_discriminator("IdentityAccount")) {
+            return Err(ProgramError::InvalidAccountData.into());
+        }
 
         let acc = Self::try_from_slice(&v[8..])?;
         Ok(acc)

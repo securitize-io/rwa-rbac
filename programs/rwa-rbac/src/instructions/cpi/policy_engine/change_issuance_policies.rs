@@ -2,11 +2,9 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
+use rbac_utils::{constants::POLICY_ENGINE_ID, get_discriminator};
 
-use crate::{
-    constants::POLICY_ENGINE_ID, controller_seeds, error::ErrorCode, get_discriminator, state::*,
-    verify_medici_signer,
-};
+use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
 
 #[derive(Accounts)]
 pub struct ChangeIssuancePolicies<'info> {

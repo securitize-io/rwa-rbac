@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
+use rbac_utils::transfer_lamports_for_realloc;
 
-use crate::{state::*, transfer_lamports_for_realloc, verify_admin_signer};
+use crate::{state::*, verify_admin_signer};
 
 #[derive(Accounts)]
 pub struct AssignUserRole<'info> {

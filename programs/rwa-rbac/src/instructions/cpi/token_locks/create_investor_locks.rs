@@ -3,13 +3,12 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 use anchor_spl::token_2022::Token2022;
-
-use crate::{
+use rbac_utils::{
     constants::{ASSET_CONTROLLER_ID, TOKEN_LOCKS_ID},
-    controller_seeds, get_discriminator,
-    state::*,
-    verify_medici_signer,
+    get_discriminator,
 };
+
+use crate::{controller_seeds, state::*, verify_medici_signer};
 
 #[derive(Accounts)]
 pub struct CreateInvestorLocks<'info> {
