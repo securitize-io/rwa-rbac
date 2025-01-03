@@ -395,7 +395,7 @@ describe("Token Locks End to End Tests", () => {
         payer: setup.payer.toString(), // Payer Account
         assetMint: mint,
         mappingSource: [1],
-        mappingValue: [10],
+        mappingValue: [11],
       },
       setup.signer1,
       setup.assetAccessController
