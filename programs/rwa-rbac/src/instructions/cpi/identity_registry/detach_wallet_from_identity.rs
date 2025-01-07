@@ -2,7 +2,7 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
-use rbac_utils::{constants::IDENTITY_REGISTRY_ID, get_discriminator};
+use rbac_utils::{constants::IDENTITY_REGISTRY_ID, DETACH_WALLET_FROM_IDENTITY_IX};
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
 
@@ -44,7 +44,7 @@ pub fn handler(ctx: Context<DetachWalletFromIdentity>, cpi_data: Vec<u8>) -> Res
 
     // Verify instruction discriminator in cpi_data
     require!(
-        cpi_data.starts_with(&get_discriminator("detach_wallet_from_identity")),
+        cpi_data.starts_with(&DETACH_WALLET_FROM_IDENTITY_IX),
         ErrorCode::UnknownInstruction
     );
 

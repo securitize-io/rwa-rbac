@@ -3,7 +3,7 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 use anchor_spl::{associated_token::AssociatedToken, token_2022::Token2022};
-use rbac_utils::{constants::ASSET_CONTROLLER_ID, get_discriminator};
+use rbac_utils::{constants::ASSET_CONTROLLER_ID, REVOKE_TOKENS_IX};
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
 
@@ -49,7 +49,7 @@ pub fn handler<'info>(
 
     // Verify instruction discriminator in cpi_data
     require!(
-        cpi_data.starts_with(&get_discriminator("revoke_tokens")),
+        cpi_data.starts_with(&REVOKE_TOKENS_IX),
         ErrorCode::UnknownInstruction
     );
 

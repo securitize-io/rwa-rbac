@@ -8,7 +8,7 @@ use anchor_spl::{
 };
 use rbac_utils::{
     constants::{ASSET_CONTROLLER_ID, IDENTITY_REGISTRY_ID},
-    get_discriminator,
+    FREEZE_TOKEN_ACCOUNT_IX,
 };
 use rwa_imr::Investor;
 
@@ -130,7 +130,7 @@ impl CreateInvestorLocks<'_> {
                     AccountMeta::new(ctx.accounts.locked_token_account.key(), false),
                     AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
                 ],
-                data: get_discriminator("freeze_token_account"),
+                data: FREEZE_TOKEN_ACCOUNT_IX.to_vec(),
             },
             &vec![
                 ctx.accounts.authority.to_account_info(),

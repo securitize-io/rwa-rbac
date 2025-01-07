@@ -4,7 +4,7 @@ use anchor_lang::{
 };
 use rbac_utils::{
     constants::{IDENTITY_METADATA_REGISTRY_ID, IDENTITY_REGISTRY_ID},
-    get_discriminator,
+    REMOVE_LEVEL_FROM_IDENTITY_ACCOUNT_IX,
 };
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
@@ -65,7 +65,7 @@ pub fn handler(ctx: Context<RemoveLevelFromIdentityAccount>, cpi_data: Vec<u8>) 
 
     // Verify instruction discriminator in cpi_data
     require!(
-        cpi_data.starts_with(&get_discriminator("remove_level_from_identity_account")),
+        cpi_data.starts_with(&REMOVE_LEVEL_FROM_IDENTITY_ACCOUNT_IX),
         ErrorCode::UnknownInstruction
     );
 

@@ -2,7 +2,7 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke},
 };
-use rbac_utils::{constants::IDENTITY_REGISTRY_ID, get_discriminator};
+use rbac_utils::{constants::IDENTITY_REGISTRY_ID, ADD_LEVEL_TO_IDENTITY_ACCOUNT_IX};
 
 use crate::state::*;
 
@@ -58,7 +58,7 @@ pub fn handler(
     let mut data: Vec<u8> = Vec::with_capacity(8 + 4 + levels.len() + 4 + expiries.len() * 8 + 1);
     data.resize(8 + 4 + levels.len() + 4 + expiries.len() * 8 + 1, 0);
 
-    data[0..8].copy_from_slice(&get_discriminator("add_level_to_identity_account"));
+    data[0..8].copy_from_slice(&ADD_LEVEL_TO_IDENTITY_ACCOUNT_IX);
 
     let mut offset = 12 + levels.len();
     data[8..12].copy_from_slice(&(levels.len() as u32).to_le_bytes());
@@ -85,7 +85,7 @@ pub fn handler(
                 AccountMeta::new_readonly(ctx.accounts.tracker_account.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.asset_mint.key(), false),
             ],
-            data: data,
+            data,
         },
         &vec![
             ctx.accounts.payer.to_account_info(),

@@ -2,7 +2,7 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke},
 };
-use rbac_utils::{constants::IDENTITY_REGISTRY_ID, get_discriminator};
+use rbac_utils::{constants::IDENTITY_REGISTRY_ID, REVOKE_IDENTITY_ACCOUNT_IX};
 
 use crate::state::*;
 
@@ -34,11 +34,7 @@ pub struct RemoveInvestor<'info> {
 }
 
 pub fn handler(ctx: Context<RemoveInvestor>, owner: Pubkey) -> Result<()> {
-    let cpi_data = [
-        &get_discriminator("revoke_identity_account"),
-        owner.as_ref(),
-    ]
-    .concat();
+    let cpi_data = [&REVOKE_IDENTITY_ACCOUNT_IX, owner.as_ref()].concat();
 
     // Perform CPI to IdentityRegistry Program.
     invoke(

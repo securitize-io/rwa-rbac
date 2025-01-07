@@ -2,7 +2,7 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke},
 };
-use rbac_utils::{constants::IDENTITY_REGISTRY_ID, get_discriminator};
+use rbac_utils::{constants::IDENTITY_REGISTRY_ID, REMOVE_LEVEL_FROM_IDENTITY_ACCOUNT_IX};
 
 use crate::state::*;
 
@@ -47,7 +47,7 @@ pub fn handler(
     let mut data: Vec<u8> = Vec::with_capacity(8 + 4 + levels_to_remove.len() + 1);
     data.resize(8 + 4 + levels_to_remove.len() + 1, 0);
 
-    data[0..8].copy_from_slice(&get_discriminator("remove_level_from_identity_account"));
+    data[0..8].copy_from_slice(&REMOVE_LEVEL_FROM_IDENTITY_ACCOUNT_IX);
 
     data[8..12].copy_from_slice(&(levels_to_remove.len() as u32).to_le_bytes());
     data[12..12 + levels_to_remove.len()].copy_from_slice(&levels_to_remove);

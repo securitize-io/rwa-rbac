@@ -2,7 +2,7 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
-use rbac_utils::{constants::POLICY_ENGINE_ID, get_discriminator};
+use rbac_utils::{constants::POLICY_ENGINE_ID, DETACH_FROM_POLICY_ENGINE_IX};
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
 
@@ -39,7 +39,7 @@ pub fn handler(ctx: Context<DetachFromPolicyEngine>, cpi_data: Vec<u8>) -> Resul
 
     // Verify instruction discriminator in cpi_data
     require!(
-        cpi_data.starts_with(&get_discriminator("detach_from_policy_engine")),
+        cpi_data.starts_with(&DETACH_FROM_POLICY_ENGINE_IX),
         ErrorCode::UnknownInstruction
     );
 

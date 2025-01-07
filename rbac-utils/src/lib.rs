@@ -1,26 +1,12 @@
 pub mod constants;
+pub mod discriminators;
 pub mod external_accounts;
+
+pub use discriminators::*;
 
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::program::invoke;
 use anchor_lang::solana_program::system_instruction::transfer;
-use hex::FromHex;
-use sha256::digest;
-
-/// Generates anchor instruction discriminator for function name.
-pub fn get_discriminator(function_name: &str) -> Vec<u8> {
-    let full_function_name = String::from("global:") + function_name;
-    let function_discriminator = String::from(&digest(full_function_name)[0..16]);
-    Vec::<u8>::from_hex(function_discriminator).unwrap()
-}
-
-/// Generates anchor instruction discriminator for account name.
-pub fn get_acc_discriminator(account_name: &str) -> Vec<u8> {
-    let full_account_name = String::from("account:") + account_name;
-    // 16 char hex string converts to 8 bytes
-    let function_discriminator = String::from(&digest(full_account_name)[0..16]);
-    Vec::<u8>::from_hex(function_discriminator).unwrap()
-}
 
 /// Checks if a string is a valid hash. In this system, we only check if the string
 /// is ascii char and has length of <= 32.

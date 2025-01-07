@@ -5,7 +5,7 @@ use anchor_lang::{
 use anchor_spl::token_2022::Token2022;
 use rbac_utils::{
     constants::{ASSET_CONTROLLER_ID, TOKEN_LOCKS_ID},
-    get_discriminator,
+    REMOVE_TOKEN_LOCK_IX,
 };
 
 use crate::{controller_seeds, state::*, verify_medici_signer};
@@ -70,7 +70,7 @@ pub fn handler<'info>(
 
     // Build data arg for CPI manually.
     let cpi_data = [
-        &get_discriminator("remove_token_lock"),
+        &REMOVE_TOKEN_LOCK_IX,
         &[u8::from(is_user_authorized)][..],
         &index.to_le_bytes()[..],
     ]

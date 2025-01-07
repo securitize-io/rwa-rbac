@@ -2,7 +2,7 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
-use rbac_utils::{constants::TOKEN_LOCKS_ID, get_discriminator};
+use rbac_utils::{constants::TOKEN_LOCKS_ID, CLOSE_INVESTOR_LOCKS_IX};
 
 use crate::{controller_seeds, state::*, verify_medici_signer};
 
@@ -59,7 +59,7 @@ pub fn handler(ctx: Context<CloseInvestorLocks>) -> Result<()> {
                 AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
             ],
-            data: get_discriminator("close_investor_locks"),
+            data: CLOSE_INVESTOR_LOCKS_IX.to_vec(),
         },
         &vec![
             ctx.accounts.payer.to_account_info(),

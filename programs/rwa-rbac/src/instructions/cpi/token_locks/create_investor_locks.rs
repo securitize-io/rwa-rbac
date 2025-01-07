@@ -5,7 +5,7 @@ use anchor_lang::{
 use anchor_spl::token_2022::Token2022;
 use rbac_utils::{
     constants::{ASSET_CONTROLLER_ID, TOKEN_LOCKS_ID},
-    get_discriminator,
+    CREATE_INVESTOR_LOCKS_IX,
 };
 
 use crate::{controller_seeds, state::*, verify_medici_signer};
@@ -95,7 +95,7 @@ pub fn handler(ctx: Context<CreateInvestorLocks>) -> Result<()> {
         &Instruction {
             program_id: ctx.accounts.token_locks_program.key(),
             accounts,
-            data: get_discriminator("create_investor_locks"),
+            data: CREATE_INVESTOR_LOCKS_IX.to_vec(),
         },
         &account_infos,
         signers_seeds,

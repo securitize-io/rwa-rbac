@@ -3,10 +3,13 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 use anchor_spl::{associated_token::AssociatedToken, token_2022::Token2022};
-use rbac_utils::external_accounts::{IdentityAccount, PartialPolicyEngineAccount};
 use rbac_utils::{
     constants::{Level, ASSET_CONTROLLER_ID, POLICY_ENGINE_ID, TOKEN_LOCKS_ID},
-    get_discriminator,
+    ISSUE_TOKENS_IX,
+};
+use rbac_utils::{
+    external_accounts::{IdentityAccount, PartialPolicyEngineAccount},
+    ADD_TOKEN_LOCK_IX,
 };
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
@@ -231,7 +234,7 @@ pub fn handler<'info>(
     };
 
     let data = [
-        &get_discriminator("issue_tokens"),
+        &ISSUE_TOKENS_IX,
         &amount.to_le_bytes()[..],
         &issuance_timestamp.to_le_bytes()[..],
     ]
@@ -252,7 +255,7 @@ pub fn handler<'info>(
 
         let reason_string = reason_string.ok_or(ErrorCode::MissingReason)?;
         let data = [
-            &get_discriminator("add_token_lock"),
+            &ADD_TOKEN_LOCK_IX,
             &amount.to_le_bytes()[..],
             &release_time.to_le_bytes()[..],
             &reason_code.ok_or(ErrorCode::MissingReason)?.to_le_bytes()[..],

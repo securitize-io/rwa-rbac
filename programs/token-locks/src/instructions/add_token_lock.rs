@@ -6,7 +6,7 @@ use anchor_spl::token_interface::{Mint, Token2022, TokenAccount};
 use rbac_utils::{
     constants::ASSET_CONTROLLER_ID,
     external_accounts::{IdentityAccount, WalletIdentity},
-    get_discriminator, transfer_lamports_for_realloc,
+    transfer_lamports_for_realloc, FREEZE_TOKEN_ACCOUNT_IX, SEIZE_TOKENS_IX, THAW_TOKEN_ACCOUNT_IX,
 };
 use rwa_imr::Investor;
 
@@ -127,7 +127,7 @@ impl<'info> AddTokenLock<'info> {
             &Instruction {
                 program_id: ctx.accounts.asset_controller_program.key(),
                 accounts: account_metas,
-                data: [&get_discriminator("seize_tokens"), &value.to_le_bytes()[..]].concat(),
+                data: [&SEIZE_TOKENS_IX, &value.to_le_bytes()[..]].concat(),
             },
             &account_infos,
         )?;
@@ -147,7 +147,7 @@ impl<'info> AddTokenLock<'info> {
                     AccountMeta::new(ctx.accounts.locked_token_account.key(), false),
                     AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
                 ],
-                data: get_discriminator("freeze_token_account"),
+                data: FREEZE_TOKEN_ACCOUNT_IX.to_vec(),
             },
             &vec![
                 ctx.accounts.authority.to_account_info(),
@@ -173,7 +173,7 @@ impl<'info> AddTokenLock<'info> {
                     AccountMeta::new(ctx.accounts.locked_token_account.key(), false),
                     AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
                 ],
-                data: get_discriminator("thaw_token_account"),
+                data: THAW_TOKEN_ACCOUNT_IX.to_vec(),
             },
             &vec![
                 ctx.accounts.authority.to_account_info(),

@@ -3,7 +3,7 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 use anchor_spl::token_2022::Token2022;
-use rbac_utils::{constants::ASSET_CONTROLLER_ID, get_discriminator};
+use rbac_utils::{constants::ASSET_CONTROLLER_ID, UPDATE_INTEREST_BEARING_MINT_RATE_IX};
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
 
@@ -42,7 +42,7 @@ pub fn handler(ctx: Context<UpdateInterestBearingMintRate>, cpi_data: Vec<u8>) -
 
     // Verify instruction discriminator in cpi_data
     require!(
-        cpi_data.starts_with(&get_discriminator("update_interest_bearing_mint_rate")),
+        cpi_data.starts_with(&UPDATE_INTEREST_BEARING_MINT_RATE_IX),
         ErrorCode::UnknownInstruction
     );
 

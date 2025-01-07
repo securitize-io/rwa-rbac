@@ -2,7 +2,7 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke},
 };
-use rbac_utils::{constants::IDENTITY_REGISTRY_ID, get_discriminator, is_valid_hash};
+use rbac_utils::{constants::IDENTITY_REGISTRY_ID, is_valid_hash, CREATE_IDENTITY_ACCOUNT_IX};
 
 use crate::{error::ErrorCode, state::*};
 
@@ -79,7 +79,7 @@ pub fn handler(
 
     // Build data arg for CPI manually.
     let cpi_data = [
-        &get_discriminator("create_identity_account"),
+        &CREATE_IDENTITY_ACCOUNT_IX,
         owner.as_ref(),
         &[level],
         &expiry.to_le_bytes(),

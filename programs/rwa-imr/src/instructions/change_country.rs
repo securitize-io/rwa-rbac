@@ -2,7 +2,7 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke},
 };
-use rbac_utils::{constants::IDENTITY_REGISTRY_ID, get_discriminator};
+use rbac_utils::{constants::IDENTITY_REGISTRY_ID, CHANGE_COUNTRY_IX};
 
 use crate::state::*;
 
@@ -40,7 +40,7 @@ pub fn handler(ctx: Context<ChangeCountry>, new_country: u8, enforce_limits: boo
     investor.validate_country()?;
 
     let mut data = vec![0u8; 10];
-    data[0..8].copy_from_slice(&get_discriminator("change_country"));
+    data[0..8].copy_from_slice(&CHANGE_COUNTRY_IX);
     data[8] = new_country;
     data[9] = enforce_limits as u8;
 

@@ -4,7 +4,7 @@ use anchor_lang::{
 };
 use rbac_utils::{
     constants::{IDENTITY_METADATA_REGISTRY_ID, IDENTITY_REGISTRY_ID},
-    get_discriminator,
+    REGISTER_INVESTOR_IX,
 };
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
@@ -56,7 +56,7 @@ pub fn handler(ctx: Context<RegisterInvestor>, cpi_data: Vec<u8>) -> Result<()> 
 
     // Verify instruction discriminator in cpi_data
     require!(
-        cpi_data.starts_with(&get_discriminator("register_investor")),
+        cpi_data.starts_with(&REGISTER_INVESTOR_IX),
         ErrorCode::UnknownInstruction
     );
 

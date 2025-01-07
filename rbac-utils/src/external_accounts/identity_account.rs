@@ -2,7 +2,6 @@ use anchor_lang::prelude::*;
 use anchor_lang::solana_program::program_error::ProgramError;
 
 use crate::constants::IDENTITY_REGISTRY_ID;
-use crate::get_acc_discriminator;
 
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct IdentityLevel {
@@ -29,13 +28,15 @@ pub struct IdentityAccount {
 }
 
 impl IdentityAccount {
+    const DISCRIMINATOR: [u8; 8] = [194, 90, 181, 160, 182, 206, 116, 158];
+
     pub fn deserialize_checked(info: &AccountInfo<'_>) -> Result<Self> {
         // Check that account is owned by the correct program.
         require_keys_eq!(*info.owner, IDENTITY_REGISTRY_ID);
 
         // Check account discriminator.
         let v = info.data.borrow();
-        if !v.starts_with(&get_acc_discriminator("IdentityAccount")) {
+        if !v.starts_with(&Self::DISCRIMINATOR) {
             return Err(ProgramError::InvalidAccountData.into());
         }
 

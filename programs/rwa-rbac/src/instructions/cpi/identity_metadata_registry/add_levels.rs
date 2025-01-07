@@ -4,7 +4,7 @@ use anchor_lang::{
 };
 use rbac_utils::{
     constants::{IDENTITY_METADATA_REGISTRY_ID, IDENTITY_REGISTRY_ID},
-    get_discriminator,
+    ADD_LEVELS_IX,
 };
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
@@ -59,7 +59,7 @@ pub fn handler(ctx: Context<AddLevels>, cpi_data: Vec<u8>) -> Result<()> {
 
     // Verify instruction discriminator in cpi_data
     require!(
-        cpi_data.starts_with(&get_discriminator("add_levels")),
+        cpi_data.starts_with(&ADD_LEVELS_IX),
         ErrorCode::UnknownInstruction
     );
 
