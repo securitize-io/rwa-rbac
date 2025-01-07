@@ -92,8 +92,16 @@
       ],
       "args": [
         {
-          "name": "cpi_data",
-          "type": "bytes"
+          "name": "level",
+          "type": "u8"
+        },
+        {
+          "name": "expiry",
+          "type": "i64"
+        },
+        {
+          "name": "enforce_limits",
+          "type": "bool"
         }
       ]
     },
@@ -2032,6 +2040,11 @@
       "code": 6005,
       "name": "MissingReason",
       "msg": "Missing reason or code"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidLevel",
+      "msg": "Invalid level"
     }
   ],
   "types": [

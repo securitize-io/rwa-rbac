@@ -316,9 +316,6 @@ describe("CPI End to End Tests", () => {
     );
     assert(identityToInvestorAccount.investor.equals(investorPda));
 
-    const rawData = await rwaRbacClient.provider.connection.getAccountInfo(
-      investorPda
-    );
     const investorAccount =
       await rwaRbacClient.identityMetadataRegistry.imrProgram.account.investor.fetch(
         investorPda
@@ -353,11 +350,8 @@ describe("CPI End to End Tests", () => {
       signer: setup.signer1.toString(), // User Account
       owner: setup.user2.toString(), // Target Account
       assetMint: mint,
-      levels: [1, 5],
-      expiry: [
-        new BN(Date.now() / 1000 + 24 * 60 * 60),
-        new BN(Date.now() / 1000 + 30 * 60 * 60),
-      ],
+      levels: [1],
+      expiry: [new BN(Date.now() / 1000 + 24 * 60 * 60)],
       country: 1,
     };
     const ixReturn = await rwaRbacClient.identityRegistry.setupUserIxns(
@@ -366,17 +360,11 @@ describe("CPI End to End Tests", () => {
       setup.userRole1
     );
 
-    // Sending in separate transactions as workaround to an unexplained local websocket error.
-    const tx1 = new Transaction().add(...ixReturn.ixs.slice(0, -1));
-    await sendAndConfirmTransaction(connection, tx1, [
-      setup.payerKp,
-      setup.signer1Kp,
-    ]);
-    const tx2 = new Transaction().add(...ixReturn.ixs.slice(-1));
-    await sendAndConfirmTransaction(connection, tx2, [
-      setup.payerKp,
-      setup.signer1Kp,
-    ]);
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(...ixReturn.ixs),
+      [setup.payerKp, setup.signer1Kp]
+    );
 
     // Validate IdentityAccount
     const identityAccount = await getIdentityAccountFromOwner(
@@ -385,11 +373,9 @@ describe("CPI End to End Tests", () => {
       rwaRbacClient.provider
     );
     assert.equal(identityAccount.owner.toString(), args.owner);
-    assert.equal(identityAccount.levels.length, 2);
-    identityAccount.levels.map((x, idx) => {
-      assert.equal(x.level, args.levels[idx]);
-      assert(x.expiry.eq(args.expiry[idx]));
-    });
+    assert.equal(identityAccount.levels.length, 1);
+    assert.equal(identityAccount.levels[0].level, args.levels[0]);
+    assert(identityAccount.levels[0].expiry.eq(args.expiry[0]));
   });
 
   it("CPI: Add Level direct fails when Investor exists", async () => {
@@ -399,7 +385,7 @@ describe("CPI End to End Tests", () => {
       owner: setup.user1.toString(), // Target Account
       authority: setup.controllerAuthority,
       assetMint: mint,
-      levels: [10],
+      levels: [30],
       expiries: [new BN(Date.now() / 1000 + 24 * 60 * 60)],
     };
     const ix =
@@ -420,16 +406,77 @@ describe("CPI End to End Tests", () => {
     }
   });
 
-  it("CPI: Add Level direct succeeds when Investor does not exist", async () => {
-    const args = {
+  it("CPI: Add and remove level direct for non Investor account", async () => {
+    let args = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // User Account
       owner: setup.user2.toString(), // Target Account
       authority: setup.controllerAuthority,
       assetMint: mint,
-      levels: [10],
+      levels: [30], // PLATFORM_WALLET
       expiries: [new BN(Date.now() / 1000 + 24 * 60 * 60)],
     };
+
+    // Should fail if levels exist for identity account (since only 1 special level is allowed).
+    try {
+      const ix =
+        await rwaRbacClient.identityRegistry.addIdentityLevelToUserAccount(
+          args,
+          setup.assetAccessController,
+          setup.userRole1
+        );
+
+      await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+        setup.payerKp,
+        setup.signer1Kp,
+      ]);
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("RequireEqViolated."));
+    }
+
+    // Remove level from identity account.
+    const removeLevelIx =
+      await rwaRbacClient.identityRegistry.removeIdentityLevelFromUserAccount(
+        {
+          payer: setup.payer.toString(), // Payer Account
+          signer: setup.signer1.toString(), // User Account
+          owner: setup.user2.toString(), // Target Account
+          authority: setup.controllerAuthority,
+          assetMint: mint,
+          levels: [1],
+          enforceLimits: true,
+        },
+        setup.assetAccessController,
+        setup.userRole1
+      );
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(removeLevelIx),
+      [setup.payerKp, setup.signer1Kp]
+    );
+
+    // Should fail if level added is not special.
+    args.levels = [8]; // PROFESSIONAL
+    try {
+      const ix =
+        await rwaRbacClient.identityRegistry.addIdentityLevelToUserAccount(
+          args,
+          setup.assetAccessController,
+          setup.userRole1
+        );
+
+      await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+        setup.payerKp,
+        setup.signer1Kp,
+      ]);
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("InvalidLevel."));
+    }
+
+    // Should succeed if level added is special.
+    args.levels = [30]; // PLATFORM_WALLET
     const ix =
       await rwaRbacClient.identityRegistry.addIdentityLevelToUserAccount(
         args,
@@ -449,8 +496,9 @@ describe("CPI End to End Tests", () => {
       rwaRbacClient.provider
     );
     assert.equal(identityAccount.owner.toString(), args.owner);
-    assert.equal(identityAccount.levels.length, 3);
-    assert(identityAccount.levels[2].expiry.eq(args.expiries[0]));
+    assert.equal(identityAccount.levels.length, 1);
+    assert.equal(identityAccount.levels[0].level, args.levels[0]);
+    assert(identityAccount.levels[0].expiry.eq(args.expiries[0]));
   });
 
   it("CPI: Add Levels through Investor", async () => {
@@ -535,42 +583,6 @@ describe("CPI End to End Tests", () => {
     } catch (err) {
       assert(err.toString().includes("DataIsNotEmpty"));
     }
-  });
-
-  it("CPI: Remove Level direct suceeds when Investor does not exist", async () => {
-    const args = {
-      payer: setup.payer.toString(), // Payer Account
-      signer: setup.signer1.toString(), // User Account
-      owner: setup.user2.toString(), // Target Account
-      authority: setup.controllerAuthority,
-      assetMint: mint,
-      levels: [1],
-      enforceLimits: true,
-    };
-    const ix =
-      await rwaRbacClient.identityRegistry.removeIdentityLevelFromUserAccount(
-        args,
-        setup.assetAccessController,
-        setup.userRole1
-      );
-
-    await sendAndConfirmTransaction(
-      connection,
-      new Transaction().add(ix),
-      [setup.payerKp, setup.signer1Kp],
-      {
-        skipPreflight: true,
-      }
-    );
-
-    // Validate IdentityAccount has only 2 levels remaining.
-    const identityAccount = await getIdentityAccountFromOwner(
-      mint,
-      setup.user2,
-      rwaRbacClient.provider
-    );
-    assert.equal(identityAccount.owner.toString(), args.owner);
-    assert.equal(identityAccount.levels.length, 2);
   });
 
   it("CPI: Remove Levels through Investor", async () => {

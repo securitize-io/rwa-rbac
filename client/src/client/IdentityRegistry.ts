@@ -62,7 +62,6 @@ export class IdentityRegistry {
     const returnIxs = [];
 
     const identityAccountIx = ixs[0];
-    const addLevelIx = ixs[2];
     const trackerAccountIx = ixs[1];
     const controllerAuthority = deriveControllerAuthorityPda(
       assetAccessController
@@ -80,37 +79,16 @@ export class IdentityRegistry {
           identityRegistryProgram: identityRegistryProgramId,
           identityRegistry: getIdentityRegistryPda(args.assetMint),
           identityAccount,
-          walletIdentity: getWalletIdentityAccountPda(args.assetMint, args.owner),
+          walletIdentity: getWalletIdentityAccountPda(
+            args.assetMint,
+            args.owner
+          ),
           systemProgram: SystemProgram.programId,
         })
         .instruction()
     );
 
     returnIxs.push(trackerAccountIx);
-
-    if (args.levels.length > 1) {
-      returnIxs.push(
-        await this.rbacProgram.methods
-          .addLevelToIdentityAccount(addLevelIx.data)
-          .accountsStrict({
-              payer: args.payer,
-              user: args.signer,
-              controllerAuthority,
-              assetAccessController,
-              authorizedUserRole: authorizedUserRole || null,
-              identityRegistryProgram: identityRegistryProgramId,
-              identityRegistry: getIdentityRegistryPda(args.assetMint),
-              identityAccount,
-              identityToInvestor: deriveIdentityToOwnerPda(identityAccount),
-              systemProgram: SystemProgram.programId,
-              policyEngineProgram: policyEngineProgramId,
-              policyEngine: getPolicyEnginePda(args.assetMint),
-              trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
-              assetMint: args.assetMint,
-            })
-            .instruction()
-      );
-    }
 
     return {
       ixs: returnIxs,
@@ -130,17 +108,16 @@ export class IdentityRegistry {
     assetAccessController: PublicKey,
     authorizedUserRole?: PublicKey
   ): Promise<TransactionInstruction> {
-    const addLevelIx = await getAddLevelToIdentityAccount(
-      args,
-      this.rwaClient.provider
-    );
-    const ixData = addLevelIx.data;
     const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
     const controllerAuthority = deriveControllerAuthorityPda(
       assetAccessController
     );
     return this.rbacProgram.methods
-      .addLevelToIdentityAccount(ixData)
+      .addLevelToIdentityAccount(
+        args.levels[0],
+        args.expiries[0],
+        args.ignorePolicy ?? false
+      )
       .accountsStrict({
         payer: args.payer,
         user: args.signer,
@@ -156,7 +133,6 @@ export class IdentityRegistry {
         policyEngine: getPolicyEnginePda(args.assetMint),
         trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
         assetMint: args.assetMint,
-
       })
       .instruction();
   }
@@ -262,7 +238,10 @@ export class IdentityRegistry {
     const identityProgram = getIdentityRegistryProgram(this.rwaClient.provider);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
-    const newWalletIdentityAccount = getIdentityAccountPda(args.assetMint, args.wallet);
+    const newWalletIdentityAccount = getIdentityAccountPda(
+      args.assetMint,
+      args.wallet
+    );
     const walletIdentity = getWalletIdentityAccountPda(
       args.assetMint,
       args.wallet.toString()
@@ -278,7 +257,7 @@ export class IdentityRegistry {
         assetMint: args.assetMint,
         walletIdentity,
         systemProgram: SystemProgram.programId,
-        newWalletIdentityAccount
+        newWalletIdentityAccount,
       })
       .instruction();
     return this.rbacProgram.methods
@@ -295,7 +274,7 @@ export class IdentityRegistry {
         assetMint: args.assetMint,
         walletIdentity,
         systemProgram: SystemProgram.programId,
-        newWalletIdentityAccount
+        newWalletIdentityAccount,
       })
       .instruction();
   }

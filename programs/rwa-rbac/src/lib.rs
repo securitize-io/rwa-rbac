@@ -221,9 +221,11 @@ pub mod rwa_rbac {
 
     pub fn add_level_to_identity_account(
         ctx: Context<AddLevelToIdentityAccount>,
-        cpi_data: Vec<u8>,
+        level: u8,
+        expiry: i64,
+        enforce_limits: bool,
     ) -> Result<()> {
-        instructions::add_level_to_identity_account::handler(ctx, cpi_data)
+        instructions::add_level_to_identity_account::handler(ctx, level, expiry, enforce_limits)
     }
 
     pub fn remove_level_from_identity_account(

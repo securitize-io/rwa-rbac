@@ -19,4 +19,7 @@ pub enum ErrorCode {
 
     #[msg("Missing reason or code")]
     MissingReason,
+
+    #[msg("Invalid level")]
+    InvalidLevel,
 }

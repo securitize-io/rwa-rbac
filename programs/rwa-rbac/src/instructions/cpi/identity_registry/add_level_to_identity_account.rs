@@ -3,8 +3,8 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 use rbac_utils::{
-    constants::{IDENTITY_METADATA_REGISTRY_ID, IDENTITY_REGISTRY_ID},
-    ADD_LEVEL_TO_IDENTITY_ACCOUNT_IX,
+    constants::{IDENTITY_METADATA_REGISTRY_ID, IDENTITY_REGISTRY_ID, SPECIAL_WALLETS},
+    external_accounts::IdentityAccount, ADD_LEVEL_TO_IDENTITY_ACCOUNT_IX,
 };
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
@@ -52,7 +52,12 @@ pub struct AddLevelToIdentityAccount<'info> {
     pub asset_mint: UncheckedAccount<'info>,
 }
 
-pub fn handler(ctx: Context<AddLevelToIdentityAccount>, cpi_data: Vec<u8>) -> Result<()> {
+pub fn handler(
+    ctx: Context<AddLevelToIdentityAccount>,
+    level: u8,
+    expiry: i64,
+    enforce_limits: bool,
+) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
     // Verify that signer is either a controller admin or has authorized user role.
@@ -60,14 +65,21 @@ pub fn handler(ctx: Context<AddLevelToIdentityAccount>, cpi_data: Vec<u8>) -> Re
         ctx.accounts.user.key(),
         controller,
         ctx.accounts.authorized_user_role.clone(),
-        MediciFlags::ADD_LEVELS,
+        MediciFlags::ADD_LEVEL_TO_IDENTITY_ACCOUNT,
     )?;
 
-    // Verify instruction discriminator in cpi_data
-    require!(
-        cpi_data.starts_with(&ADD_LEVEL_TO_IDENTITY_ACCOUNT_IX),
-        ErrorCode::UnknownInstruction
-    );
+    // Only 1 special level can be attached, existing IdentityAccount must not have any levels.
+    let identity_account = IdentityAccount::deserialize_checked(&ctx.accounts.identity_account)?;
+    require_eq!(identity_account.levels.len(), 0);
+    require!(SPECIAL_WALLETS.contains(&level), ErrorCode::InvalidLevel);
+
+    // Build instruction data for CPI.
+    let mut cpi_data = ADD_LEVEL_TO_IDENTITY_ACCOUNT_IX.to_vec();
+    cpi_data.extend(1_u32.to_le_bytes());
+    cpi_data.extend(level.to_le_bytes());
+    cpi_data.extend(1_u32.to_le_bytes());
+    cpi_data.extend(expiry.to_le_bytes());
+    cpi_data.extend([enforce_limits as u8]);
 
     // Perform CPI to IdentityRegistry Program.
     let seeds = controller_seeds!(controller);

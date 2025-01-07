@@ -143,8 +143,16 @@ export type RwaRbac = {
       ];
       args: [
         {
-          name: "cpiData";
-          type: "bytes";
+          name: "level";
+          type: "u8";
+        },
+        {
+          name: "expiry";
+          type: "i64";
+        },
+        {
+          name: "enforceLimits";
+          type: "bool";
         }
       ];
     },
@@ -2147,6 +2155,11 @@ export type RwaRbac = {
       code: 6005;
       name: "missingReason";
       msg: "Missing reason or code";
+    },
+    {
+      code: 6006;
+      name: "invalidLevel";
+      msg: "Invalid level";
     }
   ];
   types: [
