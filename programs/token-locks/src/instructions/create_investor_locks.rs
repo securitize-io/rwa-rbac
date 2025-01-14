@@ -19,8 +19,6 @@ pub struct CreateInvestorLocks<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub authority: Signer<'info>,
-    /// CHECK: Matches owner field in identity_account through seed derivation.
-    pub wallet: AccountInfo<'info>,
     #[account(
         init,
         seeds = [
@@ -38,12 +36,7 @@ pub struct CreateInvestorLocks<'info> {
         has_one = identity_account
     )]
     pub investor: Account<'info, Investor>,
-    /// CHECKED: Validated in deserialized_checked.
-    #[account(
-        seeds = [&investor.identity_registry.as_ref(), wallet.key().as_ref()],
-        bump,
-        seeds::program = IDENTITY_REGISTRY_ID,
-    )]
+    /// CHECKED: Matches known address.
     pub identity_account: UncheckedAccount<'info>,
     /// CHECK: Verified by checking seed derivation of known identity_registry.
     #[account(mut)]
@@ -113,13 +106,13 @@ impl CreateInvestorLocks<'_> {
         set_authority(
             cpi_ctx,
             AuthorityType::AccountOwner,
-            Some(self.wallet.key()),
+            Some(self.investor.key()),
         )?;
         Ok(())
     }
 
-    /// Validate and execute freeze_token_account CPI to freeze locked_token_account.
-    fn validate_and_freeze_token_account(&self, ctx: &Context<CreateInvestorLocks>) -> Result<()> {
+    /// Execute freeze_token_account CPI to freeze locked_token_account.
+    fn freeze_token_account(&self, ctx: &Context<CreateInvestorLocks>) -> Result<()> {
         invoke(
             &Instruction {
                 program_id: ctx.accounts.asset_controller_program.key(),
@@ -148,11 +141,10 @@ pub fn handler(ctx: Context<CreateInvestorLocks>) -> Result<()> {
     ctx.accounts.validate_asset_mint(&ctx)?;
     ctx.accounts.set_close_authority()?;
     ctx.accounts.set_authority()?;
-    ctx.accounts.validate_and_freeze_token_account(&ctx)?;
+    ctx.accounts.freeze_token_account(&ctx)?;
 
     let investor_locks = &mut ctx.accounts.investor_locks;
     investor_locks.investor = ctx.accounts.investor.key();
-    investor_locks.wallet = ctx.accounts.wallet.key();
     investor_locks.locked_token_account = ctx.accounts.locked_token_account.key();
 
     Ok(())

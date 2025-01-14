@@ -7,16 +7,13 @@ import {
 
 import { RwaRbac } from "../types/generated/rwa_rbac";
 import { RwaImr } from "../types/generated/rwa_imr";
+import { deriveControllerAuthorityPda, deriveInvestorPda } from "../pdas";
 import {
-  deriveControllerAuthorityPda,
-  deriveIdentityToOwnerPda,
-  deriveInvestorPda,
-} from "../pdas";
-import {
-  getCreateTrackerAccountIx,
   getIdentityAccountPda,
   getIdentityRegistryPda,
   getPolicyEnginePda,
+  getPolicyEngineProgram,
+  getPolicyEnginerEventAuthority,
   getTrackerAccountPda,
   getWalletIdentityAccountPda,
   identityRegistryProgramId,
@@ -27,6 +24,7 @@ import {
 import { IMR_PROGRAM } from "../constants";
 import {
   AddLevelsArgs,
+  AttachWalletByInvestorArgs,
   ChangeCountryArgs,
   RemoveInvestorArgs,
   RemoveLevelsArgs,
@@ -73,14 +71,16 @@ export class IdentityMetadataRegistry {
     );
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investor = deriveInvestorPda(args.investorId, identityRegistry);
-    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
-    const identityToInvestor = deriveIdentityToOwnerPda(identityAccount);
+    const identityAccount = getIdentityAccountPda(
+      args.assetMint,
+      investor.toString() // Investor is owner of IdentityAccount
+    );
+    const assetMintKey = new PublicKey(args.assetMint);
 
     const registerIx = await this.imrProgram.methods
       .registerInvestor(
         args.investorId,
         args.collisionHash,
-        new PublicKey(args.owner),
         args.levels[0],
         args.expiries[0],
         args.country,
@@ -90,11 +90,13 @@ export class IdentityMetadataRegistry {
         payer: args.payer,
         authority: controllerAuthority,
         investor,
-        identityToInvestor,
         identityRegistryProgram: identityRegistryProgramId,
         identityRegistry,
         identityAccount,
-        walletIdentity: getWalletIdentityAccountPda(args.assetMint, args.owner),
+        walletIdentity: getWalletIdentityAccountPda(
+          args.assetMint,
+          investor.toString() // Investor is owner of IdentityAccount
+        ),
         systemProgram: SystemProgram.programId,
       })
       .instruction();
@@ -110,28 +112,37 @@ export class IdentityMetadataRegistry {
           authorizedUserRole: authorizedUserRole || null,
           identityMetadataRegistryProgram: IMR_PROGRAM,
           investor,
-          identityToInvestor,
           identityRegistryProgram: identityRegistryProgramId,
           identityRegistry,
           identityAccount,
           walletIdentity: getWalletIdentityAccountPda(
             args.assetMint,
-            args.owner
+            investor.toString()
           ),
           systemProgram: SystemProgram.programId,
         })
         .instruction()
     );
 
+    const policyProgram = getPolicyEngineProgram(this.imrProgram.provider);
+    const trackerAccount = PublicKey.findProgramAddressSync(
+      [assetMintKey.toBuffer(), identityAccount.toBuffer()],
+      policyProgram.programId
+    )[0];
     returnIxs.push(
-      await getCreateTrackerAccountIx(
-        {
+      await policyProgram.methods
+        .createTrackerAccount()
+        .accountsStrict({
           payer: args.payer,
-          owner: args.owner,
-          assetMint: args.assetMint,
-        },
-        this.rwaClient.provider
-      )
+          trackerAccount,
+          systemProgram: SystemProgram.programId,
+          program: policyProgram.programId,
+          assetMint: assetMintKey,
+          eventAuthority: getPolicyEnginerEventAuthority(),
+          identityRegistry,
+          identityAccount,
+        })
+        .instruction()
     );
 
     if (args.levels.length > 1) {
@@ -142,7 +153,6 @@ export class IdentityMetadataRegistry {
             signer: args.signer,
             investorId: args.investorId,
             assetMint: args.assetMint,
-            owner: args.owner,
             levels: args.levels.slice(1),
             expiries: args.expiries.slice(1),
             proofHashes: args.proofHashes.slice(1),
@@ -177,7 +187,14 @@ export class IdentityMetadataRegistry {
     );
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investor = deriveInvestorPda(args.investorId, identityRegistry);
-    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
+    const identityAccount = getIdentityAccountPda(
+      args.assetMint,
+      investor.toString()
+    );
+    const trackerAccount = getTrackerAccountPda(
+      args.assetMint,
+      investor.toString()
+    );
 
     const ix = await this.imrProgram.methods
       .addLevels(
@@ -196,7 +213,7 @@ export class IdentityMetadataRegistry {
         systemProgram: SystemProgram.programId,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
-        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        trackerAccount,
         assetMint: args.assetMint,
       })
       .instruction();
@@ -217,7 +234,7 @@ export class IdentityMetadataRegistry {
         systemProgram: SystemProgram.programId,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
-        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        trackerAccount,
         assetMint: args.assetMint,
       })
       .instruction();
@@ -240,7 +257,14 @@ export class IdentityMetadataRegistry {
     );
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investor = deriveInvestorPda(args.investorId, identityRegistry);
-    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
+    const identityAccount = getIdentityAccountPda(
+      args.assetMint,
+      investor.toString()
+    );
+    const trackerAccount = getTrackerAccountPda(
+      args.assetMint,
+      investor.toString()
+    );
 
     const ix = await this.imrProgram.methods
       .changeCountry(args.country, args.enforceLimits ?? false)
@@ -253,7 +277,7 @@ export class IdentityMetadataRegistry {
         identityAccount,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
-        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        trackerAccount,
         assetMint: args.assetMint,
       })
       .instruction();
@@ -273,7 +297,7 @@ export class IdentityMetadataRegistry {
         identityAccount,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
-        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        trackerAccount,
         assetMint: args.assetMint,
       })
       .instruction();
@@ -296,7 +320,14 @@ export class IdentityMetadataRegistry {
     );
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investor = deriveInvestorPda(args.investorId, identityRegistry);
-    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
+    const identityAccount = getIdentityAccountPda(
+      args.assetMint,
+      investor.toString()
+    );
+    const trackerAccount = getTrackerAccountPda(
+      args.assetMint,
+      investor.toString()
+    );
 
     const ix = await this.imrProgram.methods
       .removeLevels(Buffer.from(args.levels), args.enforceLimits ?? false)
@@ -310,7 +341,7 @@ export class IdentityMetadataRegistry {
         systemProgram: SystemProgram.programId,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
-        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        trackerAccount,
         assetMint: args.assetMint,
       })
       .instruction();
@@ -331,7 +362,7 @@ export class IdentityMetadataRegistry {
         systemProgram: SystemProgram.programId,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
-        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        trackerAccount,
         assetMint: args.assetMint,
       })
       .instruction();
@@ -354,24 +385,13 @@ export class IdentityMetadataRegistry {
     );
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investor = deriveInvestorPda(args.investorId, identityRegistry);
-    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
-    const identityToInvestor = deriveIdentityToOwnerPda(identityAccount);
-
-    const ix = await this.imrProgram.methods
-      .removeInvestor(new PublicKey(args.owner))
-      .accountsStrict({
-        payer: args.payer,
-        authority: controllerAuthority,
-        investor,
-        identityToInvestor,
-        identityRegistryProgram: identityRegistryProgramId,
-        identityRegistry,
-        identityAccount,
-      })
-      .instruction();
+    const identityAccount = getIdentityAccountPda(
+      args.assetMint,
+      investor.toString()
+    );
 
     return this.rbacProgram.methods
-      .removeInvestor(ix.data)
+      .removeInvestor()
       .accountsStrict({
         payer: args.payer,
         user: args.signer,
@@ -380,10 +400,49 @@ export class IdentityMetadataRegistry {
         authorizedUserRole: authorizedUserRole || null,
         identityMetadataRegistryProgram: IMR_PROGRAM,
         investor,
-        identityToInvestor,
         identityRegistryProgram: identityRegistryProgramId,
         identityRegistry,
         identityAccount,
+      })
+      .instruction();
+  }
+
+  /**
+   * Asynchronously attach a wallet to IdentityAccouont for the Investor.
+   * @param args - {@link AttachWalletByInvestorArgs}
+   * */
+  async attachWalletByInvestor(
+    args: AttachWalletByInvestorArgs
+  ): Promise<TransactionInstruction> {
+    const identityRegistry = getIdentityRegistryPda(args.assetMint);
+    const investor = deriveInvestorPda(args.investorId, identityRegistry);
+    const identityAccount = getIdentityAccountPda(
+      args.assetMint,
+      investor.toString()
+    );
+    return this.imrProgram.methods
+      .attachWalletByInvestor(args.newWallet)
+      .accountsStrict({
+        payer: args.payer,
+        wallet: args.signer,
+        investor,
+        walletIdentity: getWalletIdentityAccountPda(
+          args.assetMint,
+          args.signer
+        ),
+        identityRegistryProgram: identityRegistryProgramId,
+        newWalletIdentity: getWalletIdentityAccountPda(
+          args.assetMint,
+          args.newWallet.toString()
+        ),
+        identityAccount,
+        identityRegistry,
+        assetMint: args.assetMint,
+        newWalletIdentityAccount: getIdentityAccountPda(
+          args.assetMint,
+          args.newWallet.toString()
+        ),
+        systemProgram: SystemProgram.programId,
       })
       .instruction();
   }

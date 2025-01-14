@@ -30,6 +30,9 @@ pub struct Investor {
     /// IdentityRegistryAccount associated with this investor.
     pub identity_registry: Pubkey,
 
+    /// PDA Seed Bump
+    pub bump: u8,
+
     /// Unique ID for Investor, generated off-chain.
     #[max_len(32)]
     pub investor_id: String,

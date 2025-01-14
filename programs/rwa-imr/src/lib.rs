@@ -19,7 +19,6 @@ pub mod rwa_imr {
         ctx: Context<RegisterInvestor>,
         investor_id: String,
         collision_hash: String,
-        owner: Pubkey,
         level: u8,
         expiry: i64,
         country: u8,
@@ -29,7 +28,6 @@ pub mod rwa_imr {
             ctx,
             investor_id,
             collision_hash,
-            owner,
             level,
             expiry,
             country,
@@ -37,8 +35,15 @@ pub mod rwa_imr {
         )
     }
 
-    pub fn remove_investor(ctx: Context<RemoveInvestor>, owner: Pubkey) -> Result<()> {
-        instructions::remove_investor::handler(ctx, owner)
+    pub fn remove_investor(ctx: Context<RemoveInvestor>) -> Result<()> {
+        instructions::remove_investor::handler(ctx)
+    }
+
+    pub fn attach_wallet_by_investor(
+        ctx: Context<AttachWalletByInvestor>,
+        new_wallet: Pubkey,
+    ) -> Result<()> {
+        instructions::attach_wallet_by_investor::handler(ctx, new_wallet)
     }
 
     pub fn add_levels(

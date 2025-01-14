@@ -24,8 +24,6 @@ pub struct CreateInvestorLocks<'info> {
     /// CHECK: Checked against known program address.
     #[account(address = TOKEN_LOCKS_ID)]
     pub token_locks_program: UncheckedAccount<'info>,
-    /// CHECK: Validated in CPI.
-    pub wallet: AccountInfo<'info>,
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub investor_locks: UncheckedAccount<'info>,
@@ -65,7 +63,6 @@ pub fn handler(ctx: Context<CreateInvestorLocks>) -> Result<()> {
     let accounts = vec![
         AccountMeta::new(ctx.accounts.payer.key(), true),
         AccountMeta::new_readonly(ctx.accounts.controller_authority.key(), true),
-        AccountMeta::new_readonly(ctx.accounts.wallet.key(), false),
         AccountMeta::new(ctx.accounts.investor_locks.key(), false),
         AccountMeta::new_readonly(ctx.accounts.investor.key(), false),
         AccountMeta::new_readonly(ctx.accounts.identity_account.key(), false),
@@ -79,7 +76,6 @@ pub fn handler(ctx: Context<CreateInvestorLocks>) -> Result<()> {
     let account_infos = vec![
         ctx.accounts.payer.to_account_info(),
         ctx.accounts.controller_authority.to_account_info(),
-        ctx.accounts.wallet.to_account_info(),
         ctx.accounts.investor_locks.to_account_info(),
         ctx.accounts.investor.to_account_info(),
         ctx.accounts.identity_account.to_account_info(),

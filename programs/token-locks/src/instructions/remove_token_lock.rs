@@ -4,9 +4,8 @@ use anchor_lang::{
 };
 use anchor_spl::token_interface::{Mint, Token2022, TokenAccount};
 use rbac_utils::{
-    constants::ASSET_CONTROLLER_ID,
-    external_accounts::{IdentityAccount, WalletIdentity},
-    FREEZE_TOKEN_ACCOUNT_IX, SEIZE_TOKENS_IX, THAW_TOKEN_ACCOUNT_IX,
+    constants::ASSET_CONTROLLER_ID, external_accounts::WalletIdentity, FREEZE_TOKEN_ACCOUNT_IX,
+    SEIZE_TOKENS_IX, THAW_TOKEN_ACCOUNT_IX,
 };
 use rwa_imr::Investor;
 
@@ -27,14 +26,14 @@ pub struct RemoveTokenLock<'info> {
     #[account(
         has_one = authority,
         has_one = identity_registry,
+        has_one = identity_account,
     )]
     pub investor: Account<'info, Investor>,
-    /// CHECK: Checked by validate_unlocked_token_account if needed.
+    /// CHECK: Checked by validate_unlocked_token_account.
     pub wallet_identity_account: UncheckedAccount<'info>,
-    /// CHECKED: Validated in deserialized_checked.
-    #[account(address = investor.identity_account)]
+    /// CHECK: Address to match for known Investor.
     pub identity_account: UncheckedAccount<'info>,
-    /// CHECK: Verified by checking against known locked_token_account.
+    /// CHECK: Checked in token transfer CPIs.
     #[account(mut)]
     pub asset_mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(mut)]
@@ -157,16 +156,9 @@ impl<'info> RemoveTokenLock<'info> {
         Ok(())
     }
 
-    /// Verify that unlocked_token_account that will receive unlocked tokens has same owner as identity_account
-    /// or is a wallet in a matching wallet_identity.
+    /// Verify that unlocked_token_account that will receive unlocked tokens is a wallet
+    /// in a matching wallet_identity.
     fn validate_unlocked_token_account(&self, ctx: &Context<RemoveTokenLock>) -> Result<()> {
-        let identity_account: IdentityAccount =
-            IdentityAccount::deserialize_checked(&ctx.accounts.identity_account)?;
-
-        if identity_account.owner == ctx.accounts.unlocked_token_account.owner {
-            return Ok(());
-        }
-
         let wallet_identity =
             WalletIdentity::deserialize_checked(&ctx.accounts.wallet_identity_account)?;
 
@@ -174,18 +166,23 @@ impl<'info> RemoveTokenLock<'info> {
             wallet_identity.identity_account,
             ctx.accounts.identity_account.key()
         );
-
         require_keys_eq!(
             ctx.accounts.unlocked_token_account.owner,
             wallet_identity.wallet
         );
+        require_keys_neq!(
+            ctx.accounts.unlocked_token_account.key(),
+            ctx.accounts.locked_token_account.key()
+        );
+
         Ok(())
     }
 }
 
 /// Instruction to remove a lock from InvestorLocks and release locked tokens back to unlocked account.
 /// As this instruction is intended to be invoked through RBAC, the RBAC program will check (but not enforce)
-/// that the user has an authorized role to perform RemoveTokenLock.
+/// that the user has an authorized role to perform RemoveTokenLock. If the user is not authorized, this instruction
+/// will only proceed if the lock has expired and signed user matches attached wallet.
 pub fn handler<'info>(
     ctx: Context<'_, '_, '_, 'info, RemoveTokenLock<'info>>,
     is_user_authorized: bool,
@@ -209,11 +206,11 @@ pub fn handler<'info>(
             .ok_or(ErrorCode::LockNotFound)?;
 
         // Return error if a non-authorized user (as checked by RBAC) tries to remove a lock that has yet expired,
-        // or if user is not the Investor owner.
+        // or if signed user is not the attached wallet.
         require!(
             is_user_authorized
                 || (lock_to_remove.has_expired()?
-                    && ctx.accounts.user.key() == ctx.accounts.investor_locks.wallet.key()),
+                    && ctx.accounts.user.key() == ctx.accounts.unlocked_token_account.owner),
             ErrorCode::UnauthorizedUser
         );
 

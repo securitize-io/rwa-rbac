@@ -44,7 +44,7 @@ export type TokenLocks = {
         },
         {
           name: "identityAccount";
-          docs: ["CHECKED: Validated in deserialized_checked."];
+          relations: ["investor"];
         },
         {
           name: "assetMint";
@@ -152,9 +152,6 @@ export type TokenLocks = {
           relations: ["investor"];
         },
         {
-          name: "wallet";
-        },
-        {
           name: "investorLocks";
           writable: true;
           pda: {
@@ -195,57 +192,7 @@ export type TokenLocks = {
         },
         {
           name: "identityAccount";
-          docs: ["CHECKED: Validated in deserialized_checked."];
-          pda: {
-            seeds: [
-              {
-                kind: "account";
-                path: "investor.identity_registry";
-                account: "investor";
-              },
-              {
-                kind: "account";
-                path: "wallet";
-              }
-            ];
-            program: {
-              kind: "const";
-              value: [
-                97,
-                136,
-                11,
-                54,
-                78,
-                78,
-                37,
-                158,
-                149,
-                188,
-                152,
-                96,
-                175,
-                193,
-                164,
-                230,
-                246,
-                55,
-                15,
-                7,
-                183,
-                58,
-                98,
-                183,
-                95,
-                31,
-                35,
-                14,
-                69,
-                164,
-                68,
-                141
-              ];
-            };
-          };
+          docs: ["CHECKED: Matches known address."];
           relations: ["investor"];
         },
         {
@@ -341,7 +288,7 @@ export type TokenLocks = {
         },
         {
           name: "identityAccount";
-          docs: ["CHECKED: Validated in deserialized_checked."];
+          relations: ["investor"];
         },
         {
           name: "assetMint";
@@ -467,6 +414,11 @@ export type TokenLocks = {
             type: "pubkey";
           },
           {
+            name: "bump";
+            docs: ["PDA Seed Bump"];
+            type: "u8";
+          },
+          {
             name: "investorId";
             docs: ["Unique ID for Investor, generated off-chain."];
             type: "string";
@@ -509,13 +461,6 @@ export type TokenLocks = {
           {
             name: "investor";
             docs: ["Address of Investor account."];
-            type: "pubkey";
-          },
-          {
-            name: "wallet";
-            docs: [
-              "Wallet holding the locked tokens (matches Investor's owner)."
-            ];
             type: "pubkey";
           },
           {

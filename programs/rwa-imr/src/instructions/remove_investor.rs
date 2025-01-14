@@ -17,12 +17,6 @@ pub struct RemoveInvestor<'info> {
         has_one = authority,
     )]
     pub investor: Account<'info, Investor>,
-    #[account(
-        mut,
-        close = payer,
-        has_one = investor,
-    )]
-    pub identity_to_investor: Account<'info, IdentityToInvestor>,
     /// CHECK: Checked against known program address.
     #[account(address = IDENTITY_REGISTRY_ID)]
     pub identity_registry_program: UncheckedAccount<'info>,
@@ -33,8 +27,12 @@ pub struct RemoveInvestor<'info> {
     pub identity_account: UncheckedAccount<'info>,
 }
 
-pub fn handler(ctx: Context<RemoveInvestor>, owner: Pubkey) -> Result<()> {
-    let cpi_data = [&REVOKE_IDENTITY_ACCOUNT_IX, owner.as_ref()].concat();
+pub fn handler(ctx: Context<RemoveInvestor>) -> Result<()> {
+    let cpi_data = [
+        &REVOKE_IDENTITY_ACCOUNT_IX,
+        ctx.accounts.investor.key().as_ref(),
+    ]
+    .concat();
 
     // Perform CPI to IdentityRegistry Program.
     invoke(

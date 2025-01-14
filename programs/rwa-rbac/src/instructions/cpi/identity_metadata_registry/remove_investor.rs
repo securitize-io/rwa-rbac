@@ -7,7 +7,7 @@ use rbac_utils::{
     REMOVE_INVESTOR_IX,
 };
 
-use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
+use crate::{controller_seeds, state::*, verify_medici_signer};
 
 #[derive(Accounts)]
 pub struct RemoveInvestor<'info> {
@@ -26,9 +26,6 @@ pub struct RemoveInvestor<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub investor: UncheckedAccount<'info>,
-    /// CHECK: Verified in CPI.
-    #[account(mut)]
-    pub identity_to_investor: UncheckedAccount<'info>,
     /// CHECK: Checked against known program address.
     #[account(address = IDENTITY_REGISTRY_ID)]
     pub identity_registry_program: UncheckedAccount<'info>,
@@ -39,7 +36,7 @@ pub struct RemoveInvestor<'info> {
     pub identity_account: UncheckedAccount<'info>,
 }
 
-pub fn handler(ctx: Context<RemoveInvestor>, cpi_data: Vec<u8>) -> Result<()> {
+pub fn handler(ctx: Context<RemoveInvestor>) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
     // Verify that signer is either a controller admin or has authorized user role.
@@ -49,12 +46,6 @@ pub fn handler(ctx: Context<RemoveInvestor>, cpi_data: Vec<u8>) -> Result<()> {
         ctx.accounts.authorized_user_role.clone(),
         MediciFlags::REMOVE_INVESTOR,
     )?;
-
-    // Verify instruction discriminator in cpi_data
-    require!(
-        cpi_data.starts_with(&REMOVE_INVESTOR_IX),
-        ErrorCode::UnknownInstruction
-    );
 
     // Perform CPI to IdentityMetadataRegistry Program.
     let seeds = controller_seeds!(controller);
@@ -67,18 +58,16 @@ pub fn handler(ctx: Context<RemoveInvestor>, cpi_data: Vec<u8>) -> Result<()> {
                 AccountMeta::new(ctx.accounts.payer.key(), true),
                 AccountMeta::new_readonly(ctx.accounts.controller_authority.key(), true),
                 AccountMeta::new(ctx.accounts.investor.key(), false),
-                AccountMeta::new(ctx.accounts.identity_to_investor.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.identity_registry_program.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
                 AccountMeta::new(ctx.accounts.identity_account.key(), false),
             ],
-            data: cpi_data,
+            data: REMOVE_INVESTOR_IX.to_vec(),
         },
         &vec![
             ctx.accounts.payer.to_account_info(),
             ctx.accounts.controller_authority.to_account_info(),
             ctx.accounts.investor.to_account_info(),
-            ctx.accounts.identity_to_investor.to_account_info(),
             ctx.accounts.identity_registry_program.to_account_info(),
             ctx.accounts.identity_registry.to_account_info(),
             ctx.accounts.identity_account.to_account_info(),

@@ -4,8 +4,7 @@ use anchor_lang::{
 };
 use anchor_spl::token_interface::{Mint, Token2022, TokenAccount};
 use rbac_utils::{
-    constants::ASSET_CONTROLLER_ID,
-    external_accounts::{IdentityAccount, WalletIdentity},
+    constants::ASSET_CONTROLLER_ID, external_accounts::WalletIdentity,
     transfer_lamports_for_realloc, FREEZE_TOKEN_ACCOUNT_IX, SEIZE_TOKENS_IX, THAW_TOKEN_ACCOUNT_IX,
 };
 use rwa_imr::Investor;
@@ -28,14 +27,14 @@ pub struct AddTokenLock<'info> {
     #[account(
         has_one = authority,
         has_one = identity_registry,
+        has_one = identity_account,
     )]
     pub investor: Account<'info, Investor>,
-    /// CHECK: Checked by validate_unlocked_token_account if needed.
+    /// CHECK: Checked by validate_unlocked_token_account.
     pub wallet_identity_account: UncheckedAccount<'info>,
-    /// CHECKED: Validated in deserialized_checked.
-    #[account(address = investor.identity_account)]
+    /// CHECK: Address to match for known Investor.
     pub identity_account: UncheckedAccount<'info>,
-    /// CHECK: Verified by checking against known locked_token_account.
+    /// CHECK: Checked in token transfer CPIs.
     #[account(mut)]
     pub asset_mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(mut)]
@@ -187,16 +186,9 @@ impl<'info> AddTokenLock<'info> {
         Ok(())
     }
 
-    /// Verify that unlocked_token_account that will have its tokens locked from has same owner as
-    /// identity_account or is a wallet in a matching wallet_identity.
+    /// Verify that unlocked_token_account that will have its tokens locked from is a wallet
+    /// in a matching wallet_identity.
     fn validate_unlocked_token_account(&self, ctx: &Context<AddTokenLock>) -> Result<()> {
-        let identity_account =
-            IdentityAccount::deserialize_checked(&ctx.accounts.identity_account)?;
-
-        if identity_account.owner == ctx.accounts.unlocked_token_account.owner {
-            return Ok(());
-        }
-
         let wallet_identity =
             WalletIdentity::deserialize_checked(&ctx.accounts.wallet_identity_account)?;
 
@@ -204,11 +196,15 @@ impl<'info> AddTokenLock<'info> {
             wallet_identity.identity_account,
             ctx.accounts.identity_account.key()
         );
-
         require_keys_eq!(
             ctx.accounts.unlocked_token_account.owner,
             wallet_identity.wallet
         );
+        require_keys_neq!(
+            ctx.accounts.unlocked_token_account.key(),
+            ctx.accounts.locked_token_account.key()
+        );
+
         Ok(())
     }
 }
@@ -220,6 +216,8 @@ pub fn handler<'info>(
     reason_code: u64,
     reason_string: String,
 ) -> Result<()> {
+    require_gt!(value, 0);
+
     ctx.accounts.validate_unlocked_token_account(&ctx)?;
     ctx.accounts
         .resize_investor_locks_if_needed(&ctx, reason_string.len())?;

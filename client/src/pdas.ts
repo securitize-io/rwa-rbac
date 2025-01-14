@@ -47,16 +47,6 @@ export const deriveInvestorPda = (
   )[0];
 };
 
-export const deriveIdentityToOwnerPda = (
-  identityAccount: PublicKey,
-  programId = IMR_PROGRAM
-) => {
-  return PublicKey.findProgramAddressSync(
-    [identityAccount.toBuffer(), Buffer.from("IdentityToInvestor")],
-    programId
-  )[0];
-};
-
 export const deriveAssetAccessControllerPda = (
   uniqueSeed: PublicKey,
   programId = RBAC_PROGRAM

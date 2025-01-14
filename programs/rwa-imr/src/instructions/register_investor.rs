@@ -25,17 +25,6 @@ pub struct RegisterInvestor<'info> {
         payer = payer
     )]
     pub investor: Account<'info, Investor>,
-    #[account(
-        init,
-        seeds = [
-            &identity_account.key().as_ref(),
-            b"IdentityToInvestor".as_ref(),
-        ],
-        bump,
-        space = 8 + std::mem::size_of::<IdentityToInvestor>(),
-        payer = payer
-    )]
-    pub identity_to_investor: Account<'info, IdentityToInvestor>,
     /// CHECK: Checked against known program address.
     #[account(address = IDENTITY_REGISTRY_ID)]
     pub identity_registry_program: UncheckedAccount<'info>,
@@ -54,7 +43,6 @@ pub fn handler(
     ctx: Context<RegisterInvestor>,
     investor_id: String,
     collision_hash: String,
-    owner: Pubkey,
     level: u8,
     expiry: i64,
     country: u8,
@@ -64,23 +52,21 @@ pub fn handler(
     require!(is_valid_hash(&collision_hash), ErrorCode::InvalidHash);
 
     let investor = &mut ctx.accounts.investor;
+
     investor.authority = ctx.accounts.authority.key();
     investor.identity_account = ctx.accounts.identity_account.key();
     investor.identity_registry = ctx.accounts.identity_registry.key();
+    investor.bump = ctx.bumps.investor;
     investor.investor_id = investor_id;
     investor.collision_hash = collision_hash;
     investor.last_updated_by = ctx.accounts.payer.key();
     investor.levels = vec![LevelData { level, proof_hash }];
     investor.country = country;
 
-    let identity_to_investor = &mut ctx.accounts.identity_to_investor;
-    identity_to_investor.identity_account = ctx.accounts.identity_account.key();
-    identity_to_investor.investor = ctx.accounts.investor.key();
-
     // Build data arg for CPI manually.
     let cpi_data = [
         &CREATE_IDENTITY_ACCOUNT_IX,
-        owner.as_ref(),
+        ctx.accounts.investor.key().as_ref(), // Set Investor PDA as IdentityAccount.
         &[level],
         &expiry.to_le_bytes(),
         &[country],

@@ -26,9 +26,6 @@ pub struct RegisterInvestor<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub investor: UncheckedAccount<'info>,
-    /// CHECK: Verified in CPI.
-    #[account(mut)]
-    pub identity_to_investor: UncheckedAccount<'info>,
     /// CHECK: Checked against known program address.
     #[account(address = IDENTITY_REGISTRY_ID)]
     pub identity_registry_program: UncheckedAccount<'info>,
@@ -71,7 +68,6 @@ pub fn handler(ctx: Context<RegisterInvestor>, cpi_data: Vec<u8>) -> Result<()> 
                 AccountMeta::new(ctx.accounts.payer.key(), true),
                 AccountMeta::new_readonly(ctx.accounts.controller_authority.key(), true),
                 AccountMeta::new(ctx.accounts.investor.key(), false),
-                AccountMeta::new(ctx.accounts.identity_to_investor.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.identity_registry_program.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
                 AccountMeta::new(ctx.accounts.identity_account.key(), false),
@@ -84,7 +80,6 @@ pub fn handler(ctx: Context<RegisterInvestor>, cpi_data: Vec<u8>) -> Result<()> 
             ctx.accounts.payer.to_account_info(),
             ctx.accounts.controller_authority.to_account_info(),
             ctx.accounts.investor.to_account_info(),
-            ctx.accounts.identity_to_investor.to_account_info(),
             ctx.accounts.identity_registry_program.to_account_info(),
             ctx.accounts.identity_registry.to_account_info(),
             ctx.accounts.identity_account.to_account_info(),

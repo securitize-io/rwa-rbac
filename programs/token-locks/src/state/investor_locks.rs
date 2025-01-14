@@ -50,9 +50,6 @@ pub struct InvestorLocks {
     /// Address of Investor account.
     pub investor: Pubkey,
 
-    /// Wallet holding the locked tokens (matches Investor's owner).
-    pub wallet: Pubkey,
-
     /// Account storing locked tokens for wallet. Will be frozen upon initialization of
     /// InvestorLocks.
     pub locked_token_account: Pubkey,
@@ -94,7 +91,6 @@ mod tests {
     fn build_investor_locks(lock_count: u8) -> InvestorLocks {
         let mut investor_locks = InvestorLocks {
             investor: Pubkey::new_unique(),
-            wallet: Pubkey::new_unique(),
             locked_token_account: Pubkey::new_unique(),
             locks: vec![],
         };

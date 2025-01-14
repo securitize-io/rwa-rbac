@@ -84,6 +84,60 @@ export type RwaImr = {
       ];
     },
     {
+      name: "attachWalletByInvestor";
+      discriminator: [252, 160, 12, 48, 159, 73, 185, 247];
+      accounts: [
+        {
+          name: "payer";
+          writable: true;
+          signer: true;
+        },
+        {
+          name: "wallet";
+          signer: true;
+        },
+        {
+          name: "investor";
+        },
+        {
+          name: "walletIdentity";
+        },
+        {
+          name: "identityRegistryProgram";
+          address: "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ";
+        },
+        {
+          name: "newWalletIdentity";
+          writable: true;
+        },
+        {
+          name: "identityAccount";
+          writable: true;
+          relations: ["investor"];
+        },
+        {
+          name: "identityRegistry";
+          relations: ["investor"];
+        },
+        {
+          name: "assetMint";
+        },
+        {
+          name: "newWalletIdentityAccount";
+        },
+        {
+          name: "systemProgram";
+          address: "11111111111111111111111111111111";
+        }
+      ];
+      args: [
+        {
+          name: "newWallet";
+          type: "pubkey";
+        }
+      ];
+    },
+    {
       name: "changeCountry";
       discriminator: [208, 227, 224, 246, 9, 254, 62, 179];
       accounts: [
@@ -174,41 +228,6 @@ export type RwaImr = {
           };
         },
         {
-          name: "identityToInvestor";
-          writable: true;
-          pda: {
-            seeds: [
-              {
-                kind: "account";
-                path: "identityAccount";
-              },
-              {
-                kind: "const";
-                value: [
-                  73,
-                  100,
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121,
-                  84,
-                  111,
-                  73,
-                  110,
-                  118,
-                  101,
-                  115,
-                  116,
-                  111,
-                  114
-                ];
-              }
-            ];
-          };
-        },
-        {
           name: "identityRegistryProgram";
           address: "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ";
         },
@@ -236,10 +255,6 @@ export type RwaImr = {
         {
           name: "collisionHash";
           type: "string";
-        },
-        {
-          name: "owner";
-          type: "pubkey";
         },
         {
           name: "level";
@@ -276,11 +291,6 @@ export type RwaImr = {
         {
           name: "investor";
           writable: true;
-          relations: ["identityToInvestor"];
-        },
-        {
-          name: "identityToInvestor";
-          writable: true;
         },
         {
           name: "identityRegistryProgram";
@@ -294,12 +304,7 @@ export type RwaImr = {
           writable: true;
         }
       ];
-      args: [
-        {
-          name: "owner";
-          type: "pubkey";
-        }
-      ];
+      args: [];
     },
     {
       name: "removeLevels";
@@ -362,10 +367,6 @@ export type RwaImr = {
   ];
   accounts: [
     {
-      name: "identityToInvestor";
-      discriminator: [120, 233, 226, 235, 196, 24, 74, 218];
-    },
-    {
       name: "investor";
       discriminator: [174, 129, 17, 83, 36, 116, 26, 196];
     }
@@ -409,24 +410,6 @@ export type RwaImr = {
   ];
   types: [
     {
-      name: "identityToInvestor";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "identityAccount";
-            docs: ["IdentityAccount associated with this investor."];
-            type: "pubkey";
-          },
-          {
-            name: "investor";
-            docs: ["Investor account associated with this identity."];
-            type: "pubkey";
-          }
-        ];
-      };
-    },
-    {
       name: "investor";
       type: {
         kind: "struct";
@@ -448,6 +431,11 @@ export type RwaImr = {
             name: "identityRegistry";
             docs: ["IdentityRegistryAccount associated with this investor."];
             type: "pubkey";
+          },
+          {
+            name: "bump";
+            docs: ["PDA Seed Bump"];
+            type: "u8";
           },
           {
             name: "investorId";

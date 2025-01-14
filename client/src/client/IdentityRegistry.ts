@@ -8,9 +8,6 @@ import {
 } from "../types/instructions";
 import {
   AddLevelToIdentityAccountArgs,
-  ChangeCountryArgs,
-  getAddLevelToIdentityAccount,
-  getChangeCountryIx,
   getIdentityAccountPda,
   getIdentityRegistryPda,
   getIdentityRegistryProgram,
@@ -25,10 +22,7 @@ import {
   RwaClient,
   SetupUserArgs,
 } from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
-import {
-  deriveControllerAuthorityPda,
-  deriveIdentityToOwnerPda,
-} from "../pdas";
+import { deriveControllerAuthorityPda } from "../pdas";
 import { SystemProgram } from "@solana/web3.js";
 
 /**
@@ -127,7 +121,7 @@ export class IdentityRegistry {
         identityRegistryProgram: identityRegistryProgramId,
         identityRegistry: getIdentityRegistryPda(args.assetMint),
         identityAccount,
-        identityToInvestor: deriveIdentityToOwnerPda(identityAccount),
+        identityAccountOwner: args.owner,
         systemProgram: SystemProgram.programId,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
@@ -168,7 +162,7 @@ export class IdentityRegistry {
         identityRegistryProgram: identityRegistryProgramId,
         identityRegistry: getIdentityRegistryPda(args.assetMint),
         identityAccount,
-        identityToInvestor: deriveIdentityToOwnerPda(identityAccount),
+        identityAccountOwner: args.owner,
         systemProgram: SystemProgram.programId,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),

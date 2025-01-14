@@ -78,6 +78,60 @@
       ]
     },
     {
+      "name": "attach_wallet_by_investor",
+      "discriminator": [252, 160, 12, 48, 159, 73, 185, 247],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "wallet",
+          "signer": true
+        },
+        {
+          "name": "investor"
+        },
+        {
+          "name": "wallet_identity"
+        },
+        {
+          "name": "identity_registry_program",
+          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+        },
+        {
+          "name": "new_wallet_identity",
+          "writable": true
+        },
+        {
+          "name": "identity_account",
+          "writable": true,
+          "relations": ["investor"]
+        },
+        {
+          "name": "identity_registry",
+          "relations": ["investor"]
+        },
+        {
+          "name": "asset_mint"
+        },
+        {
+          "name": "new_wallet_identity_account"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "new_wallet",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
       "name": "change_country",
       "discriminator": [208, 227, 224, 246, 9, 254, 62, 179],
       "accounts": [
@@ -168,25 +222,6 @@
           }
         },
         {
-          "name": "identity_to_investor",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "identity_account"
-              },
-              {
-                "kind": "const",
-                "value": [
-                  73, 100, 101, 110, 116, 105, 116, 121, 84, 111, 73, 110, 118,
-                  101, 115, 116, 111, 114
-                ]
-              }
-            ]
-          }
-        },
-        {
           "name": "identity_registry_program",
           "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
         },
@@ -214,10 +249,6 @@
         {
           "name": "collision_hash",
           "type": "string"
-        },
-        {
-          "name": "owner",
-          "type": "pubkey"
         },
         {
           "name": "level",
@@ -253,11 +284,6 @@
         },
         {
           "name": "investor",
-          "writable": true,
-          "relations": ["identity_to_investor"]
-        },
-        {
-          "name": "identity_to_investor",
           "writable": true
         },
         {
@@ -272,12 +298,7 @@
           "writable": true
         }
       ],
-      "args": [
-        {
-          "name": "owner",
-          "type": "pubkey"
-        }
-      ]
+      "args": []
     },
     {
       "name": "remove_levels",
@@ -340,10 +361,6 @@
   ],
   "accounts": [
     {
-      "name": "IdentityToInvestor",
-      "discriminator": [120, 233, 226, 235, 196, 24, 74, 218]
-    },
-    {
       "name": "Investor",
       "discriminator": [174, 129, 17, 83, 36, 116, 26, 196]
     }
@@ -387,24 +404,6 @@
   ],
   "types": [
     {
-      "name": "IdentityToInvestor",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "identity_account",
-            "docs": ["IdentityAccount associated with this investor."],
-            "type": "pubkey"
-          },
-          {
-            "name": "investor",
-            "docs": ["Investor account associated with this identity."],
-            "type": "pubkey"
-          }
-        ]
-      }
-    },
-    {
       "name": "Investor",
       "type": {
         "kind": "struct",
@@ -426,6 +425,11 @@
             "name": "identity_registry",
             "docs": ["IdentityRegistryAccount associated with this investor."],
             "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "docs": ["PDA Seed Bump"],
+            "type": "u8"
           },
           {
             "name": "investor_id",

@@ -9,28 +9,19 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import { assert } from "chai";
-import {
-  getAssociatedTokenAddressSync,
-  TOKEN_2022_PROGRAM_ID,
-} from "@solana/spl-token";
 
 import { setupTests } from "./utils";
 import { AdminFlags, MediciFlags, RwaRbacClient } from "../client/src/index";
 import {
   CreateAssetControllerIx,
-  getAssetControllerPda,
   getIdentityAccountFromOwner,
   getIdentityAccountPda,
   getIdentityRegistryPda,
   getPolicyEngineAccount,
-  getPolicyEnginePda,
-  getPolicyEngineProgram,
-  IssueTokenArgs,
+  getWalletIdentityAccount,
+  getWalletIdentityAccountPda,
 } from "../deps/rwa-token/clients/rwa-token-sdk/src";
-import {
-  deriveIdentityToOwnerPda,
-  deriveInvestorPda,
-} from "../client/src/pdas";
+import { deriveInvestorPda } from "../client/src/pdas";
 import { IssueTokensWithLockArgs } from "../client/src/types/instructions";
 
 describe("CPI End to End Tests", () => {
@@ -41,10 +32,7 @@ describe("CPI End to End Tests", () => {
   let setup;
   let mint: string;
   let connection: Connection;
-  let user1Ata: PublicKey;
-  let assetController: PublicKey;
-  let policyAccount: PublicKey;
-  let policyEngine: PublicKey;
+  let investorPda: string;
 
   const INVESTOR_ID = "d1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6";
   const PLACEHOLDER_HASH1 = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6";
@@ -107,16 +95,12 @@ describe("CPI End to End Tests", () => {
       [setup.payerKp, assetMintKp]
     );
 
-    // Store values for later use
+    // Store values for later reuse
     mint = args.assetMint;
-    user1Ata = getAssociatedTokenAddressSync(
-      new PublicKey(mint),
-      setup.user1,
-      false,
-      TOKEN_2022_PROGRAM_ID
-    );
-    assetController = getAssetControllerPda(mint);
-    policyEngine = getPolicyEnginePda(mint);
+    investorPda = deriveInvestorPda(
+      INVESTOR_ID,
+      getIdentityRegistryPda(mint)
+    ).toString();
   });
 
   it("Create UserRole 1 successfully", async () => {
@@ -269,7 +253,6 @@ describe("CPI End to End Tests", () => {
     const args = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // User Account
-      owner: setup.user1.toString(), // Target Account
       assetMint: mint,
       investorId: INVESTOR_ID,
       collisionHash: PLACEHOLDER_HASH2,
@@ -299,23 +282,8 @@ describe("CPI End to End Tests", () => {
       setup.signer1Kp,
     ]);
 
-    // Validate Investor, IdentityToInvestor and IdentityAccount
-    const investorPda = deriveInvestorPda(
-      args.investorId,
-      getIdentityRegistryPda(mint)
-    );
-    const identityAccountPda = getIdentityAccountPda(mint, setup.user1);
-    const identityToInvestor = deriveIdentityToOwnerPda(identityAccountPda);
-
-    const identityToInvestorAccount =
-      await rwaRbacClient.identityMetadataRegistry.imrProgram.account.identityToInvestor.fetch(
-        identityToInvestor
-      );
-    assert(
-      identityToInvestorAccount.identityAccount.equals(identityAccountPda)
-    );
-    assert(identityToInvestorAccount.investor.equals(investorPda));
-
+    // Validate Investor and IdentityAccount
+    const identityAccountPda = getIdentityAccountPda(mint, investorPda);
     const investorAccount =
       await rwaRbacClient.identityMetadataRegistry.imrProgram.account.investor.fetch(
         investorPda
@@ -333,10 +301,10 @@ describe("CPI End to End Tests", () => {
 
     const identityAccount = await getIdentityAccountFromOwner(
       mint,
-      setup.user1,
+      investorPda.toString(),
       rwaRbacClient.provider
     );
-    assert.equal(identityAccount.owner.toString(), args.owner);
+    assert.equal(identityAccount.owner.toString(), investorPda);
     assert.equal(identityAccount.levels.length, 2);
     identityAccount.levels.map((x, idx) => {
       assert.equal(x.level, args.levels[idx]);
@@ -344,7 +312,7 @@ describe("CPI End to End Tests", () => {
     });
   });
 
-  it("CPI: Create Identity Account", async () => {
+  it("CPI: Create Identity Account for non-Investor", async () => {
     const args = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // User Account
@@ -382,7 +350,7 @@ describe("CPI End to End Tests", () => {
     const args = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // User Account
-      owner: setup.user1.toString(), // Target Account
+      owner: investorPda,
       authority: setup.controllerAuthority,
       assetMint: mint,
       levels: [30],
@@ -505,7 +473,6 @@ describe("CPI End to End Tests", () => {
     const args = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // User Account
-      owner: setup.user1.toString(), // Target Account
       assetMint: mint,
       investorId: INVESTOR_ID,
       levels: [6, 7, 8],
@@ -528,10 +495,6 @@ describe("CPI End to End Tests", () => {
     ]);
 
     // Validate Investor and IdentityAccount
-    const investorPda = deriveInvestorPda(
-      args.investorId,
-      getIdentityRegistryPda(mint)
-    );
     const investorAccount =
       await rwaRbacClient.identityMetadataRegistry.imrProgram.account.investor.fetch(
         investorPda
@@ -548,7 +511,7 @@ describe("CPI End to End Tests", () => {
 
     const identityAccount = await getIdentityAccountFromOwner(
       mint,
-      setup.user1,
+      investorPda,
       rwaRbacClient.provider
     );
     assert.equal(identityAccount.levels.length, 5);
@@ -562,7 +525,7 @@ describe("CPI End to End Tests", () => {
     const args = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // User Account
-      owner: setup.user1.toString(), // Target Account
+      owner: investorPda,
       authority: setup.controllerAuthority,
       assetMint: mint,
       levels: [1],
@@ -589,7 +552,6 @@ describe("CPI End to End Tests", () => {
     const args = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // User Account
-      owner: setup.user1.toString(), // Target Account
       assetMint: mint,
       investorId: INVESTOR_ID,
       levels: [6, 7, 8],
@@ -611,10 +573,6 @@ describe("CPI End to End Tests", () => {
     );
 
     // Validate Investor and IdentityAccount
-    const investorPda = deriveInvestorPda(
-      args.investorId,
-      getIdentityRegistryPda(mint)
-    );
     const investorAccount =
       await rwaRbacClient.identityMetadataRegistry.imrProgram.account.investor.fetch(
         investorPda
@@ -626,7 +584,7 @@ describe("CPI End to End Tests", () => {
 
     const identityAccount = await getIdentityAccountFromOwner(
       mint,
-      setup.user1,
+      investorPda,
       rwaRbacClient.provider
     );
     assert.equal(identityAccount.levels.length, 2);
@@ -638,7 +596,7 @@ describe("CPI End to End Tests", () => {
     const refreshArgs = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // User Account
-      owner: setup.user1.toString(), // Target Account
+      owner: investorPda,
       authority: setup.controllerAuthority.toString(), // ControllerAuthority
       assetMint: mint,
       level: 1,
@@ -668,9 +626,9 @@ describe("CPI End to End Tests", () => {
     const args = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // User Account
-      owner: setup.user1.toString(), // Target Account
+      owner: investorPda,
       assetMint: mint,
-      wallet: setup.user3,
+      wallet: setup.user1,
     };
     const ix = await rwaRbacClient.identityRegistry.attachWalletToIdentityIxn(
       args,
@@ -685,17 +643,48 @@ describe("CPI End to End Tests", () => {
     // Check wallet count
     const identityAccount = await getIdentityAccountFromOwner(
       mint,
-      args.owner,
+      investorPda,
       rwaRbacClient.provider
     );
     assert.equal(identityAccount.numWallets, 2);
+  });
+
+  it("Add Wallet by Investor", async () => {
+    const ix =
+      await rwaRbacClient.identityMetadataRegistry.attachWalletByInvestor({
+        payer: setup.payer.toString(), // Payer Account
+        signer: setup.user1.toString(), // User Account
+        investorId: INVESTOR_ID,
+        assetMint: mint,
+        newWallet: setup.user3,
+      });
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.user1Kp,
+    ]);
+
+    // Check wallet count
+    const identityAccount = await getIdentityAccountFromOwner(
+      mint,
+      investorPda,
+      rwaRbacClient.provider
+    );
+    assert.equal(identityAccount.numWallets, 3);
+
+    const newWalletIdentityAccount = await getWalletIdentityAccount(
+      getWalletIdentityAccountPda(mint, setup.user3),
+      rwaRbacClient.provider
+    );
+    const identityAccountPda = getIdentityAccountPda(mint, investorPda);
+    assert(newWalletIdentityAccount.identityAccount.equals(identityAccountPda));
+    assert.equal(newWalletIdentityAccount.wallet.toString(), setup.user3);
   });
 
   it("CPI: Detach Wallet from Identity", async () => {
     const args = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // User Account
-      owner: setup.user1.toString(), // Target Account
+      owner: investorPda,
       assetMint: mint,
       wallet: setup.user3,
     };
@@ -715,14 +704,13 @@ describe("CPI End to End Tests", () => {
       args.owner,
       rwaRbacClient.provider
     );
-    assert.equal(identityAccount.numWallets, 1);
+    assert.equal(identityAccount.numWallets, 2);
   });
 
   it("CPI: Issue Tokens", async () => {
     const issueArgs: IssueTokensWithLockArgs = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // User Account
-      owner: setup.user1.toString(), // Target Account
       assetMint: mint,
       amount: new BN(1000000),
       investorId: INVESTOR_ID,
@@ -768,7 +756,6 @@ describe("CPI End to End Tests", () => {
     const args = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // User Account
-      owner: setup.user1.toString(), // Target Account
       assetMint: mint,
       investorId: INVESTOR_ID,
       country: 50,
@@ -790,31 +777,42 @@ describe("CPI End to End Tests", () => {
       payer: setup.payer.toString(), // Payer Account
       assetMint: mint,
       removedCounters: Buffer.from(""),
-      addedCounters: [{
-				id: 0,
-				identityFilter: {
-					simple: [{
-						single: [{
-							target: {receiver: {}},
-							mode: {include: {}},
-							level: {level: [1]},
-						}]
-					}] 
-				} as any,
-				value: new BN(0),
-			}, {
-				id: 1,
-				identityFilter: {
-					simple: [{
-						single: [{
-							target: {receiver: {}},
-							mode: {include: {}},
-							level: {country: [2]},
-						}]
-					}]
-				},
-				value: new BN(0),
-			} as any,],
+      addedCounters: [
+        {
+          id: 0,
+          identityFilter: {
+            simple: [
+              {
+                single: [
+                  {
+                    target: { receiver: {} },
+                    mode: { include: {} },
+                    level: { level: [1] },
+                  },
+                ],
+              },
+            ],
+          } as any,
+          value: new BN(0),
+        },
+        {
+          id: 1,
+          identityFilter: {
+            simple: [
+              {
+                single: [
+                  {
+                    target: { receiver: {} },
+                    mode: { include: {} },
+                    level: { country: [2] },
+                  },
+                ],
+              },
+            ],
+          },
+          value: new BN(0),
+        } as any,
+      ],
     };
     const ix = await rwaRbacClient.policyEngine.changeCounters(
       args,
@@ -836,7 +834,12 @@ describe("CPI End to End Tests", () => {
       changedCounters: [1],
       values: [new BN(2)],
     };
-    const ix = await rwaRbacClient.policyEngine.setCounters(args, setup.signer1, setup.assetAccessController, setup.userRole1);
+    const ix = await rwaRbacClient.policyEngine.setCounters(
+      args,
+      setup.signer1,
+      setup.assetAccessController,
+      setup.userRole1
+    );
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
       setup.payerKp,
       setup.signer1Kp,
@@ -895,7 +898,7 @@ describe("CPI End to End Tests", () => {
         authority: setup.controllerAuthority.toString(), // ControllerAuthority
         payer: setup.payer.toString(), // Payer Account
         signer: setup.signer1.toString(), // User Account
-        owner: setup.user1.toString(), // Target Account
+        owner: setup.user1,
         assetMint: mint,
       },
       setup.assetAccessController,
@@ -914,7 +917,7 @@ describe("CPI End to End Tests", () => {
         authority: setup.controllerAuthority.toString(), // ControllerAuthority
         payer: setup.payer.toString(), // Payer Account
         signer: setup.signer1.toString(), // User Account
-        owner: setup.user1.toString(), // Target Account
+        owner: setup.user1,
         assetMint: mint,
       },
       setup.assetAccessController,
@@ -929,12 +932,13 @@ describe("CPI End to End Tests", () => {
   it("CPI: Revoke Tokens", async () => {
     const revokeIx = await rwaRbacClient.assetController.revokeTokenIxn(
       {
-        owner: setup.user1.toString(), // Target Account
+        owner: null,
+        wallet: setup.user1,
         assetMint: mint,
         amount: 100,
         authority: setup.controllerAuthority.toString(), // ControllerAuthority
       },
-      setup.payer, // Payer Account
+      INVESTOR_ID,
       setup.signer1, // User Account
       setup.assetAccessController,
       setup.userRole1
@@ -945,49 +949,63 @@ describe("CPI End to End Tests", () => {
       [setup.payerKp, setup.signer1Kp]
     );
   });
-  
 
   it("CPI: Remove Investor", async () => {
+    // Detach additional wallet first to allow revoke IdentityAccount.
+    const detachIx =
+      await rwaRbacClient.identityRegistry.detachWalletFromIdentityIxn(
+        {
+          payer: setup.payer.toString(), // Payer Account
+          signer: setup.signer1.toString(), // User Account
+          owner: investorPda,
+          assetMint: mint,
+          wallet: setup.user1,
+        },
+        setup.assetAccessController,
+        setup.userRole1
+      );
+
     const args = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // User Account
-      owner: setup.user1.toString(), // Target Account
       assetMint: mint,
       investorId: INVESTOR_ID,
     };
-    const ix = await rwaRbacClient.identityMetadataRegistry.removeInvestor(
-      args,
-      setup.assetAccessController,
-      setup.userRole1
+    const removeIx =
+      await rwaRbacClient.identityMetadataRegistry.removeInvestor(
+        {
+          payer: setup.payer.toString(), // Payer Account
+          signer: setup.signer1.toString(), // User Account
+          assetMint: mint,
+          investorId: INVESTOR_ID,
+        },
+        setup.assetAccessController,
+        setup.userRole1
+      );
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(...[detachIx, removeIx]),
+      [setup.payerKp, setup.signer1Kp]
     );
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
-      setup.payerKp,
-      setup.signer1Kp,
-    ]);
 
     // Validate Investor and IdentityAccount
-    const investorPda = deriveInvestorPda(
-      args.investorId,
-      getIdentityRegistryPda(mint)
+    const identityAccountPda = getIdentityAccountPda(
+      mint,
+      investorPda.toString()
     );
-    const identityAccountPda = getIdentityAccountPda(mint, setup.user1);
-    const identityToInvestor = deriveIdentityToOwnerPda(identityAccountPda);
     assert.isNull(
-      await rwaRbacClient.provider.connection.getAccountInfo(investorPda)
+      await rwaRbacClient.provider.connection.getAccountInfo(
+        new PublicKey(investorPda)
+      )
     );
     assert.isNull(
       await rwaRbacClient.provider.connection.getAccountInfo(identityAccountPda)
-    );
-    assert.isNull(
-      await rwaRbacClient.provider.connection.getAccountInfo(identityToInvestor)
     );
   });
 
   it("CPI: Change Issuance Policies", async () => {
     const args = {
       payer: setup.payer.toString(), // Payer Account
-      signer: setup.signer1.toString(), // User Account
-      owner: setup.user1.toString(), // Target Account
       authority: setup.controllerAuthority.toString(), // ControllerAuthority
       assetMint: mint,
       issuancePolicies: {

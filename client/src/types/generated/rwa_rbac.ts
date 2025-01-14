@@ -50,78 +50,11 @@ export type RwaRbac = {
           writable: true;
         },
         {
-          name: "identityToInvestor";
+          name: "identityAccountOwner";
           docs: [
-            "Note that if identity_to_investor exists for investor, CPI to IdentityMetadataRegistry should be called."
+            "to ensure that it is not an Investor account. If it is an Investor account,",
+            "CPI to IdentityMetadataRegistry should be called."
           ];
-          pda: {
-            seeds: [
-              {
-                kind: "account";
-                path: "identityAccount";
-              },
-              {
-                kind: "const";
-                value: [
-                  73,
-                  100,
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121,
-                  84,
-                  111,
-                  73,
-                  110,
-                  118,
-                  101,
-                  115,
-                  116,
-                  111,
-                  114
-                ];
-              }
-            ];
-            program: {
-              kind: "const";
-              value: [
-                84,
-                79,
-                22,
-                26,
-                69,
-                114,
-                48,
-                253,
-                80,
-                11,
-                87,
-                127,
-                72,
-                189,
-                126,
-                53,
-                195,
-                65,
-                123,
-                145,
-                75,
-                54,
-                27,
-                26,
-                107,
-                146,
-                233,
-                196,
-                61,
-                5,
-                80,
-                50
-              ];
-            };
-          };
         },
         {
           name: "systemProgram";
@@ -925,9 +858,6 @@ export type RwaRbac = {
           address: "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz";
         },
         {
-          name: "wallet";
-        },
-        {
           name: "investorLocks";
           writable: true;
         },
@@ -1412,10 +1342,6 @@ export type RwaRbac = {
           writable: true;
         },
         {
-          name: "identityToInvestor";
-          writable: true;
-        },
-        {
           name: "identityRegistryProgram";
           address: "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ";
         },
@@ -1476,10 +1402,6 @@ export type RwaRbac = {
           writable: true;
         },
         {
-          name: "identityToInvestor";
-          writable: true;
-        },
-        {
           name: "identityRegistryProgram";
           address: "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ";
         },
@@ -1491,12 +1413,7 @@ export type RwaRbac = {
           writable: true;
         }
       ];
-      args: [
-        {
-          name: "cpiData";
-          type: "bytes";
-        }
-      ];
+      args: [];
     },
     {
       name: "removeLevelFromIdentityAccount";
@@ -1535,78 +1452,11 @@ export type RwaRbac = {
           writable: true;
         },
         {
-          name: "identityToInvestor";
+          name: "identityAccountOwner";
           docs: [
-            "Note that if identity_to_investor exists for investor, CPI to IdentityMetadataRegistry should be called."
+            "to ensure that it is not an Investor account. If it is an Investor account,",
+            "CPI to IdentityMetadataRegistry should be called."
           ];
-          pda: {
-            seeds: [
-              {
-                kind: "account";
-                path: "identityAccount";
-              },
-              {
-                kind: "const";
-                value: [
-                  73,
-                  100,
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121,
-                  84,
-                  111,
-                  73,
-                  110,
-                  118,
-                  101,
-                  115,
-                  116,
-                  111,
-                  114
-                ];
-              }
-            ];
-            program: {
-              kind: "const";
-              value: [
-                84,
-                79,
-                22,
-                26,
-                69,
-                114,
-                48,
-                253,
-                80,
-                11,
-                87,
-                127,
-                72,
-                189,
-                126,
-                53,
-                195,
-                65,
-                123,
-                145,
-                75,
-                54,
-                27,
-                26,
-                107,
-                146,
-                233,
-                196,
-                61,
-                5,
-                80,
-                50
-              ];
-            };
-          };
         },
         {
           name: "systemProgram";

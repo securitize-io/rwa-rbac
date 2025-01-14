@@ -120,13 +120,21 @@ export class AssetController {
     assetAccessController: PublicKey,
     authorizedUserRole?: PublicKey
   ): Promise<TransactionInstruction[]> {
+    const identityRegistry = getIdentityRegistryPda(args.assetMint);
+    const investorPda = deriveInvestorPda(args.investorId, identityRegistry);
     const unlockedTokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
-      new PublicKey(args.wallet || args.owner),
+      new PublicKey(args.wallet),
       false,
       TOKEN_2022_PROGRAM_ID
     );
-
+    const trackerAccount = getTrackerAccountPda(
+      args.assetMint,
+      investorPda.toString()
+    );
+    const controllerAuthority = deriveControllerAuthorityPda(
+      assetAccessController
+    );
     const ixs = [];
 
     // Check if unlockedTokenAccount exists.
@@ -139,14 +147,12 @@ export class AssetController {
       const createAtaIx = createAssociatedTokenAccountInstruction(
         new PublicKey(args.payer),
         unlockedTokenAccount,
-        new PublicKey(args.wallet || args.owner),
+        new PublicKey(args.wallet),
         new PublicKey(args.assetMint),
         TOKEN_2022_PROGRAM_ID
       );
       ixs.push(createAtaIx);
     }
-
-    const identityRegistry = getIdentityRegistryPda(args.assetMint);
 
     ixs.push(
       await this.rbacProgram.methods
@@ -159,31 +165,32 @@ export class AssetController {
         .accountsStrict({
           payer: args.payer,
           user: args.signer,
-          controllerAuthority: deriveControllerAuthorityPda(
-            assetAccessController
-          ),
+          controllerAuthority,
           assetAccessController: assetAccessController,
           authorizedUserRole: authorizedUserRole || null,
           assetControllerProgram: assetControllerProgramId,
           assetMint: args.assetMint,
           assetController: getAssetControllerPda(args.assetMint),
-          to: args.wallet || args.owner,
+          to: args.wallet,
           tokenAccount: unlockedTokenAccount,
           policyEngine: getPolicyEnginePda(args.assetMint),
           policyEngineProgram: policyEngineProgramId,
-          identityAccount: getIdentityAccountPda(args.assetMint, args.owner),
-          trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+          identityAccount: getIdentityAccountPda(
+            args.assetMint,
+            investorPda.toString()
+          ),
+          trackerAccount,
           identityRegistry,
           tokenProgram: TOKEN_2022_PROGRAM_ID,
           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
           systemProgram: SystemProgram.programId,
           walletIdentityAccount: getWalletIdentityAccountPda(
             args.assetMint,
-            args.wallet || args.owner
+            args.wallet
           ),
           tokenLocksProgram: TL_PROGRAM,
           investorLocks: deriveInvestorLocks(args.investorId, identityRegistry),
-          investor: deriveInvestorPda(args.investorId, identityRegistry),
+          investor: investorPda,
           lockedTokenAccount: deriveLockedTokenAccount(
             args.investorId,
             identityRegistry
@@ -206,20 +213,28 @@ export class AssetController {
             isSigner: false,
           },
           {
-            pubkey: getIdentityRegistryPda(args.assetMint),
+            pubkey: identityRegistry,
             isWritable: false,
             isSigner: false,
           },
           {
             pubkey: getIdentityAccountPda(
               args.assetMint,
-              args.owner.toString()
+              investorPda.toString()
             ),
             isWritable: false,
             isSigner: false,
           },
           {
-            pubkey: getTrackerAccountPda(args.assetMint, args.owner.toString()),
+            pubkey: getIdentityAccountPda(
+              args.assetMint,
+              args.wallet.toString()
+            ),
+            isWritable: false,
+            isSigner: false,
+          },
+          {
+            pubkey: trackerAccount,
             isWritable: true,
             isSigner: false,
           },
@@ -231,7 +246,7 @@ export class AssetController {
           {
             pubkey: getWalletIdentityAccountPda(
               args.assetMint,
-              args.owner.toString()
+              investorPda.toString()
             ),
             isWritable: false,
             isSigner: false,
@@ -344,17 +359,25 @@ export class AssetController {
    */
   async revokeTokenIxn(
     args: RevokeTokensArgs,
-    payer: PublicKey,
+    investorId: string,
     signer: PublicKey,
     assetAccessController: PublicKey,
     authorizedUserRole?: PublicKey
   ): Promise<TransactionInstruction> {
+    if (!args.wallet) {
+      throw new Error("Use wallet arg for wallet to revoke tokens from.");
+    }
+    // Set owner (even though it is InvestorPda) as wallet to generate ix data.
+    args.owner = args.wallet;
+
     const revokeIx = await getRevokeTokensIx(args, this.rwaClient.provider);
+    const identityRegistry = getIdentityRegistryPda(args.assetMint);
+    const investorPda = deriveInvestorPda(investorId, identityRegistry);
     const ixData = revokeIx.data;
     const assetController = getAssetControllerPda(args.assetMint);
     const revokeTokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
-      new PublicKey(args.owner),
+      new PublicKey(args.wallet),
       false,
       TOKEN_2022_PROGRAM_ID
     );
@@ -370,12 +393,21 @@ export class AssetController {
         assetMint: args.assetMint,
         assetController,
         revokeTokenAccount,
-        identityRegistry: getIdentityRegistryPda(args.assetMint),
-        identityAccount: getIdentityAccountPda(args.assetMint, args.owner),
-        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        identityRegistry,
+        identityAccount: getIdentityAccountPda(
+          args.assetMint,
+          investorPda.toString()
+        ),
+        trackerAccount: getTrackerAccountPda(
+          args.assetMint,
+          investorPda.toString()
+        ),
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
-        walletIdentityAccount: getWalletIdentityAccountPda(args.assetMint, args.wallet || args.owner),
+        walletIdentityAccount: getWalletIdentityAccountPda(
+          args.assetMint,
+          args.wallet
+        ),
         tokenProgram: TOKEN_2022_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         systemProgram: SystemProgram.programId,

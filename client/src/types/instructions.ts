@@ -127,7 +127,6 @@ export type SetupInvestorArgs = {
   investorId: string;
   collisionHash: string;
   assetMint: string;
-  owner: string;
   levels: number[];
   expiries: BN[];
   proofHashes: string[];
@@ -141,7 +140,6 @@ export type AddLevelsArgs = {
   signer: string;
   investorId: string;
   assetMint: string;
-  owner: string;
   levels: number[];
   expiries: BN[];
   proofHashes: string[];
@@ -154,7 +152,6 @@ export type ChangeCountryArgs = {
   signer: string;
   investorId: string;
   assetMint: string;
-  owner: string;
   country: number;
   enforceLimits?: boolean;
 };
@@ -165,7 +162,6 @@ export type RemoveLevelsArgs = {
   signer: string;
   investorId: string;
   assetMint: string;
-  owner: string;
   levels: number[];
   enforceLimits?: boolean;
 };
@@ -176,7 +172,6 @@ export type RemoveInvestorArgs = {
   signer: string;
   investorId: string;
   assetMint: string;
-  owner: string;
 };
 
 /** Args used to attach or detach a wallet to an IdentityAccount  */
@@ -192,7 +187,6 @@ export type AttachDetachWalletArgs = {
 export type CreateOrCloseInvestorLocksArgs = {
   payer: string;
   signer: string;
-  owner: PublicKey;
   investorId: string;
   assetMint: string;
 };
@@ -201,8 +195,7 @@ export type CreateOrCloseInvestorLocksArgs = {
 export type AddTokenLockArgs = {
   payer: string;
   signer: string;
-  owner: string;
-  wallet: PublicKey; // Same value as owner if owner is to be locked.
+  wallet: PublicKey;
   investorId: string;
   assetMint: string;
   value: BN;
@@ -214,8 +207,7 @@ export type AddTokenLockArgs = {
 /** Args used to remove a token lock */
 export type RemoveTokenLockArgs = {
   signer: string;
-  owner: string;
-  wallet: PublicKey; // Same value as owner if owner is to be locked.
+  wallet: PublicKey;
   investorId: string;
   assetMint: string;
   indices: number[];
@@ -224,8 +216,7 @@ export type RemoveTokenLockArgs = {
 export type IssueTokensWithLockArgs = {
   payer: string;
   signer: string;
-  owner: string;
-  wallet: string; // Same value as owner if owner is to be locked.
+  wallet: string;
   investorId: string;
   assetMint: string;
   amount: BN;
@@ -233,4 +224,13 @@ export type IssueTokensWithLockArgs = {
   reasonCode?: BN;
   reasonString?: string;
   lockedTokenAccount?: PublicKey;
+};
+
+/** Args used to attach wallet by Investor  */
+export type AttachWalletByInvestorArgs = {
+  payer: string;
+  signer: string;
+  investorId: string;
+  assetMint: string;
+  newWallet: PublicKey;
 };

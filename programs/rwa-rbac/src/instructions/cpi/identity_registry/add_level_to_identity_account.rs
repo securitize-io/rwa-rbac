@@ -3,8 +3,9 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 use rbac_utils::{
-    constants::{IDENTITY_METADATA_REGISTRY_ID, IDENTITY_REGISTRY_ID, SPECIAL_WALLETS},
-    external_accounts::IdentityAccount, ADD_LEVEL_TO_IDENTITY_ACCOUNT_IX,
+    constants::{IDENTITY_REGISTRY_ID, SPECIAL_WALLETS},
+    external_accounts::IdentityAccount,
+    ADD_LEVEL_TO_IDENTITY_ACCOUNT_IX,
 };
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
@@ -28,18 +29,13 @@ pub struct AddLevelToIdentityAccount<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub identity_account: UncheckedAccount<'info>,
-    /// CHECK: Verify seeds and that data is empty.
-    /// Note that if identity_to_investor exists for investor, CPI to IdentityMetadataRegistry should be called.
+    /// CHECK: Has to match owner of IdentityAccount. Verify that data is empty
+    /// to ensure that it is not an Investor account. If it is an Investor account,
+    /// CPI to IdentityMetadataRegistry should be called.
     #[account(
-        seeds = [
-            &identity_account.key().as_ref(),
-            b"IdentityToInvestor".as_ref(),
-        ],
-        bump,
-        seeds::program = IDENTITY_METADATA_REGISTRY_ID,
-        constraint = identity_to_investor.data_is_empty() @ ErrorCode::DataIsNotEmpty,
+        constraint = identity_account_owner.data_is_empty() @ ErrorCode::DataIsNotEmpty,
     )]
-    pub identity_to_investor: UncheckedAccount<'info>,
+    pub identity_account_owner: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
     /// CHECK: checked in cpi
     pub policy_engine_program: UncheckedAccount<'info>,
@@ -72,6 +68,12 @@ pub fn handler(
     let identity_account = IdentityAccount::deserialize_checked(&ctx.accounts.identity_account)?;
     require_eq!(identity_account.levels.len(), 0);
     require!(SPECIAL_WALLETS.contains(&level), ErrorCode::InvalidLevel);
+
+    // Check that identity_account_owner is the actual owner.
+    require_keys_eq!(
+        identity_account.owner,
+        ctx.accounts.identity_account_owner.key()
+    );
 
     // Build instruction data for CPI.
     let mut cpi_data = ADD_LEVEL_TO_IDENTITY_ACCOUNT_IX.to_vec();

@@ -157,8 +157,8 @@ pub mod rwa_rbac {
         instructions::register_investor::handler(ctx, cpi_data)
     }
 
-    pub fn remove_investor(ctx: Context<RemoveInvestor>, cpi_data: Vec<u8>) -> Result<()> {
-        instructions::remove_investor::handler(ctx, cpi_data)
+    pub fn remove_investor(ctx: Context<RemoveInvestor>) -> Result<()> {
+        instructions::remove_investor::handler(ctx)
     }
 
     pub fn add_levels(ctx: Context<AddLevels>, cpi_data: Vec<u8>) -> Result<()> {
