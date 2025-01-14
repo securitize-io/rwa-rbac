@@ -25,4 +25,7 @@ pub enum ErrorCode {
 
     #[msg("Invalid token account state")]
     InvalidTokenAccountState,
+
+    #[msg("Lock not found")]
+    LockNotFound,
 }

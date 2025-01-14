@@ -9,16 +9,7 @@
   "instructions": [
     {
       "name": "add_token_lock",
-      "discriminator": [
-        195,
-        26,
-        109,
-        80,
-        46,
-        7,
-        195,
-        55
-      ],
+      "discriminator": [195, 26, 109, 80, 46, 7, 195, 55],
       "accounts": [
         {
           "name": "payer",
@@ -32,9 +23,7 @@
           ],
           "writable": true,
           "signer": true,
-          "relations": [
-            "investor"
-          ]
+          "relations": ["investor"]
         },
         {
           "name": "investor_locks",
@@ -42,18 +31,14 @@
         },
         {
           "name": "investor",
-          "relations": [
-            "investor_locks"
-          ]
+          "relations": ["investor_locks"]
         },
         {
           "name": "wallet_identity_account"
         },
         {
           "name": "identity_account",
-          "docs": [
-            "CHECKED: Validated in deserialized_checked."
-          ]
+          "docs": ["CHECKED: Validated in deserialized_checked."]
         },
         {
           "name": "asset_mint",
@@ -66,9 +51,7 @@
         {
           "name": "locked_token_account",
           "writable": true,
-          "relations": [
-            "investor_locks"
-          ]
+          "relations": ["investor_locks"]
         },
         {
           "name": "asset_controller"
@@ -76,9 +59,7 @@
         {
           "name": "identity_registry",
           "writable": true,
-          "relations": [
-            "investor"
-          ]
+          "relations": ["investor"]
         },
         {
           "name": "asset_controller_program",
@@ -114,16 +95,7 @@
     },
     {
       "name": "close_investor_locks",
-      "discriminator": [
-        255,
-        60,
-        220,
-        115,
-        217,
-        104,
-        157,
-        171
-      ],
+      "discriminator": [255, 60, 220, 115, 217, 104, 157, 171],
       "accounts": [
         {
           "name": "payer",
@@ -133,9 +105,7 @@
         {
           "name": "authority",
           "signer": true,
-          "relations": [
-            "investor"
-          ]
+          "relations": ["investor"]
         },
         {
           "name": "investor_locks",
@@ -143,16 +113,12 @@
         },
         {
           "name": "investor",
-          "relations": [
-            "investor_locks"
-          ]
+          "relations": ["investor_locks"]
         },
         {
           "name": "locked_token_account",
           "writable": true,
-          "relations": [
-            "investor_locks"
-          ]
+          "relations": ["investor_locks"]
         },
         {
           "name": "token_program",
@@ -167,16 +133,7 @@
     },
     {
       "name": "create_investor_locks",
-      "discriminator": [
-        223,
-        81,
-        139,
-        162,
-        204,
-        48,
-        24,
-        213
-      ],
+      "discriminator": [223, 81, 139, 162, 204, 48, 24, 213],
       "accounts": [
         {
           "name": "payer",
@@ -186,9 +143,7 @@
         {
           "name": "authority",
           "signer": true,
-          "relations": [
-            "investor"
-          ]
+          "relations": ["investor"]
         },
         {
           "name": "wallet"
@@ -211,19 +166,7 @@
               {
                 "kind": "const",
                 "value": [
-                  73,
-                  110,
-                  118,
-                  101,
-                  115,
-                  116,
-                  111,
-                  114,
-                  76,
-                  111,
-                  99,
-                  107,
-                  115
+                  73, 110, 118, 101, 115, 116, 111, 114, 76, 111, 99, 107, 115
                 ]
               }
             ]
@@ -234,9 +177,7 @@
         },
         {
           "name": "identity_account",
-          "docs": [
-            "CHECKED: Validated in deserialized_checked."
-          ],
+          "docs": ["CHECKED: Validated in deserialized_checked."],
           "pda": {
             "seeds": [
               {
@@ -252,44 +193,13 @@
             "program": {
               "kind": "const",
               "value": [
-                97,
-                136,
-                11,
-                54,
-                78,
-                78,
-                37,
-                158,
-                149,
-                188,
-                152,
-                96,
-                175,
-                193,
-                164,
-                230,
-                246,
-                55,
-                15,
-                7,
-                183,
-                58,
-                98,
-                183,
-                95,
-                31,
-                35,
-                14,
-                69,
-                164,
-                68,
-                141
+                97, 136, 11, 54, 78, 78, 37, 158, 149, 188, 152, 96, 175, 193,
+                164, 230, 246, 55, 15, 7, 183, 58, 98, 183, 95, 31, 35, 14, 69,
+                164, 68, 141
               ]
             }
           },
-          "relations": [
-            "investor"
-          ]
+          "relations": ["investor"]
         },
         {
           "name": "asset_mint",
@@ -313,24 +223,8 @@
               {
                 "kind": "const",
                 "value": [
-                  76,
-                  111,
-                  99,
-                  107,
-                  101,
-                  100,
-                  84,
-                  111,
-                  107,
-                  101,
-                  110,
-                  65,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
+                  76, 111, 99, 107, 101, 100, 84, 111, 107, 101, 110, 65, 99,
+                  99, 111, 117, 110, 116
                 ]
               }
             ]
@@ -356,16 +250,7 @@
     },
     {
       "name": "remove_token_lock",
-      "discriminator": [
-        168,
-        128,
-        173,
-        188,
-        172,
-        228,
-        154,
-        90
-      ],
+      "discriminator": [168, 128, 173, 188, 172, 228, 154, 90],
       "accounts": [
         {
           "name": "user",
@@ -378,9 +263,7 @@
           ],
           "writable": true,
           "signer": true,
-          "relations": [
-            "investor"
-          ]
+          "relations": ["investor"]
         },
         {
           "name": "investor_locks",
@@ -388,18 +271,14 @@
         },
         {
           "name": "investor",
-          "relations": [
-            "investor_locks"
-          ]
+          "relations": ["investor_locks"]
         },
         {
           "name": "wallet_identity_account"
         },
         {
           "name": "identity_account",
-          "docs": [
-            "CHECKED: Validated in deserialized_checked."
-          ]
+          "docs": ["CHECKED: Validated in deserialized_checked."]
         },
         {
           "name": "asset_mint",
@@ -412,9 +291,7 @@
         {
           "name": "locked_token_account",
           "writable": true,
-          "relations": [
-            "investor_locks"
-          ]
+          "relations": ["investor_locks"]
         },
         {
           "name": "asset_controller"
@@ -422,9 +299,7 @@
         {
           "name": "identity_registry",
           "writable": true,
-          "relations": [
-            "investor"
-          ]
+          "relations": ["investor"]
         },
         {
           "name": "asset_controller_program",
@@ -441,8 +316,8 @@
           "type": "bool"
         },
         {
-          "name": "index",
-          "type": "u64"
+          "name": "indices",
+          "type": "bytes"
         }
       ]
     }
@@ -450,29 +325,11 @@
   "accounts": [
     {
       "name": "Investor",
-      "discriminator": [
-        174,
-        129,
-        17,
-        83,
-        36,
-        116,
-        26,
-        196
-      ]
+      "discriminator": [174, 129, 17, 83, 36, 116, 26, 196]
     },
     {
       "name": "InvestorLocks",
-      "discriminator": [
-        199,
-        60,
-        219,
-        46,
-        221,
-        205,
-        1,
-        7
-      ]
+      "discriminator": [199, 60, 219, 46, 221, 205, 1, 7]
     }
   ],
   "errors": [
@@ -515,6 +372,11 @@
       "code": 6007,
       "name": "InvalidTokenAccountState",
       "msg": "Invalid token account state"
+    },
+    {
+      "code": 6008,
+      "name": "LockNotFound",
+      "msg": "Lock not found"
     }
   ],
   "types": [
@@ -533,30 +395,22 @@
           },
           {
             "name": "identity_account",
-            "docs": [
-              "IdentityAccount associated with this investor."
-            ],
+            "docs": ["IdentityAccount associated with this investor."],
             "type": "pubkey"
           },
           {
             "name": "identity_registry",
-            "docs": [
-              "IdentityRegistryAccount associated with this investor."
-            ],
+            "docs": ["IdentityRegistryAccount associated with this investor."],
             "type": "pubkey"
           },
           {
             "name": "investor_id",
-            "docs": [
-              "Unique ID for Investor, generated off-chain."
-            ],
+            "docs": ["Unique ID for Investor, generated off-chain."],
             "type": "string"
           },
           {
             "name": "collision_hash",
-            "docs": [
-              "Metadata for investor, generated off-chain."
-            ],
+            "docs": ["Metadata for investor, generated off-chain."],
             "type": "string"
           },
           {
@@ -568,9 +422,7 @@
           },
           {
             "name": "levels",
-            "docs": [
-              "Levels assigned to investor."
-            ],
+            "docs": ["Levels assigned to investor."],
             "type": {
               "vec": {
                 "defined": {
@@ -593,9 +445,7 @@
         "fields": [
           {
             "name": "investor",
-            "docs": [
-              "Address of Investor account."
-            ],
+            "docs": ["Address of Investor account."],
             "type": "pubkey"
           },
           {
@@ -633,16 +483,12 @@
         "fields": [
           {
             "name": "level",
-            "docs": [
-              "Maps to IdentityAccount level used in RWA Token."
-            ],
+            "docs": ["Maps to IdentityAccount level used in RWA Token."],
             "type": "u8"
           },
           {
             "name": "proof_hash",
-            "docs": [
-              "Hash generated off-chain."
-            ],
+            "docs": ["Hash generated off-chain."],
             "type": "string"
           }
         ]
@@ -655,9 +501,7 @@
         "fields": [
           {
             "name": "value",
-            "docs": [
-              "Amount of tokens to lock."
-            ],
+            "docs": ["Amount of tokens to lock."],
             "type": "u64"
           },
           {
@@ -670,9 +514,7 @@
           },
           {
             "name": "reason_code",
-            "docs": [
-              "Reason code for locking."
-            ],
+            "docs": ["Reason code for locking."],
             "type": "u64"
           },
           {

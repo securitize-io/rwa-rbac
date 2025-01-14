@@ -185,36 +185,54 @@ impl<'info> RemoveTokenLock<'info> {
 
 /// Instruction to remove a lock from InvestorLocks and release locked tokens back to unlocked account.
 /// As this instruction is intended to be invoked through RBAC, the RBAC program will check (but not enforce)
-/// that the user has an authorized role to perform RemoveTokenLock. If the user is not authorized, this instruction
-/// will only proceed if the lock has expired and user matches the Investor owner.
+/// that the user has an authorized role to perform RemoveTokenLock.
 pub fn handler<'info>(
     ctx: Context<'_, '_, '_, 'info, RemoveTokenLock<'info>>,
     is_user_authorized: bool,
-    index: u64,
+    indices: Vec<u8>,
 ) -> Result<()> {
-    let index = usize::try_from(index).unwrap();
-    let lock_to_remove = ctx.accounts.investor_locks.locks.get(index).unwrap();
+    require_gt!(indices.len(), 0);
 
-    // Return error if a non-authorized user (as checked by RBAC) tries to remove a lock that has yet expired.
-    require!(
-        is_user_authorized
-            || (lock_to_remove.has_expired()?
-                && ctx.accounts.user.key() == ctx.accounts.investor_locks.wallet.key()),
-        ErrorCode::UnauthorizedUser
-    );
+    let mut amount_to_remove = 0_u64;
+
+    let indices_usize: Vec<usize> = indices
+        .iter()
+        .map(|i| usize::from(*i))
+        .collect();
+
+    for index in indices_usize.clone() {
+        let lock_to_remove = ctx
+            .accounts
+            .investor_locks
+            .locks
+            .get(index)
+            .ok_or(ErrorCode::LockNotFound)?;
+
+        // Return error if a non-authorized user (as checked by RBAC) tries to remove a lock that has yet expired,
+        // or if user is not the Investor owner.
+        require!(
+            is_user_authorized
+                || (lock_to_remove.has_expired()?
+                    && ctx.accounts.user.key() == ctx.accounts.investor_locks.wallet.key()),
+            ErrorCode::UnauthorizedUser
+        );
+
+        amount_to_remove = amount_to_remove.checked_add(lock_to_remove.value).unwrap();
+    }
 
     ctx.accounts.validate_unlocked_token_account(&ctx)?;
 
     // Thaw locked_token_account first so it can receive tokens from the unlocked_token_account.
     ctx.accounts.thaw_account(&ctx)?;
 
-    // Release locked tokens for lock removed back to wallet.
-    ctx.accounts.transfer_tokens(&ctx, lock_to_remove.value)?;
+    // Release locked tokens for all locks removed back to wallet.
+    ctx.accounts.transfer_tokens(&ctx, amount_to_remove)?;
 
     // Refreeze locked_token_account after transfer.
     ctx.accounts.freeze_account(&ctx)?;
 
-    // Remove lock from locks.
-    ctx.accounts.investor_locks.locks.remove(index);
+    // Remove locks in descending index order.
+    ctx.accounts.investor_locks.remove_locks(indices_usize)?;
+
     Ok(())
 }

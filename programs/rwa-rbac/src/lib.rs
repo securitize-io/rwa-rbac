@@ -207,9 +207,9 @@ pub mod rwa_rbac {
 
     pub fn remove_token_lock<'info>(
         ctx: Context<'_, '_, '_, 'info, RemoveTokenLock<'info>>,
-        index: u64,
+        indices: Vec<u8>,
     ) -> Result<()> {
-        instructions::remove_token_lock::handler(ctx, index)
+        instructions::remove_token_lock::handler(ctx, indices)
     }
 
     pub fn create_identity_account(

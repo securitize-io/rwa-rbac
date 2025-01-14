@@ -71,4 +71,61 @@ impl InvestorLocks {
         }
         space
     }
+
+    pub fn remove_locks(&mut self, indices: Vec<usize>) -> Result<()> {
+        // Sort indices in descending order.
+        let mut sorted_indices = indices;
+        sorted_indices.sort_unstable_by(|a, b| b.cmp(a));
+
+        // Remove locks in descending order so it would not be affected by shifting.
+        for &index in &sorted_indices {
+            self.locks.remove(index);
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use anchor_lang::prelude::Pubkey;
+
+    use super::{InvestorLocks, Lock};
+
+    fn build_investor_locks(lock_count: u8) -> InvestorLocks {
+        let mut investor_locks = InvestorLocks {
+            investor: Pubkey::new_unique(),
+            wallet: Pubkey::new_unique(),
+            locked_token_account: Pubkey::new_unique(),
+            locks: vec![],
+        };
+
+        for i in 0..lock_count {
+            investor_locks.locks.push(Lock {
+                reason_code: 0,
+                reason_string: String::new(),
+                value: u64::from(i),
+                release_time: 123,
+            });
+        }
+
+        investor_locks
+    }
+
+    #[test]
+    fn test_removing_locks() {
+        let mut investor_locks = build_investor_locks(5);
+        investor_locks.remove_locks(vec![2, 4]).unwrap();
+
+        assert_eq!(investor_locks.locks.len(), 3);
+        assert_eq!(investor_locks.locks[0].value, 0);
+        assert_eq!(investor_locks.locks[1].value, 1);
+        assert_eq!(investor_locks.locks[2].value, 3);
+
+        investor_locks.remove_locks(vec![1, 0]).unwrap();
+        assert_eq!(investor_locks.locks.len(), 1);
+        assert_eq!(investor_locks.locks[0].value, 3);
+
+        investor_locks.remove_locks(vec![0]).unwrap();
+        assert_eq!(investor_locks.locks.len(), 0);
+    }
 }

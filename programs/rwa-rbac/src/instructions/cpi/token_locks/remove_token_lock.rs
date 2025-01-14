@@ -54,7 +54,7 @@ pub struct RemoveTokenLock<'info> {
 
 pub fn handler<'info>(
     ctx: Context<'_, '_, '_, 'info, RemoveTokenLock<'info>>,
-    index: u64,
+    indices: Vec<u8>,
 ) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
@@ -69,12 +69,10 @@ pub fn handler<'info>(
     .is_ok();
 
     // Build data arg for CPI manually.
-    let cpi_data = [
-        &REMOVE_TOKEN_LOCK_IX,
-        &[u8::from(is_user_authorized)][..],
-        &index.to_le_bytes()[..],
-    ]
-    .concat();
+    let mut cpi_data = REMOVE_TOKEN_LOCK_IX.to_vec();
+    cpi_data.extend(&[u8::from(is_user_authorized)][..]);
+    cpi_data.extend((indices.len() as u32).to_le_bytes());
+    cpi_data.extend(indices);
 
     let seeds = controller_seeds!(controller);
     let signers_seeds = &[&seeds[..]];

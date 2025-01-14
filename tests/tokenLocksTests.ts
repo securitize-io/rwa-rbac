@@ -472,6 +472,78 @@ describe("Token Locks End to End Tests", () => {
     );
   });
 
+  it("Remove multiple investor locks.", async () => {
+    let investorLocks =
+      await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
+        investorLocksKey1
+      );
+    assert.equal(investorLocks.locks.length, 2);
+
+    // Remove all existing locks.
+    let args: RemoveTokenLockArgs = {
+      signer: setup.signer1.toString(), // RBAC Signer
+      owner: setup.user1.toString(),
+      investorId: INVESTOR_ID,
+      assetMint: mint,
+      wallet: setup.user1, // Wallet to Lock
+      indices: [1, 2],
+    };
+
+    // Should fail to remove since index 2 doesn't exist.
+    try {
+      await sendAndConfirmTransaction(
+        connection,
+        new Transaction().add(
+          await rwaRbacClient.tokenLocks.removeTokenLock(
+            args,
+            setup.assetAccessController
+          )
+        ),
+        [setup.payerKp, setup.signer1Kp]
+      );
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("LockNotFound"));
+    }
+
+    const lockedAccountBefore =
+      await rwaRbacClient.tokenLocks.fetchTokenAccount(lockedTokenAccount1);
+    const unlockedAccountBefore =
+      await rwaRbacClient.tokenLocks.fetchTokenAccount(unlockedTokenAccount1);
+
+    // Should succeed removing all locks.
+    args.indices = [0, 1];
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction()
+        .add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }))
+        .add(
+          await rwaRbacClient.tokenLocks.removeTokenLock(
+            args,
+            setup.assetAccessController
+          )
+        ),
+      [setup.payerKp, setup.signer1Kp]
+    );
+    investorLocks =
+      await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
+        investorLocksKey1
+      );
+    assert.equal(investorLocks.locks.length, 0);
+
+    // Check token balances.
+    const unlockedAccountAfter =
+      await rwaRbacClient.tokenLocks.fetchTokenAccount(unlockedTokenAccount1);
+    const lockedAccountAfter = await rwaRbacClient.tokenLocks.fetchTokenAccount(
+      lockedTokenAccount1
+    );
+    assert.equal(Number(lockedAccountAfter.amount), 0);
+    assert.equal(
+      unlockedAccountAfter.amount - unlockedAccountBefore.amount,
+      lockedAccountBefore.amount
+    );
+  });
+
   it("Close InvestorLocks for main owner", async () => {
     // Set lock up period to zero.
     const issuancePoliciesArgs = {
@@ -497,29 +569,7 @@ describe("Token Locks End to End Tests", () => {
       setup.signer1Kp,
     ]);
 
-    const investorLocks =
-      await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
-        investorLocksKey1
-      );
     const tx = new Transaction();
-
-    // Remove all existing locks.
-    for (let i = 0; i < investorLocks.locks.length; i++) {
-      const args: RemoveTokenLockArgs = {
-        signer: setup.signer1.toString(), // RBAC Signer
-        owner: setup.user1.toString(),
-        investorId: INVESTOR_ID,
-        assetMint: mint,
-        wallet: setup.user1, // Wallet to Lock
-        index: new BN(0),
-      };
-      tx.add(
-        await rwaRbacClient.tokenLocks.removeTokenLock(
-          args,
-          setup.assetAccessController
-        )
-      );
-    }
 
     // Close InvestorLocks after removing all locks.
     const args: CreateOrCloseInvestorLocksArgs = {
@@ -717,20 +767,37 @@ describe("Token Locks End to End Tests", () => {
   });
 
   it("Remove lock for main owner, before expiry", async () => {
-    const unlockedAccountBefore =
-      await rwaRbacClient.tokenLocks.fetchTokenAccount(unlockedTokenAccount1);
-    const lockedAccountBefore =
-      await rwaRbacClient.tokenLocks.fetchTokenAccount(lockedTokenAccount1);
-
-    const args: RemoveTokenLockArgs = {
+    let args: RemoveTokenLockArgs = {
       signer: setup.signer1.toString(), // RBAC Signer
       owner: setup.user1.toString(),
       investorId: INVESTOR_ID,
       assetMint: mint,
       wallet: setup.user1, // Wallet to Lock
-      index: new BN(0),
+      indices: [],
     };
 
+    // Shoud get an error if indices vec is empty.
+    try {
+      await sendAndConfirmTransaction(
+        connection,
+        new Transaction().add(
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 400000 }),
+          await rwaRbacClient.tokenLocks.removeTokenLock(
+            args,
+            setup.assetAccessController
+          )
+        ),
+        [setup.payerKp, setup.signer1Kp]
+      );
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("RequireGtViolated."));
+    }
+
+    const unlockedAccountBefore =
+      await rwaRbacClient.tokenLocks.fetchTokenAccount(unlockedTokenAccount1);
+    const lockedAccountBefore =
+      await rwaRbacClient.tokenLocks.fetchTokenAccount(lockedTokenAccount1);
     let investorLocks =
       await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
         investorLocksKey1
@@ -738,6 +805,7 @@ describe("Token Locks End to End Tests", () => {
     const lockedAmount = investorLocks.locks[0].value.toNumber();
     assert(Number(investorLocks.locks[0].releaseTime) > Date.now() / 1000);
 
+    args.indices = [0];
     const ix = await rwaRbacClient.tokenLocks.removeTokenLock(
       args,
       setup.assetAccessController
@@ -966,7 +1034,7 @@ describe("Token Locks End to End Tests", () => {
       investorId: INVESTOR_ID,
       assetMint: mint,
       wallet: setup.user2, // Wallet to Lock
-      index: new BN(2),
+      indices: [2],
     };
 
     const investorLocks =
@@ -975,10 +1043,7 @@ describe("Token Locks End to End Tests", () => {
       );
 
     // Check that lock has not expired.
-    assert(
-      Number(investorLocks.locks[args.index.toNumber()].releaseTime) >
-        Date.now() / 1000
-    );
+    assert(Number(investorLocks.locks[2].releaseTime) > Date.now() / 1000);
 
     const ix = await rwaRbacClient.tokenLocks.removeTokenLock(
       args,
@@ -1007,17 +1072,14 @@ describe("Token Locks End to End Tests", () => {
       investorId: INVESTOR_ID,
       assetMint: mint,
       wallet: setup.user2, // Wallet to Lock
-      index: new BN(2),
+      indices: [2],
     };
 
     let investorLocks =
       await rwaRbacClient.tokenLocks.tokenLocksProgram.account.investorLocks.fetch(
         investorLocksKey1
       );
-    assert(
-      Number(investorLocks.locks[args.index.toNumber()].releaseTime) >
-        Date.now() / 1000
-    );
+    assert(Number(investorLocks.locks[2].releaseTime) > Date.now() / 1000);
 
     const ix = await rwaRbacClient.tokenLocks.removeTokenLock(
       args,
@@ -1061,7 +1123,7 @@ describe("Token Locks End to End Tests", () => {
       investorId: INVESTOR_ID,
       assetMint: mint,
       wallet: setup.user1, // Wallet to Lock
-      index: new BN(0),
+      indices: [0],
     };
 
     let investorLocks =
@@ -1071,10 +1133,7 @@ describe("Token Locks End to End Tests", () => {
 
     // Check that lock has expired.
     await sleep(3000);
-    assert(
-      Number(investorLocks.locks[args.index.toNumber()].releaseTime) <
-        Date.now() / 1000
-    );
+    assert(Number(investorLocks.locks[0].releaseTime) < Date.now() / 1000);
 
     const ix = await rwaRbacClient.tokenLocks.removeTokenLock(
       args,
@@ -1103,7 +1162,7 @@ describe("Token Locks End to End Tests", () => {
       investorId: INVESTOR_ID,
       assetMint: mint,
       wallet: setup.user1, // Wallet to Lock
-      index: new BN(0),
+      indices: [0],
     };
 
     let investorLocks =
@@ -1191,7 +1250,7 @@ describe("Token Locks End to End Tests", () => {
       investorId: INVESTOR_ID,
       assetMint: mint,
       wallet: setup.user1, // Wallet to Lock
-      index: new BN(1),
+      indices: [1],
     };
 
     const investorLocks =
@@ -1200,7 +1259,7 @@ describe("Token Locks End to End Tests", () => {
       );
 
     // Check that lock has indefinite expiry.
-    assert(Number(investorLocks.locks[args.index.toNumber()].releaseTime) == 0);
+    assert(Number(investorLocks.locks[1].releaseTime) == 0);
 
     const ix = await rwaRbacClient.tokenLocks.removeTokenLock(
       args,
@@ -1229,7 +1288,7 @@ describe("Token Locks End to End Tests", () => {
       investorId: INVESTOR_ID,
       assetMint: mint,
       wallet: setup.user1, // Wallet to Lock
-      index: new BN(1),
+      indices: [1],
     };
 
     let investorLocks =
@@ -1238,7 +1297,7 @@ describe("Token Locks End to End Tests", () => {
       );
 
     // Check that lock has indefinite expiry.
-    assert(Number(investorLocks.locks[args.index.toNumber()].releaseTime) == 0);
+    assert(Number(investorLocks.locks[1].releaseTime) == 0);
 
     const ix = await rwaRbacClient.tokenLocks.removeTokenLock(
       args,
@@ -1303,7 +1362,7 @@ describe("Token Locks End to End Tests", () => {
       investorId: INVESTOR_ID,
       assetMint: mint,
       wallet: setup.user1, // Wallet to Lock
-      index: new BN(0),
+      indices: [0],
     };
 
     let investorLocks =

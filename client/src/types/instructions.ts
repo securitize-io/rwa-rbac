@@ -218,7 +218,7 @@ export type RemoveTokenLockArgs = {
   wallet: PublicKey; // Same value as owner if owner is to be locked.
   investorId: string;
   assetMint: string;
-  index: BN;
+  indices: number[];
 };
 
 export type IssueTokensWithLockArgs = {

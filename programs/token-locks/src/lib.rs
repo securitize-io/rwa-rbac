@@ -36,8 +36,8 @@ pub mod token_locks {
     pub fn remove_token_lock<'info>(
         ctx: Context<'_, '_, '_, 'info, RemoveTokenLock<'info>>,
         is_user_authorized: bool,
-        index: u64,
+        indices: Vec<u8>,
     ) -> Result<()> {
-        instructions::remove_token_lock::handler(ctx, is_user_authorized, index)
+        instructions::remove_token_lock::handler(ctx, is_user_authorized, indices)
     }
 }

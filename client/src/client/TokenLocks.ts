@@ -309,7 +309,7 @@ export class TokenLocks {
     );
 
     return this.rbacProgram.methods
-      .removeTokenLock(args.index)
+      .removeTokenLock(Buffer.from(args.indices))
       .accountsStrict({
         user: args.signer,
         controllerAuthority,
