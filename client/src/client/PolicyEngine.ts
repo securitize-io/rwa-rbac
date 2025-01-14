@@ -16,6 +16,7 @@ import {
   RwaClient,
   ChangeMappingArgs,
   ChangeIssuancePoliciesArgs,
+  SetCountersArgs,
 } from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
 
 /**
@@ -119,6 +120,36 @@ export class PolicyEngine {
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         systemProgram: SystemProgram.programId,
+      })
+      .instruction();
+  }
+
+  /**
+   * Asynchronously sets counter values on the policy account.
+   * @param args - {@link SetCountersArgs}
+   * @param signer - User signer public key.
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @returns A Promise that resolves to the instructions to set the counter values.
+   * */
+  async setCounters(
+    args: SetCountersArgs,
+    signer: PublicKey,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const policyIx = await this.rwaClient.policyEngine.setCounters(args);
+    const ixData = policyIx.ixs[0].data;
+    return this.rbacProgram.methods
+      .setCounters(ixData)
+      .accountsStrict({
+        payer: args.payer,
+        user: signer,
+        controllerAuthority: args.authority,
+        assetAccessController,
+        authorizedUserRole: authorizedUserRole || null,
+        policyEngineProgram: policyEngineProgramId,
+        policyEngine: getPolicyEnginePda(args.assetMint),
       })
       .instruction();
   }

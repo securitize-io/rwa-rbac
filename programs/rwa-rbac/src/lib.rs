@@ -249,4 +249,8 @@ pub mod rwa_rbac {
     ) -> Result<()> {
         instructions::change_issuance_policies::handler(ctx, cpi_data)
     }
+
+    pub fn set_counters(ctx: Context<SetCounters>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::set_counters::handler(ctx, cpi_data)
+    }
 }

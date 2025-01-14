@@ -28,6 +28,20 @@ pub struct RevokeTokens<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub revoke_token_account: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub identity_registry: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub identity_account: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    #[account(mut)]
+    pub tracker_account: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub policy_engine_program: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    #[account(mut)]
+    pub policy_engine: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub wallet_identity_account: UncheckedAccount<'info>,
     pub token_program: Program<'info, Token2022>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
@@ -57,34 +71,36 @@ pub fn handler<'info>(
     let signers_seeds = &[&seeds[..]];
 
     // Prepare account meta and info vec.
-    let mut account_metas = vec![
+    let account_metas = vec![
         AccountMeta::new(ctx.accounts.controller_authority.key(), true),
         AccountMeta::new(ctx.accounts.asset_mint.key(), false),
         AccountMeta::new_readonly(ctx.accounts.asset_controller.key(), false),
         AccountMeta::new(ctx.accounts.revoke_token_account.key(), false),
+        AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
+        AccountMeta::new_readonly(ctx.accounts.identity_account.key(), false),
+        AccountMeta::new(ctx.accounts.tracker_account.key(), false),
+        AccountMeta::new_readonly(ctx.accounts.policy_engine_program.key(), false),
+        AccountMeta::new(ctx.accounts.policy_engine.key(), false),
+        AccountMeta::new_readonly(ctx.accounts.wallet_identity_account.key(), false),
         AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
         AccountMeta::new_readonly(ctx.accounts.associated_token_program.key(), false),
         AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
     ];
-    let mut account_infos = vec![
+    let account_infos = vec![
         ctx.accounts.controller_authority.to_account_info(),
         ctx.accounts.asset_mint.to_account_info(),
         ctx.accounts.asset_controller.to_account_info(),
         ctx.accounts.revoke_token_account.to_account_info(),
+        ctx.accounts.identity_registry.to_account_info(),
+        ctx.accounts.identity_account.to_account_info(),
+        ctx.accounts.tracker_account.to_account_info(),
+        ctx.accounts.policy_engine_program.to_account_info(),
+        ctx.accounts.policy_engine.to_account_info(),
+        ctx.accounts.wallet_identity_account.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.associated_token_program.to_account_info(),
         ctx.accounts.system_program.to_account_info(),
     ];
-
-    // Add remaining accounts to vecs.
-    for x in ctx.remaining_accounts {
-        let meta = match x.is_writable {
-            true => AccountMeta::new(x.key(), x.is_signer),
-            false => AccountMeta::new_readonly(x.key(), x.is_signer),
-        };
-        account_metas.push(meta);
-        account_infos.push(x.clone());
-    }
 
     // Perform CPI to AssetController Program.
     invoke_signed(

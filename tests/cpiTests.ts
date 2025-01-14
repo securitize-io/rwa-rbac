@@ -790,7 +790,31 @@ describe("CPI End to End Tests", () => {
       payer: setup.payer.toString(), // Payer Account
       assetMint: mint,
       removedCounters: Buffer.from(""),
-      addedCounters: [],
+      addedCounters: [{
+				id: 0,
+				identityFilter: {
+					simple: [{
+						single: [{
+							target: {receiver: {}},
+							mode: {include: {}},
+							level: {level: [1]},
+						}]
+					}] 
+				} as any,
+				value: new BN(0),
+			}, {
+				id: 1,
+				identityFilter: {
+					simple: [{
+						single: [{
+							target: {receiver: {}},
+							mode: {include: {}},
+							level: {country: [2]},
+						}]
+					}]
+				},
+				value: new BN(0),
+			} as any,],
     };
     const ix = await rwaRbacClient.policyEngine.changeCounters(
       args,
@@ -798,6 +822,21 @@ describe("CPI End to End Tests", () => {
       setup.assetAccessController,
       setup.userRole1
     );
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+  });
+
+  it("CPI: Set Counters", async () => {
+    const args = {
+      authority: setup.controllerAuthority,
+      payer: setup.payer.toString(), // Payer Account
+      assetMint: mint,
+      changedCounters: [1],
+      values: [new BN(2)],
+    };
+    const ix = await rwaRbacClient.policyEngine.setCounters(args, setup.signer1, setup.assetAccessController, setup.userRole1);
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
       setup.payerKp,
       setup.signer1Kp,
@@ -848,42 +887,6 @@ describe("CPI End to End Tests", () => {
       rwaRbacClient.provider
     );
     assert.equal(mapping[1], 10);
-  });
-
-  it("CPI: Remove Investor", async () => {
-    const args = {
-      payer: setup.payer.toString(), // Payer Account
-      signer: setup.signer1.toString(), // User Account
-      owner: setup.user1.toString(), // Target Account
-      assetMint: mint,
-      investorId: INVESTOR_ID,
-    };
-    const ix = await rwaRbacClient.identityMetadataRegistry.removeInvestor(
-      args,
-      setup.assetAccessController,
-      setup.userRole1
-    );
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
-      setup.payerKp,
-      setup.signer1Kp,
-    ]);
-
-    // Validate Investor and IdentityAccount
-    const investorPda = deriveInvestorPda(
-      args.investorId,
-      getIdentityRegistryPda(mint)
-    );
-    const identityAccountPda = getIdentityAccountPda(mint, setup.user1);
-    const identityToInvestor = deriveIdentityToOwnerPda(identityAccountPda);
-    assert.isNull(
-      await rwaRbacClient.provider.connection.getAccountInfo(investorPda)
-    );
-    assert.isNull(
-      await rwaRbacClient.provider.connection.getAccountInfo(identityAccountPda)
-    );
-    assert.isNull(
-      await rwaRbacClient.provider.connection.getAccountInfo(identityToInvestor)
-    );
   });
 
   it("CPI: Freeze Token Account", async () => {
@@ -940,6 +943,43 @@ describe("CPI End to End Tests", () => {
       connection,
       new Transaction().add(revokeIx),
       [setup.payerKp, setup.signer1Kp]
+    );
+  });
+  
+
+  it("CPI: Remove Investor", async () => {
+    const args = {
+      payer: setup.payer.toString(), // Payer Account
+      signer: setup.signer1.toString(), // User Account
+      owner: setup.user1.toString(), // Target Account
+      assetMint: mint,
+      investorId: INVESTOR_ID,
+    };
+    const ix = await rwaRbacClient.identityMetadataRegistry.removeInvestor(
+      args,
+      setup.assetAccessController,
+      setup.userRole1
+    );
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+
+    // Validate Investor and IdentityAccount
+    const investorPda = deriveInvestorPda(
+      args.investorId,
+      getIdentityRegistryPda(mint)
+    );
+    const identityAccountPda = getIdentityAccountPda(mint, setup.user1);
+    const identityToInvestor = deriveIdentityToOwnerPda(identityAccountPda);
+    assert.isNull(
+      await rwaRbacClient.provider.connection.getAccountInfo(investorPda)
+    );
+    assert.isNull(
+      await rwaRbacClient.provider.connection.getAccountInfo(identityAccountPda)
+    );
+    assert.isNull(
+      await rwaRbacClient.provider.connection.getAccountInfo(identityToInvestor)
     );
   });
 

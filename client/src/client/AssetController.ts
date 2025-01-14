@@ -350,7 +350,7 @@ export class AssetController {
     authorizedUserRole?: PublicKey
   ): Promise<TransactionInstruction> {
     const revokeIx = await getRevokeTokensIx(args, this.rwaClient.provider);
-    const ixData = revokeIx[1].data;
+    const ixData = revokeIx.data;
     const assetController = getAssetControllerPda(args.assetMint);
     const revokeTokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
@@ -370,81 +370,16 @@ export class AssetController {
         assetMint: args.assetMint,
         assetController,
         revokeTokenAccount,
+        identityRegistry: getIdentityRegistryPda(args.assetMint),
+        identityAccount: getIdentityAccountPda(args.assetMint, args.owner),
+        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        policyEngineProgram: policyEngineProgramId,
+        policyEngine: getPolicyEnginePda(args.assetMint),
+        walletIdentityAccount: getWalletIdentityAccountPda(args.assetMint, args.wallet || args.owner),
         tokenProgram: TOKEN_2022_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
       })
-      .remainingAccounts([
-        {
-          pubkey: getPolicyEnginePda(args.assetMint),
-          isWritable: true,
-          isSigner: false,
-        },
-        {
-          pubkey: identityRegistryProgramId,
-          isWritable: false,
-          isSigner: false,
-        },
-        {
-          pubkey: policyEngineProgramId,
-          isWritable: false,
-          isSigner: false,
-        },
-        {
-          pubkey: getIdentityRegistryPda(args.assetMint),
-          isWritable: false,
-          isSigner: false,
-        },
-        {
-          pubkey: getIdentityAccountPda(
-            args.assetMint,
-            assetController.toString()
-          ),
-          isWritable: false,
-          isSigner: false,
-        },
-        {
-          pubkey: getIdentityAccountPda(args.assetMint, args.owner),
-          isWritable: false,
-          isSigner: false,
-        },
-        {
-          pubkey: getTrackerAccountPda(
-            args.assetMint,
-            assetController.toString()
-          ),
-          isWritable: true,
-          isSigner: false,
-        },
-        {
-          pubkey: getTrackerAccountPda(args.assetMint, args.owner),
-          isWritable: true,
-          isSigner: false,
-        },
-        {
-          pubkey: SYSVAR_INSTRUCTIONS_PUBKEY,
-          isWritable: false,
-          isSigner: false,
-        },
-        {
-          pubkey: getExtraMetasListPda(args.assetMint),
-          isWritable: false,
-          isSigner: false,
-        },
-        {
-          pubkey: getWalletIdentityAccountPda(
-            args.assetMint,
-            assetController.toString()
-          ),
-          isWritable: false,
-          isSigner: false,
-        },
-        {
-          pubkey: getWalletIdentityAccountPda(args.assetMint, args.owner),
-          isWritable: false,
-          isSigner: false,
-        },
-      ])
       .instruction();
   }
 

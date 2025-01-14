@@ -9,7 +9,16 @@
   "instructions": [
     {
       "name": "add_levels",
-      "discriminator": [101, 239, 15, 85, 60, 13, 183, 192],
+      "discriminator": [
+        101,
+        239,
+        15,
+        85,
+        60,
+        13,
+        183,
+        192
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -19,7 +28,9 @@
         {
           "name": "authority",
           "signer": true,
-          "relations": ["investor"]
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "investor",
@@ -79,7 +90,16 @@
     },
     {
       "name": "change_country",
-      "discriminator": [208, 227, 224, 246, 9, 254, 62, 179],
+      "discriminator": [
+        208,
+        227,
+        224,
+        246,
+        9,
+        254,
+        62,
+        179
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -89,7 +109,9 @@
         {
           "name": "authority",
           "signer": true,
-          "relations": ["investor"]
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "investor",
@@ -133,7 +155,16 @@
     },
     {
       "name": "register_investor",
-      "discriminator": [95, 16, 66, 212, 152, 123, 136, 173],
+      "discriminator": [
+        95,
+        16,
+        66,
+        212,
+        152,
+        123,
+        136,
+        173
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -162,7 +193,16 @@
               },
               {
                 "kind": "const",
-                "value": [73, 110, 118, 101, 115, 116, 111, 114]
+                "value": [
+                  73,
+                  110,
+                  118,
+                  101,
+                  115,
+                  116,
+                  111,
+                  114
+                ]
               }
             ]
           }
@@ -179,8 +219,24 @@
               {
                 "kind": "const",
                 "value": [
-                  73, 100, 101, 110, 116, 105, 116, 121, 84, 111, 73, 110, 118,
-                  101, 115, 116, 111, 114
+                  73,
+                  100,
+                  101,
+                  110,
+                  116,
+                  105,
+                  116,
+                  121,
+                  84,
+                  111,
+                  73,
+                  110,
+                  118,
+                  101,
+                  115,
+                  116,
+                  111,
+                  114
                 ]
               }
             ]
@@ -239,7 +295,16 @@
     },
     {
       "name": "remove_investor",
-      "discriminator": [93, 0, 162, 199, 76, 5, 180, 2],
+      "discriminator": [
+        93,
+        0,
+        162,
+        199,
+        76,
+        5,
+        180,
+        2
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -249,12 +314,16 @@
         {
           "name": "authority",
           "signer": true,
-          "relations": ["investor"]
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "investor",
           "writable": true,
-          "relations": ["identity_to_investor"]
+          "relations": [
+            "identity_to_investor"
+          ]
         },
         {
           "name": "identity_to_investor",
@@ -281,7 +350,16 @@
     },
     {
       "name": "remove_levels",
-      "discriminator": [200, 96, 65, 253, 97, 55, 16, 192],
+      "discriminator": [
+        200,
+        96,
+        65,
+        253,
+        97,
+        55,
+        16,
+        192
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -291,7 +369,9 @@
         {
           "name": "authority",
           "signer": true,
-          "relations": ["investor"]
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "investor",
@@ -341,11 +421,29 @@
   "accounts": [
     {
       "name": "IdentityToInvestor",
-      "discriminator": [120, 233, 226, 235, 196, 24, 74, 218]
+      "discriminator": [
+        120,
+        233,
+        226,
+        235,
+        196,
+        24,
+        74,
+        218
+      ]
     },
     {
       "name": "Investor",
-      "discriminator": [174, 129, 17, 83, 36, 116, 26, 196]
+      "discriminator": [
+        174,
+        129,
+        17,
+        83,
+        36,
+        116,
+        26,
+        196
+      ]
     }
   ],
   "errors": [
@@ -393,12 +491,16 @@
         "fields": [
           {
             "name": "identity_account",
-            "docs": ["IdentityAccount associated with this investor."],
+            "docs": [
+              "IdentityAccount associated with this investor."
+            ],
             "type": "pubkey"
           },
           {
             "name": "investor",
-            "docs": ["Investor account associated with this identity."],
+            "docs": [
+              "Investor account associated with this identity."
+            ],
             "type": "pubkey"
           }
         ]
@@ -419,22 +521,30 @@
           },
           {
             "name": "identity_account",
-            "docs": ["IdentityAccount associated with this investor."],
+            "docs": [
+              "IdentityAccount associated with this investor."
+            ],
             "type": "pubkey"
           },
           {
             "name": "identity_registry",
-            "docs": ["IdentityRegistryAccount associated with this investor."],
+            "docs": [
+              "IdentityRegistryAccount associated with this investor."
+            ],
             "type": "pubkey"
           },
           {
             "name": "investor_id",
-            "docs": ["Unique ID for Investor, generated off-chain."],
+            "docs": [
+              "Unique ID for Investor, generated off-chain."
+            ],
             "type": "string"
           },
           {
             "name": "collision_hash",
-            "docs": ["Metadata for investor, generated off-chain."],
+            "docs": [
+              "Metadata for investor, generated off-chain."
+            ],
             "type": "string"
           },
           {
@@ -446,7 +556,9 @@
           },
           {
             "name": "levels",
-            "docs": ["Levels assigned to investor."],
+            "docs": [
+              "Levels assigned to investor."
+            ],
             "type": {
               "vec": {
                 "defined": {
@@ -469,12 +581,16 @@
         "fields": [
           {
             "name": "level",
-            "docs": ["Maps to IdentityAccount level used in RWA Token."],
+            "docs": [
+              "Maps to IdentityAccount level used in RWA Token."
+            ],
             "type": "u8"
           },
           {
             "name": "proof_hash",
-            "docs": ["Hash generated off-chain."],
+            "docs": [
+              "Hash generated off-chain."
+            ],
             "type": "string"
           }
         ]
