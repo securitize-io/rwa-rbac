@@ -1,6 +1,6 @@
 {
-  "name": "@exo-tech-xyz/rwa-rbac",
-  "version": "0.0.1-rc1",
+  "name": "@dstoken-solana/rwa-rbac",
+  "version": "0.0.1-rc12",
   "description": "",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
@@ -16,7 +16,8 @@
     "test": "jest",
     "type-check": "tsc --noEmit",
     "prepublish": "yarn build:package",
-    "build:pack": "yarn build:package && yarn pack"
+    "build:pack": "yarn build:package && yarn pack",
+    "build": "tsc"
   },
   "devDependencies": {
     "@rollup/plugin-json": "^6.1.0",
@@ -28,9 +29,9 @@
     "typescript": ">=5.0.0"
   },
   "dependencies": {
-    "@bridgesplit/rwa-token-sdk": "file:../deps/rwa-token/clients/rwa-token-sdk",
     "@coral-xyz/anchor": "^0.30.1",
-    "@solana/spl-token": "^0.4.9",
+    "@dstoken-solana/rwa-token-sdk": "0.0.38",
+    "@solana/spl-token": "^0.3.11",
     "@solana/web3.js": "^1.95.4",
     "bs58": "^6.0.0"
   }

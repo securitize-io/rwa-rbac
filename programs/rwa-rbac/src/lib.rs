@@ -12,7 +12,7 @@ pub use state::*;
 
 use anchor_lang::prelude::*;
 
-declare_id!("AzGap3q8fXV1gHPWpAuMFqkpCewvuEY5GrkhCz86ZkDb");
+declare_id!("3g6fUgMsJQhjPUYxNjEU5PyzGf8DerbDx8p5Qh4yMnRR");
 
 #[program]
 pub mod rwa_rbac {

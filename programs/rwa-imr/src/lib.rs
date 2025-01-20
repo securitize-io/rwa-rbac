@@ -9,7 +9,7 @@ pub use state::*;
 
 use anchor_lang::prelude::*;
 
-declare_id!("6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5");
+declare_id!("D2V7wTBbNCKgYwirgRUnSmc2QyKnHSVmRotWJ4rz8Jp9");
 
 #[program]
 pub mod rwa_imr {

@@ -1,13 +1,13 @@
 import { PublicKey } from "@solana/web3.js";
 
 export const IMR_PROGRAM = new PublicKey(
-  "6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5"
+  "D2V7wTBbNCKgYwirgRUnSmc2QyKnHSVmRotWJ4rz8Jp9"
 );
 
 export const RBAC_PROGRAM = new PublicKey(
-  "AzGap3q8fXV1gHPWpAuMFqkpCewvuEY5GrkhCz86ZkDb"
+  "3g6fUgMsJQhjPUYxNjEU5PyzGf8DerbDx8p5Qh4yMnRR"
 );
 
 export const TL_PROGRAM = new PublicKey(
-  "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz"
+  "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
 );

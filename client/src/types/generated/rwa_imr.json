@@ -1,5 +1,5 @@
 {
-  "address": "6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5",
+  "address": "D2V7wTBbNCKgYwirgRUnSmc2QyKnHSVmRotWJ4rz8Jp9",
   "metadata": {
     "name": "rwa_imr",
     "version": "0.1.0",
@@ -9,7 +9,16 @@
   "instructions": [
     {
       "name": "add_levels",
-      "discriminator": [101, 239, 15, 85, 60, 13, 183, 192],
+      "discriminator": [
+        101,
+        239,
+        15,
+        85,
+        60,
+        13,
+        183,
+        192
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -19,7 +28,9 @@
         {
           "name": "authority",
           "signer": true,
-          "relations": ["investor"]
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "investor",
@@ -27,7 +38,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "identity_registry"
@@ -79,7 +90,16 @@
     },
     {
       "name": "attach_wallet_by_investor",
-      "discriminator": [252, 160, 12, 48, 159, 73, 185, 247],
+      "discriminator": [
+        252,
+        160,
+        12,
+        48,
+        159,
+        73,
+        185,
+        247
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -98,7 +118,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "new_wallet_identity",
@@ -107,17 +127,18 @@
         {
           "name": "identity_account",
           "writable": true,
-          "relations": ["investor"]
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "identity_registry",
-          "relations": ["investor"]
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "asset_mint"
-        },
-        {
-          "name": "new_wallet_identity_account"
         },
         {
           "name": "system_program",
@@ -133,7 +154,16 @@
     },
     {
       "name": "change_country",
-      "discriminator": [208, 227, 224, 246, 9, 254, 62, 179],
+      "discriminator": [
+        208,
+        227,
+        224,
+        246,
+        9,
+        254,
+        62,
+        179
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -143,7 +173,9 @@
         {
           "name": "authority",
           "signer": true,
-          "relations": ["investor"]
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "investor",
@@ -151,7 +183,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "identity_registry"
@@ -187,7 +219,16 @@
     },
     {
       "name": "register_investor",
-      "discriminator": [95, 16, 66, 212, 152, 123, 136, 173],
+      "discriminator": [
+        95,
+        16,
+        66,
+        212,
+        152,
+        123,
+        136,
+        173
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -216,14 +257,23 @@
               },
               {
                 "kind": "const",
-                "value": [73, 110, 118, 101, 115, 116, 111, 114]
+                "value": [
+                  73,
+                  110,
+                  118,
+                  101,
+                  115,
+                  116,
+                  111,
+                  114
+                ]
               }
             ]
           }
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "identity_registry"
@@ -270,7 +320,16 @@
     },
     {
       "name": "remove_investor",
-      "discriminator": [93, 0, 162, 199, 76, 5, 180, 2],
+      "discriminator": [
+        93,
+        0,
+        162,
+        199,
+        76,
+        5,
+        180,
+        2
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -280,7 +339,9 @@
         {
           "name": "authority",
           "signer": true,
-          "relations": ["investor"]
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "investor",
@@ -288,7 +349,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "identity_registry"
@@ -296,13 +357,26 @@
         {
           "name": "identity_account",
           "writable": true
+        },
+        {
+          "name": "wallet_identity",
+          "writable": true
         }
       ],
       "args": []
     },
     {
       "name": "remove_levels",
-      "discriminator": [200, 96, 65, 253, 97, 55, 16, 192],
+      "discriminator": [
+        200,
+        96,
+        65,
+        253,
+        97,
+        55,
+        16,
+        192
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -312,7 +386,9 @@
         {
           "name": "authority",
           "signer": true,
-          "relations": ["investor"]
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "investor",
@@ -320,7 +396,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "identity_registry"
@@ -362,7 +438,16 @@
   "accounts": [
     {
       "name": "Investor",
-      "discriminator": [174, 129, 17, 83, 36, 116, 26, 196]
+      "discriminator": [
+        174,
+        129,
+        17,
+        83,
+        36,
+        116,
+        26,
+        196
+      ]
     }
   ],
   "errors": [
@@ -418,27 +503,37 @@
           },
           {
             "name": "identity_account",
-            "docs": ["IdentityAccount associated with this investor."],
+            "docs": [
+              "IdentityAccount associated with this investor."
+            ],
             "type": "pubkey"
           },
           {
             "name": "identity_registry",
-            "docs": ["IdentityRegistryAccount associated with this investor."],
+            "docs": [
+              "IdentityRegistryAccount associated with this investor."
+            ],
             "type": "pubkey"
           },
           {
             "name": "bump",
-            "docs": ["PDA Seed Bump"],
+            "docs": [
+              "PDA Seed Bump"
+            ],
             "type": "u8"
           },
           {
             "name": "investor_id",
-            "docs": ["Unique ID for Investor, generated off-chain."],
+            "docs": [
+              "Unique ID for Investor, generated off-chain."
+            ],
             "type": "string"
           },
           {
             "name": "collision_hash",
-            "docs": ["Metadata for investor, generated off-chain."],
+            "docs": [
+              "Metadata for investor, generated off-chain."
+            ],
             "type": "string"
           },
           {
@@ -450,7 +545,9 @@
           },
           {
             "name": "levels",
-            "docs": ["Levels assigned to investor."],
+            "docs": [
+              "Levels assigned to investor."
+            ],
             "type": {
               "vec": {
                 "defined": {
@@ -473,12 +570,16 @@
         "fields": [
           {
             "name": "level",
-            "docs": ["Maps to IdentityAccount level used in RWA Token."],
+            "docs": [
+              "Maps to IdentityAccount level used in RWA Token."
+            ],
             "type": "u8"
           },
           {
             "name": "proof_hash",
-            "docs": ["Hash generated off-chain."],
+            "docs": [
+              "Hash generated off-chain."
+            ],
             "type": "string"
           }
         ]

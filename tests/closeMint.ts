@@ -11,12 +11,13 @@ import {
 
 import { setupTests } from "./utils";
 import { RwaRbacClient } from "../client/src/index";
-import { CreateAssetControllerIx } from "../deps/rwa-token/clients/rwa-token-sdk/src";
+import { CreateAssetControllerIx } from "@dstoken-solana/rwa-token-sdk";
 import { ComputeBudgetProgram } from "@solana/web3.js";
 
 describe("CloseMint Ixs Test", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
+  const provider = anchor.AnchorProvider.env();
 
   let rwaRbacClient: RwaRbacClient;
   let setup;
@@ -26,7 +27,7 @@ describe("CloseMint Ixs Test", () => {
   before(async () => {
     setup = await setupTests();
     connection = setup.config.connection;
-    rwaRbacClient = new RwaRbacClient(setup.config, new Wallet(setup.payerKp));
+    rwaRbacClient = new RwaRbacClient(setup.config, provider);
 
     const ix = await rwaRbacClient.createAssetAccessControllerIxn({
       payer: setup.payer,

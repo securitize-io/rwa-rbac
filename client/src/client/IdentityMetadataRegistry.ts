@@ -20,7 +20,7 @@ import {
   IxReturn,
   policyEngineProgramId,
   RwaClient,
-} from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
+} from "@dstoken-solana/rwa-token-sdk";
 import { IMR_PROGRAM } from "../constants";
 import {
   AddLevelsArgs,
@@ -403,6 +403,10 @@ export class IdentityMetadataRegistry {
         identityRegistryProgram: identityRegistryProgramId,
         identityRegistry,
         identityAccount,
+        walletIdentity: getWalletIdentityAccountPda(
+          args.assetMint,
+          investor.toString()
+        ),
       })
       .instruction();
   }
@@ -438,10 +442,6 @@ export class IdentityMetadataRegistry {
         identityAccount,
         identityRegistry,
         assetMint: args.assetMint,
-        newWalletIdentityAccount: getIdentityAccountPda(
-          args.assetMint,
-          args.newWallet.toString()
-        ),
         systemProgram: SystemProgram.programId,
       })
       .instruction();

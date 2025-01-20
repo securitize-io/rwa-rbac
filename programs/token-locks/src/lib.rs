@@ -9,7 +9,7 @@ pub use state::*;
 
 use anchor_lang::prelude::*;
 
-declare_id!("HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz");
+declare_id!("9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU");
 
 #[program]
 pub mod token_locks {

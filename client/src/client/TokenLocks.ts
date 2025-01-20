@@ -30,7 +30,7 @@ import {
   identityRegistryProgramId,
   policyEngineProgramId,
   RwaClient,
-} from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
+} from "@dstoken-solana/rwa-token-sdk";
 import { TL_PROGRAM } from "../constants";
 import {
   AddTokenLockArgs,

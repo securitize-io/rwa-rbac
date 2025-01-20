@@ -1,4 +1,4 @@
-import { AnchorProvider, BN, Program, Wallet } from "@coral-xyz/anchor";
+import { BN, Program, Provider } from "@coral-xyz/anchor";
 import { SystemProgram } from "@solana/web3.js";
 
 import { RwaRbac } from "../types/generated/rwa_rbac";
@@ -21,8 +21,8 @@ import {
   UpdateControllerAdminArgs,
   WithdrawExcessRentArgs,
 } from "../types/instructions";
-import { RwaClient } from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
-import { Config } from "../../../deps/rwa-token/clients/rwa-token-sdk/src/classes/types";
+import { RwaClient } from "@dstoken-solana/rwa-token-sdk";
+import { Config } from "@dstoken-solana/rwa-token-sdk";
 import { IdentityMetadataRegistry } from "./IdentityMetadataRegistry";
 import { TokenLocks } from "./TokenLocks";
 
@@ -34,11 +34,11 @@ export class RwaRbacClient {
   identityRegistry: IdentityRegistry;
   identityMetadataRegistry: IdentityMetadataRegistry;
   tokenLocks: TokenLocks;
-  provider: AnchorProvider;
+  provider: Provider;
 
-  constructor(config: Config, wallet: Wallet) {
-    this.rwaClient = new RwaClient(config, wallet);
-    this.provider = this.rwaClient.provider;
+  constructor(config: Config, provider: Provider) {
+    this.rwaClient = new RwaClient(config, provider);
+    this.provider = provider;
     this.rbacProgram = new Program(rbacIDL as RwaRbac, this.provider);
     this.assetController = new AssetController(
       this.rwaClient,

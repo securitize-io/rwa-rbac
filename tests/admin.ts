@@ -19,6 +19,8 @@ describe("Admin Ixs Test", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
 
+  const provider = anchor.AnchorProvider.env();
+
   let rwaRbacClient: RwaRbacClient;
   let setup;
   let connection: Connection;
@@ -26,7 +28,7 @@ describe("Admin Ixs Test", () => {
   before(async () => {
     setup = await setupTests();
     connection = setup.config.connection;
-    rwaRbacClient = new RwaRbacClient(setup.config, new Wallet(setup.payerKp));
+    rwaRbacClient = new RwaRbacClient(setup.config, provider);
   });
 
   it("Create AssetAccessController successfully", async () => {

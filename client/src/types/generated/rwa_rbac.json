@@ -1,5 +1,5 @@
 {
-  "address": "AzGap3q8fXV1gHPWpAuMFqkpCewvuEY5GrkhCz86ZkDb",
+  "address": "3g6fUgMsJQhjPUYxNjEU5PyzGf8DerbDx8p5Qh4yMnRR",
   "metadata": {
     "name": "rwa_rbac",
     "version": "0.1.0",
@@ -9,7 +9,16 @@
   "instructions": [
     {
       "name": "add_level_to_identity_account",
-      "discriminator": [102, 204, 64, 169, 252, 177, 192, 232],
+      "discriminator": [
+        102,
+        204,
+        64,
+        169,
+        252,
+        177,
+        192,
+        232
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -22,11 +31,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -34,7 +47,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "identity_registry"
@@ -85,7 +98,16 @@
     },
     {
       "name": "add_levels",
-      "discriminator": [101, 239, 15, 85, 60, 13, 183, 192],
+      "discriminator": [
+        101,
+        239,
+        15,
+        85,
+        60,
+        13,
+        183,
+        192
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -98,11 +120,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -110,7 +136,7 @@
         },
         {
           "name": "identity_metadata_registry_program",
-          "address": "6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5"
+          "address": "D2V7wTBbNCKgYwirgRUnSmc2QyKnHSVmRotWJ4rz8Jp9"
         },
         {
           "name": "investor",
@@ -118,7 +144,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "identity_registry"
@@ -154,7 +180,16 @@
     },
     {
       "name": "add_token_lock",
-      "discriminator": [195, 26, 109, 80, 46, 7, 195, 55],
+      "discriminator": [
+        195,
+        26,
+        109,
+        80,
+        46,
+        7,
+        195,
+        55
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -168,11 +203,15 @@
         {
           "name": "controller_authority",
           "writable": true,
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -180,7 +219,7 @@
         },
         {
           "name": "token_locks_program",
-          "address": "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz"
+          "address": "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
         },
         {
           "name": "investor_locks",
@@ -216,7 +255,7 @@
         },
         {
           "name": "asset_controller_program",
-          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
         },
         {
           "name": "token_program",
@@ -236,7 +275,16 @@
     },
     {
       "name": "assign_user_role",
-      "discriminator": [39, 8, 31, 232, 255, 118, 39, 44],
+      "discriminator": [
+        39,
+        8,
+        31,
+        232,
+        255,
+        118,
+        39,
+        44
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -249,7 +297,10 @@
         },
         {
           "name": "asset_access_controller",
-          "relations": ["user_role", "authorized_user_role"]
+          "relations": [
+            "user_role",
+            "authorized_user_role"
+          ]
         },
         {
           "name": "user_role",
@@ -275,7 +326,16 @@
     },
     {
       "name": "attach_to_policy_engine",
-      "discriminator": [99, 59, 117, 21, 146, 11, 54, 173],
+      "discriminator": [
+        99,
+        59,
+        117,
+        21,
+        146,
+        11,
+        54,
+        173
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -288,11 +348,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -300,7 +364,7 @@
         },
         {
           "name": "policy_engine_program",
-          "address": "4wyusm2nxncvNyiVej5mZ1k1mVPhfG41oNvHx4BWiYMq"
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
         },
         {
           "name": "policy_engine",
@@ -320,7 +384,16 @@
     },
     {
       "name": "attach_wallet_to_identity",
-      "discriminator": [61, 129, 252, 190, 8, 202, 179, 90],
+      "discriminator": [
+        61,
+        129,
+        252,
+        190,
+        8,
+        202,
+        179,
+        90
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -333,11 +406,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -345,7 +422,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "wallet_identity",
@@ -362,9 +439,6 @@
           "name": "asset_mint"
         },
         {
-          "name": "new_wallet_identity_account"
-        },
-        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
@@ -378,7 +452,16 @@
     },
     {
       "name": "change_counter_limits",
-      "discriminator": [200, 2, 8, 102, 43, 168, 141, 139],
+      "discriminator": [
+        200,
+        2,
+        8,
+        102,
+        43,
+        168,
+        141,
+        139
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -391,11 +474,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -403,7 +490,7 @@
         },
         {
           "name": "policy_engine_program",
-          "address": "4wyusm2nxncvNyiVej5mZ1k1mVPhfG41oNvHx4BWiYMq"
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
         },
         {
           "name": "policy_engine",
@@ -423,7 +510,16 @@
     },
     {
       "name": "change_counters",
-      "discriminator": [156, 107, 88, 204, 113, 131, 241, 192],
+      "discriminator": [
+        156,
+        107,
+        88,
+        204,
+        113,
+        131,
+        241,
+        192
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -436,11 +532,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -448,7 +548,7 @@
         },
         {
           "name": "policy_engine_program",
-          "address": "4wyusm2nxncvNyiVej5mZ1k1mVPhfG41oNvHx4BWiYMq"
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
         },
         {
           "name": "policy_engine",
@@ -468,7 +568,16 @@
     },
     {
       "name": "change_country",
-      "discriminator": [208, 227, 224, 246, 9, 254, 62, 179],
+      "discriminator": [
+        208,
+        227,
+        224,
+        246,
+        9,
+        254,
+        62,
+        179
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -481,11 +590,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -493,7 +606,7 @@
         },
         {
           "name": "identity_metadata_registry_program",
-          "address": "6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5"
+          "address": "D2V7wTBbNCKgYwirgRUnSmc2QyKnHSVmRotWJ4rz8Jp9"
         },
         {
           "name": "investor",
@@ -501,7 +614,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "identity_registry"
@@ -533,7 +646,16 @@
     },
     {
       "name": "change_issuance_policies",
-      "discriminator": [186, 201, 163, 157, 32, 250, 166, 37],
+      "discriminator": [
+        186,
+        201,
+        163,
+        157,
+        32,
+        250,
+        166,
+        37
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -546,11 +668,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -558,7 +684,7 @@
         },
         {
           "name": "policy_engine_program",
-          "address": "4wyusm2nxncvNyiVej5mZ1k1mVPhfG41oNvHx4BWiYMq"
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
         },
         {
           "name": "policy_engine",
@@ -574,7 +700,16 @@
     },
     {
       "name": "change_mapping",
-      "discriminator": [103, 1, 52, 20, 160, 194, 113, 125],
+      "discriminator": [
+        103,
+        1,
+        52,
+        20,
+        160,
+        194,
+        113,
+        125
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -587,11 +722,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -599,7 +738,7 @@
         },
         {
           "name": "policy_engine_program",
-          "address": "4wyusm2nxncvNyiVej5mZ1k1mVPhfG41oNvHx4BWiYMq"
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
         },
         {
           "name": "policy_engine",
@@ -615,7 +754,16 @@
     },
     {
       "name": "close_investor_locks",
-      "discriminator": [255, 60, 220, 115, 217, 104, 157, 171],
+      "discriminator": [
+        255,
+        60,
+        220,
+        115,
+        217,
+        104,
+        157,
+        171
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -628,11 +776,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -640,7 +792,7 @@
         },
         {
           "name": "token_locks_program",
-          "address": "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz"
+          "address": "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
         },
         {
           "name": "investor_locks",
@@ -665,7 +817,16 @@
     },
     {
       "name": "close_mint_account",
-      "discriminator": [14, 121, 72, 246, 96, 224, 42, 162],
+      "discriminator": [
+        14,
+        121,
+        72,
+        246,
+        96,
+        224,
+        42,
+        162
+      ],
       "accounts": [
         {
           "name": "user",
@@ -674,11 +835,15 @@
         {
           "name": "controller_authority",
           "writable": true,
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -686,7 +851,7 @@
         },
         {
           "name": "asset_controller_program",
-          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
         },
         {
           "name": "asset_mint",
@@ -709,7 +874,16 @@
     },
     {
       "name": "create_controller",
-      "discriminator": [176, 246, 168, 148, 10, 12, 2, 48],
+      "discriminator": [
+        176,
+        246,
+        168,
+        148,
+        10,
+        12,
+        2,
+        48
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -732,8 +906,27 @@
               {
                 "kind": "const",
                 "value": [
-                  65, 115, 115, 101, 116, 65, 99, 99, 101, 115, 115, 67, 111,
-                  110, 116, 114, 111, 108, 108, 101, 114
+                  65,
+                  115,
+                  115,
+                  101,
+                  116,
+                  65,
+                  99,
+                  99,
+                  101,
+                  115,
+                  115,
+                  67,
+                  111,
+                  110,
+                  116,
+                  114,
+                  111,
+                  108,
+                  108,
+                  101,
+                  114
                 ]
               }
             ]
@@ -753,7 +946,16 @@
     },
     {
       "name": "create_identity_account",
-      "discriminator": [82, 240, 35, 129, 113, 134, 116, 70],
+      "discriminator": [
+        82,
+        240,
+        35,
+        129,
+        113,
+        134,
+        116,
+        70
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -766,11 +968,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -778,7 +984,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "identity_registry"
@@ -805,7 +1011,16 @@
     },
     {
       "name": "create_investor_locks",
-      "discriminator": [223, 81, 139, 162, 204, 48, 24, 213],
+      "discriminator": [
+        223,
+        81,
+        139,
+        162,
+        204,
+        48,
+        24,
+        213
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -818,11 +1033,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -830,7 +1049,7 @@
         },
         {
           "name": "token_locks_program",
-          "address": "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz"
+          "address": "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
         },
         {
           "name": "investor_locks",
@@ -855,7 +1074,7 @@
         },
         {
           "name": "asset_controller_program",
-          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
         },
         {
           "name": "token_program",
@@ -870,7 +1089,16 @@
     },
     {
       "name": "create_user_role",
-      "discriminator": [13, 20, 224, 42, 3, 120, 67, 23],
+      "discriminator": [
+        13,
+        20,
+        224,
+        42,
+        3,
+        120,
+        67,
+        23
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -888,7 +1116,9 @@
         {
           "name": "asset_access_controller",
           "writable": true,
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -916,7 +1146,16 @@
     },
     {
       "name": "delete_user_role",
-      "discriminator": [177, 139, 27, 46, 113, 250, 139, 225],
+      "discriminator": [
+        177,
+        139,
+        27,
+        46,
+        113,
+        250,
+        139,
+        225
+      ],
       "accounts": [
         {
           "name": "receiver",
@@ -928,7 +1167,10 @@
         },
         {
           "name": "asset_access_controller",
-          "relations": ["user_role", "authorized_user_role"]
+          "relations": [
+            "user_role",
+            "authorized_user_role"
+          ]
         },
         {
           "name": "user_role",
@@ -943,7 +1185,16 @@
     },
     {
       "name": "detach_from_policy_engine",
-      "discriminator": [156, 137, 67, 121, 46, 207, 45, 12],
+      "discriminator": [
+        156,
+        137,
+        67,
+        121,
+        46,
+        207,
+        45,
+        12
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -956,11 +1207,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -968,7 +1223,7 @@
         },
         {
           "name": "policy_engine_program",
-          "address": "4wyusm2nxncvNyiVej5mZ1k1mVPhfG41oNvHx4BWiYMq"
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
         },
         {
           "name": "policy_engine",
@@ -988,7 +1243,16 @@
     },
     {
       "name": "detach_wallet_from_identity",
-      "discriminator": [166, 70, 236, 254, 166, 116, 201, 50],
+      "discriminator": [
+        166,
+        70,
+        236,
+        254,
+        166,
+        116,
+        201,
+        50
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -1002,11 +1266,15 @@
         {
           "name": "controller_authority",
           "writable": true,
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -1014,7 +1282,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "wallet_identity",
@@ -1037,7 +1305,16 @@
     },
     {
       "name": "freeze_token_account",
-      "discriminator": [138, 168, 178, 109, 205, 224, 209, 93],
+      "discriminator": [
+        138,
+        168,
+        178,
+        109,
+        205,
+        224,
+        209,
+        93
+      ],
       "accounts": [
         {
           "name": "user",
@@ -1045,11 +1322,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -1057,7 +1338,7 @@
         },
         {
           "name": "asset_controller_program",
-          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
         },
         {
           "name": "asset_mint",
@@ -1084,7 +1365,16 @@
     },
     {
       "name": "issue_tokens",
-      "discriminator": [40, 207, 145, 106, 249, 54, 23, 179],
+      "discriminator": [
+        40,
+        207,
+        145,
+        106,
+        249,
+        54,
+        23,
+        179
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -1098,11 +1388,15 @@
         {
           "name": "controller_authority",
           "writable": true,
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -1110,7 +1404,7 @@
         },
         {
           "name": "asset_controller_program",
-          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
         },
         {
           "name": "asset_mint",
@@ -1151,7 +1445,7 @@
         },
         {
           "name": "policy_engine_program",
-          "address": "4wyusm2nxncvNyiVej5mZ1k1mVPhfG41oNvHx4BWiYMq"
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
         },
         {
           "name": "policy_engine",
@@ -1163,7 +1457,7 @@
         {
           "name": "token_locks_program",
           "optional": true,
-          "address": "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz"
+          "address": "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
         },
         {
           "name": "investor_locks",
@@ -1205,7 +1499,16 @@
     },
     {
       "name": "modify_user_role",
-      "discriminator": [108, 235, 68, 252, 229, 247, 71, 185],
+      "discriminator": [
+        108,
+        235,
+        68,
+        252,
+        229,
+        247,
+        71,
+        185
+      ],
       "accounts": [
         {
           "name": "user",
@@ -1213,7 +1516,10 @@
         },
         {
           "name": "asset_access_controller",
-          "relations": ["user_role", "authorized_user_role"]
+          "relations": [
+            "user_role",
+            "authorized_user_role"
+          ]
         },
         {
           "name": "user_role",
@@ -1241,7 +1547,16 @@
     },
     {
       "name": "refresh_level_to_identity_account",
-      "discriminator": [23, 68, 237, 111, 144, 169, 239, 91],
+      "discriminator": [
+        23,
+        68,
+        237,
+        111,
+        144,
+        169,
+        239,
+        91
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -1254,11 +1569,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -1266,7 +1585,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "identity_registry"
@@ -1285,7 +1604,16 @@
     },
     {
       "name": "register_investor",
-      "discriminator": [95, 16, 66, 212, 152, 123, 136, 173],
+      "discriminator": [
+        95,
+        16,
+        66,
+        212,
+        152,
+        123,
+        136,
+        173
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -1298,11 +1626,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -1310,7 +1642,7 @@
         },
         {
           "name": "identity_metadata_registry_program",
-          "address": "6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5"
+          "address": "D2V7wTBbNCKgYwirgRUnSmc2QyKnHSVmRotWJ4rz8Jp9"
         },
         {
           "name": "investor",
@@ -1318,7 +1650,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "identity_registry"
@@ -1345,7 +1677,16 @@
     },
     {
       "name": "remove_investor",
-      "discriminator": [93, 0, 162, 199, 76, 5, 180, 2],
+      "discriminator": [
+        93,
+        0,
+        162,
+        199,
+        76,
+        5,
+        180,
+        2
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -1358,11 +1699,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -1370,7 +1715,7 @@
         },
         {
           "name": "identity_metadata_registry_program",
-          "address": "6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5"
+          "address": "D2V7wTBbNCKgYwirgRUnSmc2QyKnHSVmRotWJ4rz8Jp9"
         },
         {
           "name": "investor",
@@ -1378,7 +1723,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "identity_registry"
@@ -1386,13 +1731,26 @@
         {
           "name": "identity_account",
           "writable": true
+        },
+        {
+          "name": "wallet_identity",
+          "writable": true
         }
       ],
       "args": []
     },
     {
       "name": "remove_level_from_identity_account",
-      "discriminator": [194, 231, 187, 54, 197, 136, 170, 55],
+      "discriminator": [
+        194,
+        231,
+        187,
+        54,
+        197,
+        136,
+        170,
+        55
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -1405,11 +1763,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -1417,7 +1779,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "identity_registry"
@@ -1460,7 +1822,16 @@
     },
     {
       "name": "remove_levels",
-      "discriminator": [200, 96, 65, 253, 97, 55, 16, 192],
+      "discriminator": [
+        200,
+        96,
+        65,
+        253,
+        97,
+        55,
+        16,
+        192
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -1473,11 +1844,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -1485,7 +1860,7 @@
         },
         {
           "name": "identity_metadata_registry_program",
-          "address": "6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5"
+          "address": "D2V7wTBbNCKgYwirgRUnSmc2QyKnHSVmRotWJ4rz8Jp9"
         },
         {
           "name": "investor",
@@ -1493,7 +1868,7 @@
         },
         {
           "name": "identity_registry_program",
-          "address": "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
           "name": "identity_registry"
@@ -1529,7 +1904,16 @@
     },
     {
       "name": "remove_token_lock",
-      "discriminator": [168, 128, 173, 188, 172, 228, 154, 90],
+      "discriminator": [
+        168,
+        128,
+        173,
+        188,
+        172,
+        228,
+        154,
+        90
+      ],
       "accounts": [
         {
           "name": "user",
@@ -1538,11 +1922,15 @@
         {
           "name": "controller_authority",
           "writable": true,
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -1550,7 +1938,7 @@
         },
         {
           "name": "token_locks_program",
-          "address": "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz"
+          "address": "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
         },
         {
           "name": "investor_locks",
@@ -1586,7 +1974,7 @@
         },
         {
           "name": "asset_controller_program",
-          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
         },
         {
           "name": "token_program",
@@ -1602,7 +1990,16 @@
     },
     {
       "name": "remove_user_role",
-      "discriminator": [43, 242, 133, 94, 48, 124, 214, 153],
+      "discriminator": [
+        43,
+        242,
+        133,
+        94,
+        48,
+        124,
+        214,
+        153
+      ],
       "accounts": [
         {
           "name": "user",
@@ -1610,7 +2007,10 @@
         },
         {
           "name": "asset_access_controller",
-          "relations": ["user_role", "authorized_user_role"]
+          "relations": [
+            "user_role",
+            "authorized_user_role"
+          ]
         },
         {
           "name": "user_role",
@@ -1632,7 +2032,16 @@
     },
     {
       "name": "revoke_tokens",
-      "discriminator": [215, 42, 15, 134, 173, 80, 33, 21],
+      "discriminator": [
+        215,
+        42,
+        15,
+        134,
+        173,
+        80,
+        33,
+        21
+      ],
       "accounts": [
         {
           "name": "user",
@@ -1641,11 +2050,15 @@
         {
           "name": "controller_authority",
           "writable": true,
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -1653,7 +2066,7 @@
         },
         {
           "name": "asset_controller_program",
-          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
         },
         {
           "name": "asset_mint",
@@ -1708,7 +2121,16 @@
     },
     {
       "name": "seize_tokens",
-      "discriminator": [79, 30, 69, 54, 78, 1, 16, 23],
+      "discriminator": [
+        79,
+        30,
+        69,
+        54,
+        78,
+        1,
+        16,
+        23
+      ],
       "accounts": [
         {
           "name": "user",
@@ -1717,11 +2139,15 @@
         {
           "name": "controller_authority",
           "writable": true,
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -1729,7 +2155,7 @@
         },
         {
           "name": "asset_controller_program",
-          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
         },
         {
           "name": "asset_mint"
@@ -1759,7 +2185,16 @@
     },
     {
       "name": "set_counters",
-      "discriminator": [127, 151, 147, 141, 171, 53, 28, 135],
+      "discriminator": [
+        127,
+        151,
+        147,
+        141,
+        171,
+        53,
+        28,
+        135
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -1772,11 +2207,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -1784,7 +2223,7 @@
         },
         {
           "name": "policy_engine_program",
-          "address": "4wyusm2nxncvNyiVej5mZ1k1mVPhfG41oNvHx4BWiYMq"
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
         },
         {
           "name": "policy_engine",
@@ -1800,7 +2239,16 @@
     },
     {
       "name": "thaw_token_account",
-      "discriminator": [199, 172, 96, 93, 244, 252, 137, 171],
+      "discriminator": [
+        199,
+        172,
+        96,
+        93,
+        244,
+        252,
+        137,
+        171
+      ],
       "accounts": [
         {
           "name": "user",
@@ -1808,11 +2256,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -1820,7 +2272,7 @@
         },
         {
           "name": "asset_controller_program",
-          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
         },
         {
           "name": "asset_mint",
@@ -1851,7 +2303,16 @@
     },
     {
       "name": "update_asset_metadata",
-      "discriminator": [217, 98, 205, 153, 242, 4, 41, 76],
+      "discriminator": [
+        217,
+        98,
+        205,
+        153,
+        242,
+        4,
+        41,
+        76
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -1865,11 +2326,15 @@
         {
           "name": "controller_authority",
           "writable": true,
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -1877,7 +2342,7 @@
         },
         {
           "name": "asset_controller_program",
-          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
         },
         {
           "name": "asset_mint",
@@ -1907,12 +2372,23 @@
     },
     {
       "name": "update_controller_admin",
-      "discriminator": [94, 188, 33, 18, 191, 119, 128, 209],
+      "discriminator": [
+        94,
+        188,
+        33,
+        18,
+        191,
+        119,
+        128,
+        209
+      ],
       "accounts": [
         {
           "name": "admin",
           "signer": true,
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
@@ -1928,7 +2404,16 @@
     },
     {
       "name": "update_interest_bearing_mint_rate",
-      "discriminator": [29, 174, 109, 163, 227, 75, 2, 144],
+      "discriminator": [
+        29,
+        174,
+        109,
+        163,
+        227,
+        75,
+        2,
+        144
+      ],
       "accounts": [
         {
           "name": "user",
@@ -1936,11 +2421,15 @@
         },
         {
           "name": "controller_authority",
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller",
-          "relations": ["authorized_user_role"]
+          "relations": [
+            "authorized_user_role"
+          ]
         },
         {
           "name": "authorized_user_role",
@@ -1948,7 +2437,7 @@
         },
         {
           "name": "asset_controller_program",
-          "address": "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
         },
         {
           "name": "asset_mint",
@@ -1974,7 +2463,16 @@
     },
     {
       "name": "withdraw_excess_rent",
-      "discriminator": [20, 25, 71, 58, 107, 60, 159, 75],
+      "discriminator": [
+        20,
+        25,
+        71,
+        58,
+        107,
+        60,
+        159,
+        75
+      ],
       "accounts": [
         {
           "name": "receiver",
@@ -1983,12 +2481,16 @@
         {
           "name": "admin",
           "signer": true,
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "controller_authority",
           "writable": true,
-          "relations": ["asset_access_controller"]
+          "relations": [
+            "asset_access_controller"
+          ]
         },
         {
           "name": "asset_access_controller"
@@ -2004,11 +2506,29 @@
   "accounts": [
     {
       "name": "AssetAccessController",
-      "discriminator": [159, 84, 3, 26, 90, 167, 134, 33]
+      "discriminator": [
+        159,
+        84,
+        3,
+        26,
+        90,
+        167,
+        134,
+        33
+      ]
     },
     {
       "name": "UserRole",
-      "discriminator": [62, 252, 194, 137, 183, 165, 147, 28]
+      "discriminator": [
+        62,
+        252,
+        194,
+        137,
+        183,
+        165,
+        147,
+        28
+      ]
     }
   ],
   "errors": [
@@ -2063,17 +2583,23 @@
           },
           {
             "name": "controller_authority_bump",
-            "docs": ["Bump seed for controller_authority."],
+            "docs": [
+              "Bump seed for controller_authority."
+            ],
             "type": "u8"
           },
           {
             "name": "admin",
-            "docs": ["Admin keypair that's allowed to manage this controller."],
+            "docs": [
+              "Admin keypair that's allowed to manage this controller."
+            ],
             "type": "pubkey"
           },
           {
             "name": "unique_seed",
-            "docs": ["Unique seed used for creating this account."],
+            "docs": [
+              "Unique seed used for creating this account."
+            ],
             "type": "pubkey"
           },
           {
@@ -2093,7 +2619,9 @@
         "fields": [
           {
             "name": "asset_access_controller",
-            "docs": ["Controller that user role is designated for."],
+            "docs": [
+              "Controller that user role is designated for."
+            ],
             "type": "pubkey"
           },
           {
@@ -2105,22 +2633,30 @@
           },
           {
             "name": "name",
-            "docs": ["Name of this role."],
+            "docs": [
+              "Name of this role."
+            ],
             "type": "string"
           },
           {
             "name": "allowed_admin_ixs",
-            "docs": ["Bitflag of allowed admin instructions."],
+            "docs": [
+              "Bitflag of allowed admin instructions."
+            ],
             "type": "u64"
           },
           {
             "name": "allowed_medici_ixs",
-            "docs": ["Bitflag of allowed Medici CPI instructions."],
+            "docs": [
+              "Bitflag of allowed Medici CPI instructions."
+            ],
             "type": "u64"
           },
           {
             "name": "users",
-            "docs": ["List of users assigned with this role."],
+            "docs": [
+              "List of users assigned with this role."
+            ],
             "type": {
               "vec": "pubkey"
             }

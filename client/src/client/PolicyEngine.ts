@@ -17,7 +17,7 @@ import {
   ChangeMappingArgs,
   ChangeIssuancePoliciesArgs,
   SetCountersArgs,
-} from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
+} from "@dstoken-solana/rwa-token-sdk";
 
 /**
  * Represents the role-based access client for Policy Engine for an RWA.

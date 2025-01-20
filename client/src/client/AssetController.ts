@@ -45,7 +45,7 @@ import {
   TransferTokensArgs,
   UpdateAssetMetadataArgs,
   VoidTokensArgs,
-} from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
+} from "@dstoken-solana/rwa-token-sdk";
 import { TL_PROGRAM } from "../constants";
 import {
   deriveInvestorLocks,
@@ -487,11 +487,14 @@ export class AssetController {
    */
   async seizeTokensIxn(
     args: SeizeTokensArgs,
+    investorId: string,
     signer: PublicKey,
     assetAccessController: PublicKey,
     authorizedUserRole?: PublicKey
   ): Promise<TransactionInstruction> {
-    const [_, seizeIx] = await getSeizeTokensIx(args, this.rwaClient.provider);
+    const identityRegistry = getIdentityRegistryPda(args.assetMint);
+    const investorPda = deriveInvestorPda(investorId, identityRegistry);
+    const [_, seizeIx] = await getSeizeTokensIx({...args, wallet: args.from, from: investorPda.toString()}, this.rwaClient.provider);
     return this.rbacProgram.methods
       .seizeTokens(seizeIx.data)
       .accountsStrict({
@@ -543,7 +546,7 @@ export class AssetController {
           isSigner: false,
         },
         {
-          pubkey: getIdentityAccountPda(args.assetMint, args.from),
+          pubkey: getIdentityAccountPda(args.assetMint, investorPda.toString()),
           isWritable: false,
           isSigner: false,
         },
@@ -553,7 +556,7 @@ export class AssetController {
           isSigner: false,
         },
         {
-          pubkey: getTrackerAccountPda(args.assetMint, args.from),
+          pubkey: getTrackerAccountPda(args.assetMint, investorPda.toString()),
           isWritable: true,
           isSigner: false,
         },

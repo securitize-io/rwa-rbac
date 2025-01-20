@@ -21,7 +21,7 @@ import {
   RemoveLevelFromIdentityAccountArgs,
   RwaClient,
   SetupUserArgs,
-} from "../../../deps/rwa-token/clients/rwa-token-sdk/src";
+} from "@dstoken-solana/rwa-token-sdk";
 import { deriveControllerAuthorityPda } from "../pdas";
 import { SystemProgram } from "@solana/web3.js";
 
@@ -251,7 +251,6 @@ export class IdentityRegistry {
         assetMint: args.assetMint,
         walletIdentity,
         systemProgram: SystemProgram.programId,
-        newWalletIdentityAccount,
       })
       .instruction();
     return this.rbacProgram.methods
@@ -268,7 +267,6 @@ export class IdentityRegistry {
         assetMint: args.assetMint,
         walletIdentity,
         systemProgram: SystemProgram.programId,
-        newWalletIdentityAccount,
       })
       .instruction();
   }

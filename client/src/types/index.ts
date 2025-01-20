@@ -1,4 +1,3 @@
-export * from "./generated/rwa_rbac";
+export * from "./generated";
 export * from "./flags";
-export * from "./generated/rwa_imr";
-export * from "./generated/token_locks";
+export * from "./instructions";

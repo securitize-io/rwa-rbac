@@ -5,8 +5,8 @@ import {
   LAMPORTS_PER_SOL,
   PublicKey,
 } from "@solana/web3.js";
-import { pdas, RBAC_PROGRAM } from "../client/src";
-import { Config } from "@bridgesplit/rwa-token-sdk/dist/classes/types";
+import { deriveAssetAccessControllerPda, deriveUserRolePda, RBAC_PROGRAM } from "../client/src";
+import { Config } from "@dstoken-solana/rwa-token-sdk";
 
 export async function setupTests() {
   const payerKp = new Keypair();
@@ -34,11 +34,11 @@ export async function setupTests() {
   );
 
   const uniqueSeed = Keypair.generate().publicKey;
-  const controller = pdas.deriveAssetAccessControllerPda(uniqueSeed);
+  const controller = deriveAssetAccessControllerPda(uniqueSeed);
   const roleId1 = new BN(1);
   const roleId2 = new BN(2);
-  const userRole1 = pdas.deriveUserRolePda(roleId1, controller);
-  const userRole2 = pdas.deriveUserRolePda(roleId2, controller);
+  const userRole1 = deriveUserRolePda(roleId1, controller);
+  const userRole2 = deriveUserRolePda(roleId2, controller);
 
   const [controllerAuthority, controllerAuthorityBump] =
     PublicKey.findProgramAddressSync([controller.toBuffer()], RBAC_PROGRAM);

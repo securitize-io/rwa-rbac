@@ -1,4 +1,0 @@
-[submodule "deps/rwa-token"]
-	path = deps/rwa-token
-	url = https://github.com/tiago18c/rwa-token.git
-	branch = holders_policy

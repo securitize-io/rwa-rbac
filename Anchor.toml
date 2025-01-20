@@ -5,9 +5,9 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-rwa_rbac = "AzGap3q8fXV1gHPWpAuMFqkpCewvuEY5GrkhCz86ZkDb"
-rwa_imr = "6g7C5Re5hMY7Yi4dWGCEXWvzysCEePybo7jgTNBMsuL5"
-token_locks = "HKYfwoKujgGHJdHjDAxW8pqqNLmVSe9ukbua8tnQEFPz"
+rwa_rbac = "3g6fUgMsJQhjPUYxNjEU5PyzGf8DerbDx8p5Qh4yMnRR"
+rwa_imr = "D2V7wTBbNCKgYwirgRUnSmc2QyKnHSVmRotWJ4rz8Jp9"
+token_locks = "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
 
 [registry]
 url = "https://api.apr.dev"
@@ -25,17 +25,17 @@ shutdown_wait = 2000
 upgradeable = false
 
 [[test.genesis]]
-address = "2fJZj6eLMvdGkHTePvbXGjh9x1hHSMvkBPhTcAAPvBMa"
+address = "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
 program = "./deps/asset_controller.so"
 
 [[test.genesis]]
-address = "8Bp1xoRscjuHoG1KT41zAaujGTx2fyB2uzTt8GTeWZX8"
+address = "JDxF8P4SctW8rB5s5FbupPFYecKFqLSv7fTES3cFei3b"
 program = "./deps/data_registry.so"
 
 [[test.genesis]]
-address = "7Zis9Cg1pa3PMRCMfJBgzoQThoBA21QMrkmEnx6nZdQQ"
+address = "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
 program = "./deps/identity_registry.so"
 
 [[test.genesis]]
-address = "4wyusm2nxncvNyiVej5mZ1k1mVPhfG41oNvHx4BWiYMq"
+address = "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
 program = "./deps/policy_engine.so"

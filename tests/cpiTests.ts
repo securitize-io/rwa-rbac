@@ -20,14 +20,14 @@ import {
   getPolicyEngineAccount,
   getWalletIdentityAccount,
   getWalletIdentityAccountPda,
-} from "../deps/rwa-token/clients/rwa-token-sdk/src";
+} from "@dstoken-solana/rwa-token-sdk";
 import { deriveInvestorPda } from "../client/src/pdas";
 import { IssueTokensWithLockArgs } from "../client/src/types/instructions";
 
 describe("CPI End to End Tests", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
-
+  const provider = anchor.AnchorProvider.env();
   let rwaRbacClient: RwaRbacClient;
   let setup;
   let mint: string;
@@ -41,7 +41,7 @@ describe("CPI End to End Tests", () => {
   before(async () => {
     setup = await setupTests();
     connection = setup.config.connection;
-    rwaRbacClient = new RwaRbacClient(setup.config, new Wallet(setup.payerKp));
+    rwaRbacClient = new RwaRbacClient(setup.config, provider);
   });
 
   it("Create AssetAccessController successfully", async () => {
@@ -742,6 +742,7 @@ describe("CPI End to End Tests", () => {
     };
     const ix = await rwaRbacClient.assetController.seizeTokensIxn(
       args,
+      INVESTOR_ID,
       setup.signer1.toString(),
       setup.assetAccessController,
       setup.userRole1
