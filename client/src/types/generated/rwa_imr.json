@@ -361,6 +361,14 @@
         {
           "name": "wallet_identity",
           "writable": true
+        },
+        {
+          "name": "policy_engine_program",
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
+        },
+        {
+          "name": "tracker_account",
+          "writable": true
         }
       ],
       "args": []

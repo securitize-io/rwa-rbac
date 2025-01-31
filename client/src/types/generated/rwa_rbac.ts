@@ -1741,6 +1741,14 @@ export type RwaRbac = {
         {
           "name": "walletIdentity",
           "writable": true
+        },
+        {
+          "name": "policyEngineProgram",
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
+        },
+        {
+          "name": "trackerAccount",
+          "writable": true
         }
       ],
       "args": []

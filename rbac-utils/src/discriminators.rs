@@ -30,3 +30,4 @@ pub const REGISTER_INVESTOR_IX: [u8; 8] = [95, 16, 66, 212, 152, 123, 136, 173];
 pub const REMOVE_INVESTOR_IX: [u8; 8] = [93, 0, 162, 199, 76, 5, 180, 2];
 pub const REMOVE_LEVELS_IX: [u8; 8] = [200, 96, 65, 253, 97, 55, 16, 192];
 pub const SET_COUNTERS_IX: [u8; 8] = [127, 151, 147, 141, 171, 53, 28, 135];
+pub const CLOSE_TRACKER_IX: [u8; 8] = [191, 131, 63, 182, 65, 217, 37, 166];

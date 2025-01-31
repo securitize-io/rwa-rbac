@@ -2,7 +2,10 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke},
 };
-use rbac_utils::{constants::IDENTITY_REGISTRY_ID, REVOKE_IDENTITY_ACCOUNT_IX};
+use rbac_utils::{
+    constants::{IDENTITY_REGISTRY_ID, POLICY_ENGINE_ID},
+    CLOSE_TRACKER_IX, REVOKE_IDENTITY_ACCOUNT_IX,
+};
 
 use crate::state::*;
 
@@ -28,16 +31,16 @@ pub struct RemoveInvestor<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub wallet_identity: UncheckedAccount<'info>,
+    /// CHECK: Checked against known program address.
+    #[account(address = POLICY_ENGINE_ID)]
+    pub policy_engine_program: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    #[account(mut)]
+    pub tracker_account: UncheckedAccount<'info>,
 }
 
 pub fn handler(ctx: Context<RemoveInvestor>) -> Result<()> {
-    let cpi_data = [
-        &REVOKE_IDENTITY_ACCOUNT_IX,
-        ctx.accounts.investor.key().as_ref(),
-    ]
-    .concat();
-
-    // Perform CPI to IdentityRegistry Program.
+    // Perform CPI to IdentityRegistry Program to revoke identity account
     invoke(
         &Instruction {
             program_id: ctx.accounts.identity_registry_program.key(),
@@ -48,7 +51,11 @@ pub fn handler(ctx: Context<RemoveInvestor>) -> Result<()> {
                 AccountMeta::new(ctx.accounts.identity_account.key(), false),
                 AccountMeta::new(ctx.accounts.wallet_identity.key(), false),
             ],
-            data: cpi_data,
+            data: [
+                &REVOKE_IDENTITY_ACCOUNT_IX,
+                ctx.accounts.investor.key().as_ref(),
+            ]
+            .concat(),
         },
         &[
             ctx.accounts.payer.to_account_info(),
@@ -56,6 +63,24 @@ pub fn handler(ctx: Context<RemoveInvestor>) -> Result<()> {
             ctx.accounts.identity_registry.to_account_info(),
             ctx.accounts.identity_account.to_account_info(),
             ctx.accounts.wallet_identity.to_account_info(),
+        ],
+    )?;
+
+    // Perform CPI to PolicyEngine Program to close tracker account.
+    invoke(
+        &Instruction {
+            program_id: ctx.accounts.policy_engine_program.key(),
+            accounts: vec![
+                AccountMeta::new(ctx.accounts.payer.key(), true),
+                AccountMeta::new_readonly(ctx.accounts.identity_account.key(), false),
+                AccountMeta::new(ctx.accounts.tracker_account.key(), false),
+            ],
+            data: CLOSE_TRACKER_IX.to_vec(),
+        },
+        &[
+            ctx.accounts.payer.to_account_info(),
+            ctx.accounts.identity_account.to_account_info(),
+            ctx.accounts.tracker_account.to_account_info(),
         ],
     )?;
     Ok(())

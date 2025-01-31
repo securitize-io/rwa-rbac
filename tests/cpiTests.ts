@@ -18,8 +18,10 @@ import {
   getIdentityAccountPda,
   getIdentityRegistryPda,
   getPolicyEngineAccount,
+  getTrackerAccountPda,
   getWalletIdentityAccount,
   getWalletIdentityAccountPda,
+  policyEngineProgramId,
 } from "@dstoken-solana/rwa-token-sdk";
 import { deriveInvestorPda } from "../client/src/pdas";
 import { IssueTokensWithLockArgs } from "../client/src/types/instructions";
@@ -966,12 +968,6 @@ describe("CPI End to End Tests", () => {
         setup.userRole1
       );
 
-    const args = {
-      payer: setup.payer.toString(), // Payer Account
-      signer: setup.signer1.toString(), // User Account
-      assetMint: mint,
-      investorId: INVESTOR_ID,
-    };
     const removeIx =
       await rwaRbacClient.identityMetadataRegistry.removeInvestor(
         {
@@ -1001,6 +997,16 @@ describe("CPI End to End Tests", () => {
     );
     assert.isNull(
       await rwaRbacClient.provider.connection.getAccountInfo(identityAccountPda)
+    );
+
+    const trackerAccountPda = getTrackerAccountPda(
+      mint,
+      investorPda.toString()
+    );
+    assert.isNull(
+      await rwaRbacClient.provider.connection.getAccountInfo(
+        new PublicKey(trackerAccountPda)
+      )
     );
   });
 

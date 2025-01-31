@@ -3,7 +3,7 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 use rbac_utils::{
-    constants::{IDENTITY_METADATA_REGISTRY_ID, IDENTITY_REGISTRY_ID},
+    constants::{IDENTITY_METADATA_REGISTRY_ID, IDENTITY_REGISTRY_ID, POLICY_ENGINE_ID},
     REMOVE_INVESTOR_IX,
 };
 
@@ -37,6 +37,12 @@ pub struct RemoveInvestor<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub wallet_identity: UncheckedAccount<'info>,
+    /// CHECK: Checked against known program address.
+    #[account(address = POLICY_ENGINE_ID)]
+    pub policy_engine_program: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    #[account(mut)]
+    pub tracker_account: UncheckedAccount<'info>,
 }
 
 pub fn handler(ctx: Context<RemoveInvestor>) -> Result<()> {
@@ -65,6 +71,8 @@ pub fn handler(ctx: Context<RemoveInvestor>) -> Result<()> {
                 AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
                 AccountMeta::new(ctx.accounts.identity_account.key(), false),
                 AccountMeta::new(ctx.accounts.wallet_identity.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.policy_engine_program.key(), false),
+                AccountMeta::new(ctx.accounts.tracker_account.key(), false),
             ],
             data: REMOVE_INVESTOR_IX.to_vec(),
         },
@@ -76,6 +84,8 @@ pub fn handler(ctx: Context<RemoveInvestor>) -> Result<()> {
             ctx.accounts.identity_registry.to_account_info(),
             ctx.accounts.identity_account.to_account_info(),
             ctx.accounts.wallet_identity.to_account_info(),
+            ctx.accounts.policy_engine_program.to_account_info(),
+            ctx.accounts.tracker_account.to_account_info(),
         ],
         signers_seeds,
     )?;

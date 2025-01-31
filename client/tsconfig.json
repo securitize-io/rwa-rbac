@@ -1,12 +1,11 @@
 {
   "compilerOptions": {
-    "lib": ["ES5", "es2015"],
-    "types": ["node"],
-    "target": "ES5",
+    "lib": ["es6", "ES2020"],
     "declaration": true,
     "declarationDir": "dist",
     "declarationMap": true,
-    "module": "CommonJS",
+    "module": "es6",
+    "target": "es6",
     "noImplicitAny": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
@@ -14,11 +13,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "outDir": "dist",
-    "baseUrl": "src",
-    "paths": {
-      "*": ["node_modules/*"]
-    },
-    "typeRoots": ["node_modules/@types"]
+    "typeRoots": ["node_modules/@types"],
+    "rootDir": "src"
   },
-  "include": ["src/**/*"]
 }

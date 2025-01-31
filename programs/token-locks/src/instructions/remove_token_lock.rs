@@ -192,10 +192,7 @@ pub fn handler<'info>(
 
     let mut amount_to_remove = 0_u64;
 
-    let indices_usize: Vec<usize> = indices
-        .iter()
-        .map(|i| usize::from(*i))
-        .collect();
+    let indices_usize: Vec<usize> = indices.iter().map(|i| usize::from(*i)).collect();
 
     for index in indices_usize.clone() {
         let lock_to_remove = ctx

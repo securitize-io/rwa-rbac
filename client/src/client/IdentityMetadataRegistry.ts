@@ -407,6 +407,11 @@ export class IdentityMetadataRegistry {
           args.assetMint,
           investor.toString()
         ),
+        policyEngineProgram: policyEngineProgramId,
+        trackerAccount: getTrackerAccountPda(
+          args.assetMint,
+          investor.toString()
+        ),
       })
       .instruction();
   }
