@@ -31,3 +31,5 @@ pub const REMOVE_INVESTOR_IX: [u8; 8] = [93, 0, 162, 199, 76, 5, 180, 2];
 pub const REMOVE_LEVELS_IX: [u8; 8] = [200, 96, 65, 253, 97, 55, 16, 192];
 pub const SET_COUNTERS_IX: [u8; 8] = [127, 151, 147, 141, 171, 53, 28, 135];
 pub const CLOSE_TRACKER_IX: [u8; 8] = [191, 131, 63, 182, 65, 217, 37, 166];
+pub const ADD_LOCK_IX: [u8; 8] = [242, 102, 183, 107, 109, 168, 82, 140];
+pub const REMOVE_LOCK_IX: [u8; 8] = [1, 17, 121, 74, 62, 241, 127, 120];

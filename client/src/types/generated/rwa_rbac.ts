@@ -185,6 +185,80 @@ export type RwaRbac = {
       ]
     },
     {
+      "name": "addLock",
+      "discriminator": [
+        242,
+        102,
+        183,
+        107,
+        109,
+        168,
+        82,
+        140
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "policyEngineProgram",
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
+        },
+        {
+          "name": "policyEngine",
+          "writable": true
+        },
+        {
+          "name": "assetMint"
+        },
+        {
+          "name": "identityRegistry"
+        },
+        {
+          "name": "identityAccount"
+        },
+        {
+          "name": "trackerAccount",
+          "writable": true
+        },
+        {
+          "name": "eventAuthority"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpiData",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
       "name": "addTokenLock",
       "discriminator": [
         195,
@@ -1459,47 +1533,12 @@ export type RwaRbac = {
         },
         {
           "name": "walletIdentityAccount"
-        },
-        {
-          "name": "tokenLocksProgram",
-          "optional": true,
-          "address": "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
-        },
-        {
-          "name": "investorLocks",
-          "writable": true,
-          "optional": true
-        },
-        {
-          "name": "investor",
-          "optional": true
-        },
-        {
-          "name": "lockedTokenAccount",
-          "writable": true,
-          "optional": true
         }
       ],
       "args": [
         {
-          "name": "amount",
-          "type": "u64"
-        },
-        {
-          "name": "issuanceTimestamp",
-          "type": "i64"
-        },
-        {
-          "name": "reasonCode",
-          "type": {
-            "option": "u64"
-          }
-        },
-        {
-          "name": "reasonString",
-          "type": {
-            "option": "string"
-          }
+          "name": "cpiData",
+          "type": "bytes"
         }
       ]
     },
@@ -1907,6 +1946,80 @@ export type RwaRbac = {
         },
         {
           "name": "assetMint"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpiData",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "removeLock",
+      "discriminator": [
+        1,
+        17,
+        121,
+        74,
+        62,
+        241,
+        127,
+        120
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "policyEngineProgram",
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
+        },
+        {
+          "name": "policyEngine",
+          "writable": true
+        },
+        {
+          "name": "assetMint"
+        },
+        {
+          "name": "identityRegistry"
+        },
+        {
+          "name": "identityAccount"
+        },
+        {
+          "name": "trackerAccount",
+          "writable": true
+        },
+        {
+          "name": "eventAuthority"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [

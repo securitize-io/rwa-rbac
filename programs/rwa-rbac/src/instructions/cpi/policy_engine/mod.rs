@@ -5,6 +5,8 @@ pub mod change_issuance_policies;
 pub mod change_mapping;
 pub mod detach_from_policy_engine;
 pub mod set_counters;
+pub mod add_lock;
+pub mod remove_lock;
 
 pub use attach_to_policy_engine::*;
 pub use change_counter_limits::*;
@@ -13,3 +15,5 @@ pub use change_issuance_policies::*;
 pub use change_mapping::*;
 pub use detach_from_policy_engine::*;
 pub use set_counters::*;
+pub use add_lock::*;
+pub use remove_lock::*;

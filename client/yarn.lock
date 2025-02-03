@@ -314,10 +314,10 @@
     bn.js "^5.1.2"
     buffer-layout "^1.2.0"
 
-"@dstoken-solana/rwa-token-sdk@0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@dstoken-solana/rwa-token-sdk/-/rwa-token-sdk-0.1.0.tgz#4845161a5507ac93180c0e2717ff08dc9ffb5568"
-  integrity sha512-MrITnsmOCRYTknKXRHVwcXP613SLSQVb24QrrwpxZQHyl0I9CGMCChGQIJ9gr21OWB2dImAVbG3t0DlI5QInBw==
+"@dstoken-solana/rwa-token-sdk@0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@dstoken-solana/rwa-token-sdk/-/rwa-token-sdk-0.1.4.tgz#b5eeda25b3232b87a558dc1fe972e278acadaba8"
+  integrity sha512-jzlyWaseU2Lqa5gMa5PqskOkp4cKhOqsai7/PoKwk+xTXL4t8YfGAcjg5XRZS6e2r3HQfwvfb42aN2AYLSeSpA==
   dependencies:
     "@coral-xyz/anchor" "^0.30.1"
     "@solana/spl-token" "^0.3.11"
@@ -706,14 +706,14 @@
 
 "@solana/spl-token-metadata@^0.1.2":
   version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@solana/spl-token-metadata/-/spl-token-metadata-0.1.6.tgz#d240947aed6e7318d637238022a7b0981b32ae80"
+  resolved "https://registry.npmjs.org/@solana/spl-token-metadata/-/spl-token-metadata-0.1.6.tgz"
   integrity sha512-7sMt1rsm/zQOQcUWllQX9mD2O6KhSAtY1hFR2hfFwgqfFWzSY9E9GDvFVNYUI1F0iQKcm6HmePU9QbKRXTEBiA==
   dependencies:
     "@solana/codecs" "2.0.0-rc.1"
 
 "@solana/spl-token@^0.3.11":
   version "0.3.11"
-  resolved "https://registry.yarnpkg.com/@solana/spl-token/-/spl-token-0.3.11.tgz#cdc10f9472b29b39c8983c92592cadd06627fb9a"
+  resolved "https://registry.npmjs.org/@solana/spl-token/-/spl-token-0.3.11.tgz"
   integrity sha512-bvohO3rIMSVL24Pb+I4EYTJ6cL82eFpInEXD/I8K8upOGjpqHsKUoAempR/RnUlI1qSFNyFlWJfu6MNUgfbCQQ==
   dependencies:
     "@solana/buffer-layout" "^4.0.0"

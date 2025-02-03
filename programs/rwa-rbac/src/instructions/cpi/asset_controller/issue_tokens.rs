@@ -58,17 +58,6 @@ pub struct IssueTokens<'info> {
     pub policy_engine: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     pub wallet_identity_account: UncheckedAccount<'info>,
-    /// CHECK: Checked against known program address.
-    #[account(address = TOKEN_LOCKS_ID)]
-    pub token_locks_program: Option<UncheckedAccount<'info>>,
-    /// CHECK: Verified in CPI.
-    #[account(mut)]
-    pub investor_locks: Option<UncheckedAccount<'info>>,
-    /// CHECK: Verified in CPI.
-    pub investor: Option<UncheckedAccount<'info>>,
-    /// CHECK: Verified in CPI.
-    #[account(mut)]
-    pub locked_token_account: Option<UncheckedAccount<'info>>,
 }
 
 impl<'info> IssueTokens<'info> {
@@ -85,6 +74,7 @@ impl<'info> IssueTokens<'info> {
             &Instruction {
                 program_id: ctx.accounts.asset_controller_program.key(),
                 accounts: vec![
+                    AccountMeta::new(ctx.accounts.payer.key(), true),
                     AccountMeta::new(ctx.accounts.controller_authority.key(), true),
                     AccountMeta::new(ctx.accounts.asset_mint.key(), false),
                     AccountMeta::new_readonly(ctx.accounts.asset_controller.key(), false),
@@ -103,6 +93,7 @@ impl<'info> IssueTokens<'info> {
                 data,
             },
             &vec![
+                ctx.accounts.payer.to_account_info(),
                 ctx.accounts.controller_authority.to_account_info(),
                 ctx.accounts.asset_mint.to_account_info(),
                 ctx.accounts.asset_controller.to_account_info(),
@@ -122,96 +113,12 @@ impl<'info> IssueTokens<'info> {
         )?;
         Ok(())
     }
-
-    /// Executes add token lock CPI to TokenLocks Program.
-    fn lock_tokens(
-        &self,
-        ctx: &Context<'_, '_, '_, 'info, IssueTokens<'info>>,
-        data: Vec<u8>,
-    ) -> Result<()> {
-        let seeds = controller_seeds!(&ctx.accounts.asset_access_controller);
-        let signers_seeds = &[&seeds[..]];
-
-        let mut account_metas = vec![
-            AccountMeta::new(ctx.accounts.payer.key(), true),
-            AccountMeta::new(ctx.accounts.controller_authority.key(), true),
-            AccountMeta::new(ctx.accounts.investor_locks.as_ref().unwrap().key(), false),
-            AccountMeta::new_readonly(ctx.accounts.investor.as_ref().unwrap().key(), false),
-            AccountMeta::new_readonly(ctx.accounts.wallet_identity_account.as_ref().key(), false),
-            AccountMeta::new_readonly(ctx.accounts.identity_account.as_ref().key(), false),
-            AccountMeta::new(ctx.accounts.asset_mint.key(), false),
-            AccountMeta::new(ctx.accounts.token_account.key(), false),
-            AccountMeta::new(
-                ctx.accounts.locked_token_account.as_ref().unwrap().key(),
-                false,
-            ),
-            AccountMeta::new_readonly(ctx.accounts.asset_controller.key(), false),
-            AccountMeta::new(ctx.accounts.identity_registry.key(), false),
-            AccountMeta::new_readonly(ctx.accounts.asset_controller_program.key(), false),
-            AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
-            AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
-        ];
-        let mut account_infos = vec![
-            ctx.accounts.payer.to_account_info(),
-            ctx.accounts.controller_authority.to_account_info(),
-            ctx.accounts
-                .investor_locks
-                .as_ref()
-                .unwrap()
-                .to_account_info(),
-            ctx.accounts.investor.as_ref().unwrap().to_account_info(),
-            ctx.accounts
-                .wallet_identity_account
-                .as_ref()
-                .to_account_info(),
-            ctx.accounts.identity_account.as_ref().to_account_info(),
-            ctx.accounts.asset_mint.to_account_info(),
-            ctx.accounts.token_account.to_account_info(),
-            ctx.accounts
-                .locked_token_account
-                .as_ref()
-                .unwrap()
-                .to_account_info(),
-            ctx.accounts.asset_controller.to_account_info(),
-            ctx.accounts.identity_registry.to_account_info(),
-            ctx.accounts.asset_controller_program.to_account_info(),
-            ctx.accounts.token_program.to_account_info(),
-            ctx.accounts.system_program.to_account_info(),
-        ];
-
-        // Add remaining accounts to vecs.
-        for x in ctx.remaining_accounts {
-            let meta = match x.is_writable {
-                true => AccountMeta::new(x.key(), x.is_signer),
-                false => AccountMeta::new_readonly(x.key(), x.is_signer),
-            };
-            account_metas.push(meta);
-            account_infos.push(x.clone());
-        }
-
-        invoke_signed(
-            &Instruction {
-                program_id: ctx.accounts.token_locks_program.clone().unwrap().key(),
-                accounts: account_metas,
-                data,
-            },
-            &account_infos,
-            signers_seeds,
-        )?;
-
-        Ok(())
-    }
 }
 
 pub fn handler<'info>(
-    ctx: Context<'_, '_, '_, 'info, IssueTokens<'info>>,
-    amount: u64,
-    issuance_timestamp: i64,
-    reason_code: Option<u64>,
-    reason_string: Option<String>,
+    ctx: Context<'_, '_, '_, 'info, IssueTokens<'info>>, cpi_data: Vec<u8>
 ) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
-    require_gte!(issuance_timestamp, 0);
 
     // Verify that signer is either a controller admin or has authorized user role.
     verify_medici_signer(
@@ -221,49 +128,12 @@ pub fn handler<'info>(
         MediciFlags::ISSUE_TOKENS,
     )?;
 
-    // Get user's token issue lock period.
-    let identity_account = IdentityAccount::deserialize_checked(&ctx.accounts.identity_account)?;
-    let policy_engine_account =
-        PartialPolicyEngineAccount::deserialize_checked(&ctx.accounts.policy_engine)?;
-    let compliance_level = policy_engine_account.mapping[identity_account.country as usize];
+    require!(
+        cpi_data.starts_with(&ISSUE_TOKENS_IX),
+        ErrorCode::UnknownInstruction
+    );
 
-    let issuance_timestamp = if policy_engine_account.issuance_policies.disallow_backdating {
-        Clock::get()?.unix_timestamp
-    } else {
-        issuance_timestamp
-    };
+    ctx.accounts.issue_tokens(&ctx, cpi_data)?;
 
-    let data = [
-        &ISSUE_TOKENS_IX,
-        &amount.to_le_bytes()[..],
-        &issuance_timestamp.to_le_bytes()[..],
-    ]
-    .concat();
-    ctx.accounts.issue_tokens(&ctx, data)?;
-
-    let lock_period = if compliance_level == Level::US as u8 {
-        policy_engine_account.issuance_policies.us_lock_period
-    } else {
-        policy_engine_account.issuance_policies.non_us_lock_period
-    };
-
-    // Lock issued tokens if lock period is non zero.
-    if lock_period > 0 {
-        let release_time = issuance_timestamp
-            .checked_add(i64::try_from(lock_period).unwrap())
-            .unwrap();
-
-        let reason_string = reason_string.ok_or(ErrorCode::MissingReason)?;
-        let data = [
-            &ADD_TOKEN_LOCK_IX,
-            &amount.to_le_bytes()[..],
-            &release_time.to_le_bytes()[..],
-            &reason_code.ok_or(ErrorCode::MissingReason)?.to_le_bytes()[..],
-            &(reason_string.len() as u32).to_le_bytes()[..],
-            reason_string.as_ref(),
-        ]
-        .concat();
-        ctx.accounts.lock_tokens(&ctx, data)?;
-    }
     Ok(())
 }

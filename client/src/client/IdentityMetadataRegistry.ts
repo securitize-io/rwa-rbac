@@ -13,7 +13,7 @@ import {
   getIdentityRegistryPda,
   getPolicyEnginePda,
   getPolicyEngineProgram,
-  getPolicyEnginerEventAuthority,
+  getPolicyEngineEventAuthority,
   getTrackerAccountPda,
   getWalletIdentityAccountPda,
   identityRegistryProgramId,
@@ -138,7 +138,7 @@ export class IdentityMetadataRegistry {
           systemProgram: SystemProgram.programId,
           program: policyProgram.programId,
           assetMint: assetMintKey,
-          eventAuthority: getPolicyEnginerEventAuthority(),
+          eventAuthority: getPolicyEngineEventAuthority(),
           identityRegistry,
           identityAccount,
         })

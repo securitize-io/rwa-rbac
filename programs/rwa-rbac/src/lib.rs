@@ -73,19 +73,9 @@ pub mod rwa_rbac {
     }
 
     pub fn issue_tokens<'info>(
-        ctx: Context<'_, '_, '_, 'info, IssueTokens<'info>>,
-        amount: u64,
-        issuance_timestamp: i64,
-        reason_code: Option<u64>,
-        reason_string: Option<String>,
+        ctx: Context<'_, '_, '_, 'info, IssueTokens<'info>>, cpi_data: Vec<u8>
     ) -> Result<()> {
-        instructions::issue_tokens::handler(
-            ctx,
-            amount,
-            issuance_timestamp,
-            reason_code,
-            reason_string,
-        )
+        instructions::issue_tokens::handler(ctx, cpi_data)
     }
 
     pub fn update_asset_metadata(
@@ -252,5 +242,13 @@ pub mod rwa_rbac {
 
     pub fn set_counters(ctx: Context<SetCounters>, cpi_data: Vec<u8>) -> Result<()> {
         instructions::set_counters::handler(ctx, cpi_data)
+    }
+
+    pub fn add_lock(ctx: Context<AddLock>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::add_lock::handler(ctx, cpi_data)
+    }
+
+    pub fn remove_lock(ctx: Context<RemoveLock>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::remove_lock::handler(ctx, cpi_data)
     }
 }

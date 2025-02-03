@@ -179,6 +179,80 @@
       ]
     },
     {
+      "name": "add_lock",
+      "discriminator": [
+        242,
+        102,
+        183,
+        107,
+        109,
+        168,
+        82,
+        140
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controller_authority",
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role",
+          "optional": true
+        },
+        {
+          "name": "policy_engine_program",
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
+        },
+        {
+          "name": "policy_engine",
+          "writable": true
+        },
+        {
+          "name": "asset_mint"
+        },
+        {
+          "name": "identity_registry"
+        },
+        {
+          "name": "identity_account"
+        },
+        {
+          "name": "tracker_account",
+          "writable": true
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpi_data",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
       "name": "add_token_lock",
       "discriminator": [
         195,
@@ -1453,47 +1527,12 @@
         },
         {
           "name": "wallet_identity_account"
-        },
-        {
-          "name": "token_locks_program",
-          "optional": true,
-          "address": "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
-        },
-        {
-          "name": "investor_locks",
-          "writable": true,
-          "optional": true
-        },
-        {
-          "name": "investor",
-          "optional": true
-        },
-        {
-          "name": "locked_token_account",
-          "writable": true,
-          "optional": true
         }
       ],
       "args": [
         {
-          "name": "amount",
-          "type": "u64"
-        },
-        {
-          "name": "issuance_timestamp",
-          "type": "i64"
-        },
-        {
-          "name": "reason_code",
-          "type": {
-            "option": "u64"
-          }
-        },
-        {
-          "name": "reason_string",
-          "type": {
-            "option": "string"
-          }
+          "name": "cpi_data",
+          "type": "bytes"
         }
       ]
     },
@@ -1901,6 +1940,80 @@
         },
         {
           "name": "asset_mint"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpi_data",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "remove_lock",
+      "discriminator": [
+        1,
+        17,
+        121,
+        74,
+        62,
+        241,
+        127,
+        120
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controller_authority",
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role",
+          "optional": true
+        },
+        {
+          "name": "policy_engine_program",
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
+        },
+        {
+          "name": "policy_engine",
+          "writable": true
+        },
+        {
+          "name": "asset_mint"
+        },
+        {
+          "name": "identity_registry"
+        },
+        {
+          "name": "identity_account"
+        },
+        {
+          "name": "tracker_account",
+          "writable": true
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [

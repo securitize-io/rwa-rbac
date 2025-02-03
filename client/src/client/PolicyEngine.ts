@@ -17,6 +17,12 @@ import {
   ChangeMappingArgs,
   ChangeIssuancePoliciesArgs,
   SetCountersArgs,
+  AddLockArgs,
+  RemoveLockArgs,
+  getIdentityRegistryPda,
+  getIdentityAccountPda,
+  getTrackerAccountPda,
+  getPolicyEngineEventAuthority,
 } from "@dstoken-solana/rwa-token-sdk";
 
 /**
@@ -243,6 +249,62 @@ export class PolicyEngine {
         authorizedUserRole: authorizedUserRole || null,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
+      })
+      .instruction();
+  }
+
+  async addLock(
+    args: AddLockArgs,
+    signer: PublicKey,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const policyIx = await this.rwaClient.policyEngine.addLock(args);
+    const ixData = policyIx.ixs[0].data;
+    return this.rbacProgram.methods
+      .addLock(ixData)
+      .accountsStrict({
+        payer: args.payer,
+        user: signer,
+        controllerAuthority: args.authority,
+        assetAccessController,
+        authorizedUserRole: authorizedUserRole || null,
+        policyEngineProgram: policyEngineProgramId,
+        policyEngine: getPolicyEnginePda(args.assetMint),
+        systemProgram: SystemProgram.programId,
+        assetMint: new PublicKey(args.assetMint),
+        identityRegistry: getIdentityRegistryPda(args.assetMint),
+        identityAccount: getIdentityAccountPda(args.assetMint, args.owner),
+        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        eventAuthority: getPolicyEngineEventAuthority(),
+      })
+      .instruction();
+  }
+
+  async removeLock(
+    args: RemoveLockArgs,
+    signer: PublicKey,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const policyIx = await this.rwaClient.policyEngine.removeLock(args);
+    const ixData = policyIx.ixs[0].data;
+    return this.rbacProgram.methods
+      .removeLock(ixData)
+      .accountsStrict({
+        payer: args.payer,
+        user: signer,
+        controllerAuthority: args.authority,
+        assetAccessController,
+        authorizedUserRole: authorizedUserRole || null,
+        policyEngineProgram: policyEngineProgramId,
+        policyEngine: getPolicyEnginePda(args.assetMint),
+        systemProgram: SystemProgram.programId,
+        assetMint: new PublicKey(args.assetMint),
+        identityRegistry: getIdentityRegistryPda(args.assetMint),
+        identityAccount: getIdentityAccountPda(args.assetMint, args.owner),
+        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        eventAuthority: getPolicyEngineEventAuthority(),
       })
       .instruction();
   }

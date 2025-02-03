@@ -226,6 +226,16 @@ export type IssueTokensWithLockArgs = {
   lockedTokenAccount?: PublicKey;
 };
 
+export type IssueTokensArgs = {
+  payer: string;
+  signer: string;
+  wallet: string;
+  investorId: string;
+  assetMint: string;
+  amount: BN;
+  issuanceTimestamp: BN;
+};
+
 /** Args used to attach wallet by Investor  */
 export type AttachWalletByInvestorArgs = {
   payer: string;

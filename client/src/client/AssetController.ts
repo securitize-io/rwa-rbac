@@ -13,6 +13,7 @@ import {
 } from "@solana/spl-token";
 
 import {
+  IssueTokensArgs,
   IssueTokensWithLockArgs,
   UpdateInterestBearingMintRateArgs,
 } from "../types/instructions";
@@ -30,6 +31,7 @@ import {
   getFreezeTokenIx,
   getIdentityAccountPda,
   getIdentityRegistryPda,
+  getIssueTokensIx,
   getPolicyEnginePda,
   getRevokeTokensIx,
   getSeizeTokensIx,
@@ -38,6 +40,7 @@ import {
   getUpdateInterestBearingMintRateIx,
   getWalletIdentityAccountPda,
   identityRegistryProgramId,
+  IssueTokenArgs,
   policyEngineProgramId,
   RevokeTokensArgs,
   RwaClient,
@@ -115,146 +118,71 @@ export class AssetController {
    * @param assetAccessController - RBAC AssetAccessController account.
    * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
    */
-  async issueTokenIxns(
-    args: IssueTokensWithLockArgs,
+  async issueTokenIxns(args: IssueTokensArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
-  ): Promise<TransactionInstruction[]> {
+    authorizedUserRole?: PublicKey): Promise<TransactionInstruction>  {
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
+    const controllerAuthority = deriveControllerAuthorityPda(
+      assetAccessController
+    );
     const investorPda = deriveInvestorPda(args.investorId, identityRegistry);
-    const unlockedTokenAccount = getAssociatedTokenAddressSync(
-      new PublicKey(args.assetMint),
-      new PublicKey(args.wallet),
-      false,
-      TOKEN_2022_PROGRAM_ID
+
+    const issueTokensIxs = await getIssueTokensIx(
+      {
+        payer: args.payer,
+        signer: args.signer,
+        wallet: args.wallet,
+        assetMint: args.assetMint,
+        amount: args.amount,
+        timestamp: args.issuanceTimestamp,
+        authority: controllerAuthority.toString(),
+        owner: investorPda.toString(),
+      },
+      this.rwaClient.provider
     );
     const trackerAccount = getTrackerAccountPda(
       args.assetMint,
       investorPda.toString()
     );
-    const controllerAuthority = deriveControllerAuthorityPda(
-      assetAccessController
-    );
-    const ixs = [];
 
-    // Check if unlockedTokenAccount exists.
-    const tokenAccountData =
-      await this.rbacProgram.provider.connection.getAccountInfo(
-        unlockedTokenAccount
-      );
-    if (!tokenAccountData) {
-      // ATA needs to be created separately as controller_pda cannot be payer.
-      const createAtaIx = createAssociatedTokenAccountInstruction(
-        new PublicKey(args.payer),
-        unlockedTokenAccount,
-        new PublicKey(args.wallet),
+    const ixData = issueTokensIxs[0].data;
+    const tokenAccount = getAssociatedTokenAddressSync(
         new PublicKey(args.assetMint),
+        new PublicKey(args.wallet),
+        false,
         TOKEN_2022_PROGRAM_ID
       );
-      ixs.push(createAtaIx);
-    }
 
-    ixs.push(
-      await this.rbacProgram.methods
-        .issueTokens(
-          args.amount,
-          args.issuanceTimestamp,
-          args.reasonCode == undefined ? null : args.reasonCode,
-          args.reasonString == undefined ? null : args.reasonString
-        )
-        .accountsStrict({
-          payer: args.payer,
-          user: args.signer,
-          controllerAuthority,
-          assetAccessController: assetAccessController,
-          authorizedUserRole: authorizedUserRole || null,
-          assetControllerProgram: assetControllerProgramId,
-          assetMint: args.assetMint,
-          assetController: getAssetControllerPda(args.assetMint),
-          to: args.wallet,
-          tokenAccount: unlockedTokenAccount,
-          policyEngine: getPolicyEnginePda(args.assetMint),
-          policyEngineProgram: policyEngineProgramId,
-          identityAccount: getIdentityAccountPda(
-            args.assetMint,
-            investorPda.toString()
-          ),
-          trackerAccount,
-          identityRegistry,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
-          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-          systemProgram: SystemProgram.programId,
-          walletIdentityAccount: getWalletIdentityAccountPda(
-            args.assetMint,
-            args.wallet
-          ),
-          tokenLocksProgram: TL_PROGRAM,
-          investorLocks: deriveInvestorLocks(args.investorId, identityRegistry),
-          investor: investorPda,
-          lockedTokenAccount: deriveLockedTokenAccount(
-            args.investorId,
-            identityRegistry
-          ),
-        })
-        .remainingAccounts([
-          {
-            pubkey: getPolicyEnginePda(args.assetMint),
-            isWritable: true,
-            isSigner: false,
-          },
-          {
-            pubkey: identityRegistryProgramId,
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: policyEngineProgramId,
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: identityRegistry,
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: getIdentityAccountPda(
-              args.assetMint,
-              investorPda.toString()
-            ),
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: getIdentityAccountPda(
-              args.assetMint,
-              args.wallet.toString()
-            ),
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: trackerAccount,
-            isWritable: true,
-            isSigner: false,
-          },
-          {
-            pubkey: getExtraMetasListPda(args.assetMint),
-            isWritable: false,
-            isSigner: false,
-          },
-          {
-            pubkey: getWalletIdentityAccountPda(
-              args.assetMint,
-              investorPda.toString()
-            ),
-            isWritable: false,
-            isSigner: false,
-          },
-        ])
-        .instruction()
-    );
-    return ixs;
+    return await this.rbacProgram.methods
+      .issueTokens(ixData)
+      .accountsStrict({
+        payer: args.payer,
+        user: args.signer,
+        controllerAuthority: controllerAuthority,
+        assetAccessController: assetAccessController,
+        authorizedUserRole: authorizedUserRole || null,
+        assetControllerProgram: assetControllerProgramId,
+        assetMint: args.assetMint,
+        assetController: getAssetControllerPda(args.assetMint),
+        to: args.wallet,
+        tokenAccount: tokenAccount,
+        policyEngine: getPolicyEnginePda(args.assetMint),
+        policyEngineProgram: policyEngineProgramId,
+        identityAccount: getIdentityAccountPda(
+          args.assetMint,
+          investorPda.toString()
+        ),
+        trackerAccount,
+        identityRegistry,
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        systemProgram: SystemProgram.programId,
+        walletIdentityAccount: getWalletIdentityAccountPda(
+          args.assetMint,
+          args.wallet
+        ),
+      })
+      .instruction();
   }
 
   /**

@@ -24,7 +24,8 @@ import {
   policyEngineProgramId,
 } from "@dstoken-solana/rwa-token-sdk";
 import { deriveInvestorPda } from "../client/src/pdas";
-import { IssueTokensWithLockArgs } from "../client/src/types/instructions";
+import { IssueTokensArgs, IssueTokensWithLockArgs } from "../client/src/types/instructions";
+import { createAssociatedTokenAccount, getOrCreateAssociatedTokenAccount, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
 describe("CPI End to End Tests", () => {
   // Configure the client to use the local cluster.
@@ -710,7 +711,7 @@ describe("CPI End to End Tests", () => {
   });
 
   it("CPI: Issue Tokens", async () => {
-    const issueArgs: IssueTokensWithLockArgs = {
+    const issueArgs: IssueTokensArgs = {
       payer: setup.payer.toString(), // Payer Account
       signer: setup.signer1.toString(), // User Account
       assetMint: mint,
@@ -719,6 +720,7 @@ describe("CPI End to End Tests", () => {
       wallet: setup.user1,
       issuanceTimestamp: new BN(Date.now() / 1000),
     };
+    //await getOrCreateAssociatedTokenAccount(rwaRbacClient.provider.connection, setup.payerKp, new PublicKey(mint), setup.user1, false, null, null, TOKEN_2022_PROGRAM_ID);
     const issueTokenIxns = await rwaRbacClient.assetController.issueTokenIxns(
       issueArgs,
       setup.assetAccessController,
@@ -726,7 +728,7 @@ describe("CPI End to End Tests", () => {
     );
     await sendAndConfirmTransaction(
       connection,
-      new Transaction().add(...issueTokenIxns),
+      new Transaction().add(issueTokenIxns),
       [setup.payerKp, setup.signer1Kp],
       {
         skipPreflight: true,
@@ -736,11 +738,12 @@ describe("CPI End to End Tests", () => {
 
   it("CPI: Seize Tokens", async () => {
     const args = {
-      amount: 1,
+      amount: new BN(1),
       from: setup.user1,
       to: setup.user1,
       authority: setup.controllerAuthority,
       assetMint: mint,
+      reason: "test",
     };
     const ix = await rwaRbacClient.assetController.seizeTokensIxn(
       args,
@@ -938,8 +941,9 @@ describe("CPI End to End Tests", () => {
         owner: null,
         wallet: setup.user1,
         assetMint: mint,
-        amount: 100,
+        amount: new BN(100),
         authority: setup.controllerAuthority.toString(), // ControllerAuthority
+        reason: "test",
       },
       INVESTOR_ID,
       setup.signer1, // User Account
@@ -951,6 +955,51 @@ describe("CPI End to End Tests", () => {
       new Transaction().add(revokeIx),
       [setup.payerKp, setup.signer1Kp]
     );
+  });
+
+  it("CPI: Add Lock", async () => {
+    const args = {
+      payer: setup.payer.toString(), // Payer Account
+      signer: setup.signer1.toString(), // User Account
+      authority: setup.controllerAuthority.toString(), // ControllerAuthority-
+      owner: investorPda,
+      assetMint: mint,
+      reason: new BN(1),
+      reasonString: "test",
+      amount: new BN(100),
+      lockTime: new BN(Date.now() / 1000),
+    };
+    const ix = await rwaRbacClient.policyEngine.addLock(
+      args,
+      setup.signer1,
+      setup.assetAccessController,
+      setup.userRole1
+    );
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+  });
+
+  it("CPI: Remove Lock", async () => {
+    const args = {
+      payer: setup.payer.toString(), // Payer Account
+      signer: setup.signer1.toString(), // User Account
+      authority: setup.controllerAuthority.toString(), // ControllerAuthority-
+      owner: investorPda,
+      assetMint: mint,
+      index: 0,
+    };
+    const ix = await rwaRbacClient.policyEngine.removeLock(
+      args,
+      setup.signer1,
+      setup.assetAccessController,
+      setup.userRole1
+    );
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
   });
 
   it("CPI: Remove Investor", async () => {
