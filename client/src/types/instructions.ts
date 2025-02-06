@@ -244,3 +244,11 @@ export type AttachWalletByInvestorArgs = {
   assetMint: string;
   newWallet: PublicKey;
 };
+
+/** Args used to set lookup table address */
+export type SetLookuptableAddressArgs = {
+  signer: string;
+  assetAccessController: PublicKey;
+  lutAddress: PublicKey;
+  authorizedUserRole?: PublicKey;
+};

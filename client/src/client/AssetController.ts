@@ -55,6 +55,7 @@ import {
   deriveControllerAuthorityPda,
   deriveInvestorPda,
   deriveLockedTokenAccount,
+  getEventAuthority,
 } from "../pdas";
 
 /**
@@ -181,6 +182,7 @@ export class AssetController {
           args.assetMint,
           args.wallet
         ),
+        eventAuthority: getAssetControllerEventAuthority(),
       })
       .instruction();
   }
@@ -339,6 +341,7 @@ export class AssetController {
         tokenProgram: TOKEN_2022_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
+        eventAuthority: getAssetControllerEventAuthority(),
       })
       .instruction();
   }
@@ -446,6 +449,7 @@ export class AssetController {
           TOKEN_2022_PROGRAM_ID
         ),
         tokenProgram: TOKEN_2022_PROGRAM_ID,
+        eventAuthority: getAssetControllerEventAuthority(),
       })
       .remainingAccounts([
         {

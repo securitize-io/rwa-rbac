@@ -1,8 +1,9 @@
 use anchor_lang::prelude::*;
 use rbac_utils::transfer_lamports_for_realloc;
 
-use crate::{state::*, verify_admin_signer};
+use crate::{events::AssignUserRoleEvent, state::*, verify_admin_signer};
 
+#[event_cpi]
 #[derive(Accounts)]
 pub struct AssignUserRole<'info> {
     #[account(mut)]
@@ -58,7 +59,15 @@ pub fn handler(ctx: Context<AssignUserRole>, users_to_assign: Vec<Pubkey>) -> Re
     }
 
     // Assign users to role.
-    user_role.assign_users(users_to_assign);
+    user_role.assign_users(users_to_assign.clone());
+
+    emit_cpi!(AssignUserRoleEvent {
+        addresses: users_to_assign,
+        role: user_role.name.clone(),
+        role_id: user_role.id,
+        sender: ctx.accounts.user.key(),
+        seed: ctx.accounts.asset_access_controller.unique_seed,
+    });
 
     Ok(())
 }

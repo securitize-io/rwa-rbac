@@ -24,6 +24,8 @@ pub struct AttachToPolicyEngine<'info> {
     #[account(mut)]
     pub policy_engine: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
+    /// CHECK: Verified in CPI.
+    pub event_authority: UncheckedAccount<'info>,
 }
 
 pub fn handler(ctx: Context<AttachToPolicyEngine>, cpi_data: Vec<u8>) -> Result<()> {
@@ -55,6 +57,8 @@ pub fn handler(ctx: Context<AttachToPolicyEngine>, cpi_data: Vec<u8>) -> Result<
                 AccountMeta::new_readonly(ctx.accounts.controller_authority.key(), true),
                 AccountMeta::new(ctx.accounts.policy_engine.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.event_authority.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.policy_engine_program.key(), false),
             ],
             data: cpi_data,
         },
@@ -63,6 +67,8 @@ pub fn handler(ctx: Context<AttachToPolicyEngine>, cpi_data: Vec<u8>) -> Result<
             ctx.accounts.controller_authority.to_account_info(),
             ctx.accounts.policy_engine.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.event_authority.to_account_info(),
+            ctx.accounts.policy_engine_program.to_account_info(),
         ],
         signers_seeds,
     )?;

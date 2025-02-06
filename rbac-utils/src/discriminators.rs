@@ -33,3 +33,4 @@ pub const SET_COUNTERS_IX: [u8; 8] = [127, 151, 147, 141, 171, 53, 28, 135];
 pub const CLOSE_TRACKER_IX: [u8; 8] = [191, 131, 63, 182, 65, 217, 37, 166];
 pub const ADD_LOCK_IX: [u8; 8] = [242, 102, 183, 107, 109, 168, 82, 140];
 pub const REMOVE_LOCK_IX: [u8; 8] = [1, 17, 121, 74, 62, 241, 127, 120];
+pub const REMOVE_IDENTITY_ACCOUNT_IX: [u8; 8] = [77, 88, 182, 61, 235, 49, 2, 137];

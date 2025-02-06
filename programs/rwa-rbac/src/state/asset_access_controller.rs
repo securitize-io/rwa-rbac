@@ -16,4 +16,7 @@ pub struct AssetAccessController {
 
     /// Number of UserRoles created since initialization. Used for deriving all created UserRole PDAs.
     pub user_roles_count: u64,
+
+    /// Address of the lookup table.
+    pub lut_address: Pubkey,
 }

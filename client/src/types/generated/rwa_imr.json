@@ -63,6 +63,41 @@
         },
         {
           "name": "asset_mint"
+        },
+        {
+          "name": "event_authority_identity_registry"
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
         }
       ],
       "args": [
@@ -143,6 +178,9 @@
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority_identity_registry"
         }
       ],
       "args": [
@@ -204,6 +242,9 @@
         },
         {
           "name": "asset_mint"
+        },
+        {
+          "name": "event_authority_identity_registry"
         }
       ],
       "args": [
@@ -289,6 +330,41 @@
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority_identity_registry"
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
         }
       ],
       "args": [
@@ -369,6 +445,41 @@
         {
           "name": "tracker_account",
           "writable": true
+        },
+        {
+          "name": "event_authority_identity_registry"
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
         }
       ],
       "args": []
@@ -429,6 +540,9 @@
         },
         {
           "name": "asset_mint"
+        },
+        {
+          "name": "event_authority_identity_registry"
         }
       ],
       "args": [
@@ -455,6 +569,60 @@
         116,
         26,
         196
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AddLevelsEvent",
+      "discriminator": [
+        90,
+        156,
+        44,
+        28,
+        242,
+        1,
+        130,
+        61
+      ]
+    },
+    {
+      "name": "RegisterInvestorEvent",
+      "discriminator": [
+        137,
+        181,
+        142,
+        164,
+        140,
+        196,
+        246,
+        182
+      ]
+    },
+    {
+      "name": "RemoveInvestorEvent",
+      "discriminator": [
+        221,
+        84,
+        243,
+        216,
+        215,
+        253,
+        246,
+        253
+      ]
+    },
+    {
+      "name": "RemoveLevelsEvent",
+      "discriminator": [
+        145,
+        158,
+        97,
+        146,
+        126,
+        14,
+        2,
+        225
       ]
     }
   ],
@@ -496,6 +664,38 @@
     }
   ],
   "types": [
+    {
+      "name": "AddLevelsEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "investor_id",
+            "type": "string"
+          },
+          {
+            "name": "sender",
+            "type": "pubkey"
+          },
+          {
+            "name": "levels",
+            "type": "bytes"
+          },
+          {
+            "name": "expiries",
+            "type": {
+              "vec": "i64"
+            }
+          },
+          {
+            "name": "proof_hashes",
+            "type": {
+              "vec": "string"
+            }
+          }
+        ]
+      }
+    },
     {
       "name": "Investor",
       "type": {
@@ -589,6 +789,74 @@
               "Hash generated off-chain."
             ],
             "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RegisterInvestorEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "investor_id",
+            "type": "string"
+          },
+          {
+            "name": "level",
+            "type": "u8"
+          },
+          {
+            "name": "expiry",
+            "type": "i64"
+          },
+          {
+            "name": "collision_hash",
+            "type": "string"
+          },
+          {
+            "name": "sender",
+            "type": "pubkey"
+          },
+          {
+            "name": "country",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemoveInvestorEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "investor_id",
+            "type": "string"
+          },
+          {
+            "name": "sender",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemoveLevelsEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "investor_id",
+            "type": "string"
+          },
+          {
+            "name": "sender",
+            "type": "pubkey"
+          },
+          {
+            "name": "levels",
+            "type": "bytes"
           }
         ]
       }

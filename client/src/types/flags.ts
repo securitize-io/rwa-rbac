@@ -4,7 +4,8 @@ export enum AdminFlags {
   MODIFY_USER_ROLE = 1 << 1,
   ASSIGN_OR_REMOVE_ANY_USER_ROLE = 1 << 2,
   ASSIGN_OR_REMOVE_CURRENT_ROLE = 1 << 3,
-  ALL = (1 << 4) - 1,
+  SET_LUT_ADDRESS = 1 << 4,
+  ALL = (1 << 5) - 1,
 }
 
 export enum MediciFlags {
@@ -39,5 +40,6 @@ export enum MediciFlags {
   CHANGE_COUNTRY = 1 << 27,
   CHANGE_MAPPING = 1 << 28,
   CHANGE_ISSUANCE_POLICIES = 1 << 29,
-  ALL = (1 << 30) - 1,
+  REMOVE_IDENTITY_ACCOUNT = 1 << 30,
+  ALL = (1 << 30) - 1 + (1 << 30),
 }

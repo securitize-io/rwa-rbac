@@ -85,6 +85,9 @@ export type RwaRbac = {
         },
         {
           "name": "assetMint"
+        },
+        {
+          "name": "eventAuthority"
         }
       ],
       "args": [
@@ -175,6 +178,12 @@ export type RwaRbac = {
         },
         {
           "name": "assetMint"
+        },
+        {
+          "name": "eventAuthorityIdentityMetadataRegistry"
+        },
+        {
+          "name": "eventAuthorityIdentityRegistry"
         }
       ],
       "args": [
@@ -259,101 +268,6 @@ export type RwaRbac = {
       ]
     },
     {
-      "name": "addTokenLock",
-      "discriminator": [
-        195,
-        26,
-        109,
-        80,
-        46,
-        7,
-        195,
-        55
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controllerAuthority",
-          "writable": true,
-          "relations": [
-            "assetAccessController"
-          ]
-        },
-        {
-          "name": "assetAccessController",
-          "relations": [
-            "authorizedUserRole"
-          ]
-        },
-        {
-          "name": "authorizedUserRole",
-          "optional": true
-        },
-        {
-          "name": "tokenLocksProgram",
-          "address": "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
-        },
-        {
-          "name": "investorLocks",
-          "writable": true
-        },
-        {
-          "name": "investor"
-        },
-        {
-          "name": "walletIdentityAccount"
-        },
-        {
-          "name": "identityAccount"
-        },
-        {
-          "name": "assetMint",
-          "writable": true
-        },
-        {
-          "name": "unlockedTokenAccount",
-          "writable": true
-        },
-        {
-          "name": "lockedTokenAccount",
-          "writable": true
-        },
-        {
-          "name": "assetController"
-        },
-        {
-          "name": "identityRegistry",
-          "writable": true
-        },
-        {
-          "name": "assetControllerProgram",
-          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "cpiData",
-          "type": "bytes"
-        }
-      ]
-    },
-    {
       "name": "assignUserRole",
       "discriminator": [
         39,
@@ -393,6 +307,38 @@ export type RwaRbac = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
         }
       ],
       "args": [
@@ -453,6 +399,9 @@ export type RwaRbac = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthority"
         }
       ],
       "args": [
@@ -521,6 +470,9 @@ export type RwaRbac = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthority"
         }
       ],
       "args": [
@@ -579,6 +531,9 @@ export type RwaRbac = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthority"
         }
       ],
       "args": [
@@ -637,6 +592,9 @@ export type RwaRbac = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthority"
         }
       ],
       "args": [
@@ -715,6 +673,9 @@ export type RwaRbac = {
         },
         {
           "name": "assetMint"
+        },
+        {
+          "name": "eventAuthorityIdentityRegistry"
         }
       ],
       "args": [
@@ -769,6 +730,9 @@ export type RwaRbac = {
         {
           "name": "policyEngine",
           "writable": true
+        },
+        {
+          "name": "eventAuthority"
         }
       ],
       "args": [
@@ -823,6 +787,9 @@ export type RwaRbac = {
         {
           "name": "policyEngine",
           "writable": true
+        },
+        {
+          "name": "eventAuthority"
         }
       ],
       "args": [
@@ -831,69 +798,6 @@ export type RwaRbac = {
           "type": "bytes"
         }
       ]
-    },
-    {
-      "name": "closeInvestorLocks",
-      "discriminator": [
-        255,
-        60,
-        220,
-        115,
-        217,
-        104,
-        157,
-        171
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controllerAuthority",
-          "relations": [
-            "assetAccessController"
-          ]
-        },
-        {
-          "name": "assetAccessController",
-          "relations": [
-            "authorizedUserRole"
-          ]
-        },
-        {
-          "name": "authorizedUserRole",
-          "optional": true
-        },
-        {
-          "name": "tokenLocksProgram",
-          "address": "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
-        },
-        {
-          "name": "investorLocks",
-          "writable": true
-        },
-        {
-          "name": "investor"
-        },
-        {
-          "name": "lockedTokenAccount",
-          "writable": true
-        },
-        {
-          "name": "tokenProgram"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
     },
     {
       "name": "closeMintAccount",
@@ -1080,6 +984,9 @@ export type RwaRbac = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthority"
         }
       ],
       "args": [
@@ -1088,84 +995,6 @@ export type RwaRbac = {
           "type": "bytes"
         }
       ]
-    },
-    {
-      "name": "createInvestorLocks",
-      "discriminator": [
-        223,
-        81,
-        139,
-        162,
-        204,
-        48,
-        24,
-        213
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controllerAuthority",
-          "relations": [
-            "assetAccessController"
-          ]
-        },
-        {
-          "name": "assetAccessController",
-          "relations": [
-            "authorizedUserRole"
-          ]
-        },
-        {
-          "name": "authorizedUserRole",
-          "optional": true
-        },
-        {
-          "name": "tokenLocksProgram",
-          "address": "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
-        },
-        {
-          "name": "investorLocks",
-          "writable": true
-        },
-        {
-          "name": "investor"
-        },
-        {
-          "name": "identityAccount"
-        },
-        {
-          "name": "assetMint",
-          "writable": true
-        },
-        {
-          "name": "lockedTokenAccount",
-          "writable": true
-        },
-        {
-          "name": "assetController"
-        },
-        {
-          "name": "assetControllerProgram",
-          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
     },
     {
       "name": "createUserRole",
@@ -1312,6 +1141,9 @@ export type RwaRbac = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthority"
         }
       ],
       "args": [
@@ -1374,6 +1206,9 @@ export type RwaRbac = {
         },
         {
           "name": "identityRegistry"
+        },
+        {
+          "name": "eventAuthority"
         }
       ],
       "args": [
@@ -1533,6 +1368,9 @@ export type RwaRbac = {
         },
         {
           "name": "walletIdentityAccount"
+        },
+        {
+          "name": "eventAuthority"
         }
       ],
       "args": [
@@ -1709,8 +1547,81 @@ export type RwaRbac = {
           "writable": true
         },
         {
+          "name": "eventAuthorityIdentityMetadataRegistry"
+        },
+        {
+          "name": "eventAuthorityIdentityRegistry"
+        },
+        {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpiData",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "removeIdentityAccount",
+      "discriminator": [
+        78,
+        35,
+        174,
+        50,
+        72,
+        181,
+        12,
+        42
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "identityRegistryProgram",
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
+        },
+        {
+          "name": "identityRegistry"
+        },
+        {
+          "name": "identityAccount",
+          "writable": true
+        },
+        {
+          "name": "walletIdentity",
+          "writable": true
+        },
+        {
+          "name": "eventAuthority"
+        },
+        {
+          "name": "identityOwner"
         }
       ],
       "args": [
@@ -1788,6 +1699,12 @@ export type RwaRbac = {
         {
           "name": "trackerAccount",
           "writable": true
+        },
+        {
+          "name": "eventAuthorityIdentityMetadataRegistry"
+        },
+        {
+          "name": "eventAuthorityIdentityRegistry"
         }
       ],
       "args": []
@@ -1864,6 +1781,9 @@ export type RwaRbac = {
         },
         {
           "name": "assetMint"
+        },
+        {
+          "name": "eventAuthority"
         }
       ],
       "args": [
@@ -1946,6 +1866,9 @@ export type RwaRbac = {
         },
         {
           "name": "assetMint"
+        },
+        {
+          "name": "eventAuthorityIdentityRegistry"
         }
       ],
       "args": [
@@ -2030,92 +1953,6 @@ export type RwaRbac = {
       ]
     },
     {
-      "name": "removeTokenLock",
-      "discriminator": [
-        168,
-        128,
-        173,
-        188,
-        172,
-        228,
-        154,
-        90
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controllerAuthority",
-          "writable": true,
-          "relations": [
-            "assetAccessController"
-          ]
-        },
-        {
-          "name": "assetAccessController",
-          "relations": [
-            "authorizedUserRole"
-          ]
-        },
-        {
-          "name": "authorizedUserRole",
-          "optional": true
-        },
-        {
-          "name": "tokenLocksProgram",
-          "address": "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
-        },
-        {
-          "name": "investorLocks",
-          "writable": true
-        },
-        {
-          "name": "investor"
-        },
-        {
-          "name": "walletIdentityAccount"
-        },
-        {
-          "name": "identityAccount"
-        },
-        {
-          "name": "assetMint",
-          "writable": true
-        },
-        {
-          "name": "unlockedTokenAccount",
-          "writable": true
-        },
-        {
-          "name": "lockedTokenAccount",
-          "writable": true
-        },
-        {
-          "name": "assetController"
-        },
-        {
-          "name": "identityRegistry",
-          "writable": true
-        },
-        {
-          "name": "assetControllerProgram",
-          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        }
-      ],
-      "args": [
-        {
-          "name": "indices",
-          "type": "bytes"
-        }
-      ]
-    },
-    {
       "name": "removeUserRole",
       "discriminator": [
         43,
@@ -2146,6 +1983,38 @@ export type RwaRbac = {
         {
           "name": "authorizedUserRole",
           "optional": true
+        },
+        {
+          "name": "eventAuthority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
         }
       ],
       "args": [
@@ -2237,6 +2106,9 @@ export type RwaRbac = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthority"
         }
       ],
       "args": [
@@ -2301,6 +2173,9 @@ export type RwaRbac = {
         {
           "name": "tokenProgram",
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "eventAuthority"
         }
       ],
       "args": [
@@ -2355,6 +2230,9 @@ export type RwaRbac = {
         {
           "name": "policyEngine",
           "writable": true
+        },
+        {
+          "name": "eventAuthority"
         }
       ],
       "args": [
@@ -2363,6 +2241,40 @@ export type RwaRbac = {
           "type": "bytes"
         }
       ]
+    },
+    {
+      "name": "setLutAddress",
+      "discriminator": [
+        254,
+        239,
+        106,
+        70,
+        17,
+        87,
+        57,
+        202
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "assetAccessController",
+          "writable": true,
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "lutAddress"
+        }
+      ],
+      "args": []
     },
     {
       "name": "thawTokenAccount",
@@ -2658,6 +2570,34 @@ export type RwaRbac = {
       ]
     }
   ],
+  "events": [
+    {
+      "name": "assignUserRoleEvent",
+      "discriminator": [
+        66,
+        20,
+        203,
+        47,
+        242,
+        72,
+        213,
+        93
+      ]
+    },
+    {
+      "name": "removeUserRoleEvent",
+      "discriminator": [
+        213,
+        162,
+        73,
+        7,
+        11,
+        89,
+        226,
+        140
+      ]
+    }
+  ],
   "errors": [
     {
       "code": 6000,
@@ -2693,6 +2633,11 @@ export type RwaRbac = {
       "code": 6006,
       "name": "invalidLevel",
       "msg": "Invalid level"
+    },
+    {
+      "code": 6007,
+      "name": "illegalOperation",
+      "msg": "Illegal operation"
     }
   ],
   "types": [
@@ -2735,6 +2680,73 @@ export type RwaRbac = {
               "Number of UserRoles created since initialization. Used for deriving all created UserRole PDAs."
             ],
             "type": "u64"
+          },
+          {
+            "name": "lutAddress",
+            "docs": [
+              "Address of the lookup table."
+            ],
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "assignUserRoleEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "addresses",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "role",
+            "type": "string"
+          },
+          {
+            "name": "roleId",
+            "type": "u64"
+          },
+          {
+            "name": "sender",
+            "type": "pubkey"
+          },
+          {
+            "name": "seed",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "removeUserRoleEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "addresses",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "role",
+            "type": "string"
+          },
+          {
+            "name": "roleId",
+            "type": "u64"
+          },
+          {
+            "name": "sender",
+            "type": "pubkey"
+          },
+          {
+            "name": "seed",
+            "type": "pubkey"
           }
         ]
       }

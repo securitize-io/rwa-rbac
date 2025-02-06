@@ -64,6 +64,7 @@ export class PolicyEngine {
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         systemProgram: SystemProgram.programId,
+        eventAuthority: getPolicyEngineEventAuthority(),
       })
       .instruction();
   }
@@ -95,6 +96,7 @@ export class PolicyEngine {
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         systemProgram: SystemProgram.programId,
+        eventAuthority: getPolicyEngineEventAuthority(),
       })
       .instruction();
   }
@@ -126,6 +128,7 @@ export class PolicyEngine {
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         systemProgram: SystemProgram.programId,
+        eventAuthority: getPolicyEngineEventAuthority(),
       })
       .instruction();
   }
@@ -156,6 +159,7 @@ export class PolicyEngine {
         authorizedUserRole: authorizedUserRole || null,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
+        eventAuthority: getPolicyEngineEventAuthority(),
       })
       .instruction();
   }
@@ -189,6 +193,7 @@ export class PolicyEngine {
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         systemProgram: SystemProgram.programId,
+        eventAuthority: getPolicyEngineEventAuthority(),
       })
       .instruction();
   }
@@ -218,6 +223,7 @@ export class PolicyEngine {
         authorizedUserRole: authorizedUserRole || null,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
+        eventAuthority: getPolicyEngineEventAuthority(),
       })
       .instruction();
   }
@@ -249,6 +255,7 @@ export class PolicyEngine {
         authorizedUserRole: authorizedUserRole || null,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
+        eventAuthority: getPolicyEngineEventAuthority(),
       })
       .instruction();
   }

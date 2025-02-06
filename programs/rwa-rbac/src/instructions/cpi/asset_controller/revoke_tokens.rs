@@ -45,6 +45,8 @@ pub struct RevokeTokens<'info> {
     pub token_program: Program<'info, Token2022>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
+    /// CHECK: Verified in CPI.
+    pub event_authority: UncheckedAccount<'info>,
 }
 
 pub fn handler<'info>(
@@ -85,6 +87,8 @@ pub fn handler<'info>(
         AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
         AccountMeta::new_readonly(ctx.accounts.associated_token_program.key(), false),
         AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
+        AccountMeta::new_readonly(ctx.accounts.event_authority.key(), false),
+        AccountMeta::new_readonly(ctx.accounts.asset_controller_program.key(), false),
     ];
     let account_infos = vec![
         ctx.accounts.controller_authority.to_account_info(),
@@ -100,6 +104,8 @@ pub fn handler<'info>(
         ctx.accounts.token_program.to_account_info(),
         ctx.accounts.associated_token_program.to_account_info(),
         ctx.accounts.system_program.to_account_info(),
+        ctx.accounts.event_authority.to_account_info(),
+        ctx.accounts.asset_controller_program.to_account_info(),
     ];
 
     // Perform CPI to AssetController Program.

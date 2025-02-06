@@ -43,6 +43,8 @@ pub struct ChangeCountry<'info> {
     pub tracker_account: UncheckedAccount<'info>,
     /// CHECK: checked in cpi
     pub asset_mint: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub event_authority_identity_registry: UncheckedAccount<'info>,
 }
 
 pub fn handler(ctx: Context<ChangeCountry>, cpi_data: Vec<u8>) -> Result<()> {
@@ -80,6 +82,7 @@ pub fn handler(ctx: Context<ChangeCountry>, cpi_data: Vec<u8>) -> Result<()> {
                 AccountMeta::new(ctx.accounts.policy_engine.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.tracker_account.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.asset_mint.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.event_authority_identity_registry.key(), false),
             ],
             data: cpi_data,
         },
@@ -94,6 +97,7 @@ pub fn handler(ctx: Context<ChangeCountry>, cpi_data: Vec<u8>) -> Result<()> {
             ctx.accounts.policy_engine.to_account_info(),
             ctx.accounts.tracker_account.to_account_info(),
             ctx.accounts.asset_mint.to_account_info(),
+            ctx.accounts.event_authority_identity_registry.to_account_info(),
         ],
         signers_seeds,
     )?;

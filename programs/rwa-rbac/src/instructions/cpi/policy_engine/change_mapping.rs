@@ -23,6 +23,8 @@ pub struct ChangeMapping<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub policy_engine: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub event_authority: UncheckedAccount<'info>,
 }
 
 pub fn handler(ctx: Context<ChangeMapping>, cpi_data: Vec<u8>) -> Result<()> {
@@ -53,6 +55,8 @@ pub fn handler(ctx: Context<ChangeMapping>, cpi_data: Vec<u8>) -> Result<()> {
                 AccountMeta::new(ctx.accounts.payer.key(), true),
                 AccountMeta::new_readonly(ctx.accounts.controller_authority.key(), true),
                 AccountMeta::new(ctx.accounts.policy_engine.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.event_authority.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.policy_engine_program.key(), false),
             ],
             data: cpi_data,
         },
@@ -60,6 +64,8 @@ pub fn handler(ctx: Context<ChangeMapping>, cpi_data: Vec<u8>) -> Result<()> {
             ctx.accounts.payer.to_account_info(),
             ctx.accounts.controller_authority.to_account_info(),
             ctx.accounts.policy_engine.to_account_info(),
+            ctx.accounts.event_authority.to_account_info(),
+            ctx.accounts.policy_engine_program.to_account_info(),
         ],
         signers_seeds,
     )?;

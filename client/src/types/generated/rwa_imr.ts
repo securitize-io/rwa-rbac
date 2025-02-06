@@ -69,6 +69,41 @@ export type RwaImr = {
         },
         {
           "name": "assetMint"
+        },
+        {
+          "name": "eventAuthorityIdentityRegistry"
+        },
+        {
+          "name": "eventAuthority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
         }
       ],
       "args": [
@@ -149,6 +184,9 @@ export type RwaImr = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthorityIdentityRegistry"
         }
       ],
       "args": [
@@ -210,6 +248,9 @@ export type RwaImr = {
         },
         {
           "name": "assetMint"
+        },
+        {
+          "name": "eventAuthorityIdentityRegistry"
         }
       ],
       "args": [
@@ -295,6 +336,41 @@ export type RwaImr = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthorityIdentityRegistry"
+        },
+        {
+          "name": "eventAuthority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
         }
       ],
       "args": [
@@ -375,6 +451,41 @@ export type RwaImr = {
         {
           "name": "trackerAccount",
           "writable": true
+        },
+        {
+          "name": "eventAuthorityIdentityRegistry"
+        },
+        {
+          "name": "eventAuthority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
         }
       ],
       "args": []
@@ -435,6 +546,9 @@ export type RwaImr = {
         },
         {
           "name": "assetMint"
+        },
+        {
+          "name": "eventAuthorityIdentityRegistry"
         }
       ],
       "args": [
@@ -461,6 +575,60 @@ export type RwaImr = {
         116,
         26,
         196
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "addLevelsEvent",
+      "discriminator": [
+        90,
+        156,
+        44,
+        28,
+        242,
+        1,
+        130,
+        61
+      ]
+    },
+    {
+      "name": "registerInvestorEvent",
+      "discriminator": [
+        137,
+        181,
+        142,
+        164,
+        140,
+        196,
+        246,
+        182
+      ]
+    },
+    {
+      "name": "removeInvestorEvent",
+      "discriminator": [
+        221,
+        84,
+        243,
+        216,
+        215,
+        253,
+        246,
+        253
+      ]
+    },
+    {
+      "name": "removeLevelsEvent",
+      "discriminator": [
+        145,
+        158,
+        97,
+        146,
+        126,
+        14,
+        2,
+        225
       ]
     }
   ],
@@ -502,6 +670,38 @@ export type RwaImr = {
     }
   ],
   "types": [
+    {
+      "name": "addLevelsEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "investorId",
+            "type": "string"
+          },
+          {
+            "name": "sender",
+            "type": "pubkey"
+          },
+          {
+            "name": "levels",
+            "type": "bytes"
+          },
+          {
+            "name": "expiries",
+            "type": {
+              "vec": "i64"
+            }
+          },
+          {
+            "name": "proofHashes",
+            "type": {
+              "vec": "string"
+            }
+          }
+        ]
+      }
+    },
     {
       "name": "investor",
       "type": {
@@ -595,6 +795,74 @@ export type RwaImr = {
               "Hash generated off-chain."
             ],
             "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "registerInvestorEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "investorId",
+            "type": "string"
+          },
+          {
+            "name": "level",
+            "type": "u8"
+          },
+          {
+            "name": "expiry",
+            "type": "i64"
+          },
+          {
+            "name": "collisionHash",
+            "type": "string"
+          },
+          {
+            "name": "sender",
+            "type": "pubkey"
+          },
+          {
+            "name": "country",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "removeInvestorEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "investorId",
+            "type": "string"
+          },
+          {
+            "name": "sender",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "removeLevelsEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "investorId",
+            "type": "string"
+          },
+          {
+            "name": "sender",
+            "type": "pubkey"
+          },
+          {
+            "name": "levels",
+            "type": "bytes"
           }
         ]
       }

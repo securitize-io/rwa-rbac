@@ -1,22 +1,25 @@
-import { BN, Program, Provider } from "@coral-xyz/anchor";
-import { SystemProgram } from "@solana/web3.js";
+import { BN, Program, Provider, utils } from "@coral-xyz/anchor";
+import { CompiledInstruction, SystemProgram } from "@solana/web3.js";
 
 import { RwaRbac } from "../types/generated/rwa_rbac";
 import * as rbacIDL from "../types/generated/rwa_rbac.json";
 import { RwaImr } from "../types/generated/rwa_imr";
 import * as imrIDL from "../types/generated/rwa_imr.json";
-import { TokenLocks as TokenLocksType } from "../types/generated/token_locks";
-import * as tokenLocksIdl from "../types/generated/token_locks.json";
 import { AssetController } from "./AssetController";
 import { PolicyEngine } from "./PolicyEngine";
 import { IdentityRegistry } from "./IdentityRegistry";
-import { deriveAssetAccessControllerPda, deriveUserRolePda } from "../pdas";
+import {
+  deriveAssetAccessControllerPda,
+  deriveUserRolePda,
+  getEventAuthority,
+} from "../pdas";
 import {
   AssignUserRoleArgs,
   CreateControllerArgs,
   DeleteUserRoleArgs,
   ModifyUserRoleArgs,
   RemoveUserRoleArgs,
+  SetLookuptableAddressArgs,
   SetupUserRoleArgs,
   UpdateControllerAdminArgs,
   WithdrawExcessRentArgs,
@@ -24,7 +27,7 @@ import {
 import { RwaClient } from "@dstoken-solana/rwa-token-sdk";
 import { Config } from "@dstoken-solana/rwa-token-sdk";
 import { IdentityMetadataRegistry } from "./IdentityMetadataRegistry";
-import { TokenLocks } from "./TokenLocks";
+import { RBAC_PROGRAM } from "../constants";
 
 export class RwaRbacClient {
   rbacProgram: Program<RwaRbac>;
@@ -33,7 +36,6 @@ export class RwaRbacClient {
   policyEngine: PolicyEngine;
   identityRegistry: IdentityRegistry;
   identityMetadataRegistry: IdentityMetadataRegistry;
-  tokenLocks: TokenLocks;
   provider: Provider;
 
   constructor(config: Config, provider: Provider) {
@@ -54,11 +56,29 @@ export class RwaRbacClient {
       this.rbacProgram,
       new Program(imrIDL as RwaImr, this.provider)
     );
-    this.tokenLocks = new TokenLocks(
-      this.rwaClient,
-      this.rbacProgram,
-      new Program(tokenLocksIdl as TokenLocksType, this.provider)
-    );
+  }
+
+  /**
+   * Parses inner instructions data field for array of events emitted by program using CPI Events.
+   * @param ixs - Array of CompiledInstruction from a transaction inner instructions.
+   * @returns Array of Events
+   * */
+  parseEvents(ixs: CompiledInstruction[]) {
+    const eventCoder = this.rbacProgram.coder.events;
+    const events = ixs
+      .map(({ data }) => {
+        try {
+          const buffer = Buffer.from(utils.bytes.bs58.decode(data));
+          const event = eventCoder.decode(
+            utils.bytes.base64.encode(buffer.slice(8))
+          );
+          return event;
+        } catch (err) {
+          console.error("Error decoding events", err);
+        }
+      })
+      .filter((v) => v != null);
+    return events;
   }
 
   /**
@@ -179,6 +199,8 @@ export class RwaRbacClient {
         authorizedUserRole: args.authorizedUserRole || null,
         assetAccessController: args.assetAccessController,
         systemProgram: SystemProgram.programId,
+        eventAuthority: getEventAuthority(RBAC_PROGRAM),
+        program: RBAC_PROGRAM,
       })
       .instruction();
   }
@@ -196,6 +218,8 @@ export class RwaRbacClient {
         userRole: args.userRole,
         authorizedUserRole: args.authorizedUserRole || null,
         assetAccessController: args.assetAccessController,
+        eventAuthority: getEventAuthority(RBAC_PROGRAM),
+        program: RBAC_PROGRAM,
       })
       .instruction();
   }
@@ -214,6 +238,23 @@ export class RwaRbacClient {
         controllerAuthority: args.controllerAuthority,
         assetAccessController: args.assetAccessController,
         systemProgram: SystemProgram.programId,
+      })
+      .instruction();
+  }
+  
+  /**
+   * Asynchronously generates instruction to set lookup table address field in the AssetAccessController.
+   * @param args - {@link SetLookuptableAddressArgs}
+   * @returns A Promise that resolves to the instruction to set lookup table address.
+   */
+  async setLookuptableAddressIxn(args: SetLookuptableAddressArgs) {
+    return this.rbacProgram.methods
+      .setLutAddress()
+      .accountsStrict({
+        user: args.signer,
+        assetAccessController: args.assetAccessController,
+        authorizedUserRole: args.authorizedUserRole || null,
+        lutAddress: args.lutAddress,
       })
       .instruction();
   }

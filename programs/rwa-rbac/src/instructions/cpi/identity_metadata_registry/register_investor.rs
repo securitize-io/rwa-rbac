@@ -37,6 +37,10 @@ pub struct RegisterInvestor<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub wallet_identity: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub event_authority_identity_metadata_registry: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub event_authority_identity_registry: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 }
 
@@ -73,6 +77,12 @@ pub fn handler(ctx: Context<RegisterInvestor>, cpi_data: Vec<u8>) -> Result<()> 
                 AccountMeta::new(ctx.accounts.identity_account.key(), false),
                 AccountMeta::new(ctx.accounts.wallet_identity.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.event_authority_identity_registry.key(), false), // For Event CPI
+                AccountMeta::new_readonly(ctx.accounts.event_authority_identity_metadata_registry.key(), false), // For Event CPI
+                AccountMeta::new_readonly(
+                    ctx.accounts.identity_metadata_registry_program.key(),
+                    false,
+                ), // For Event CPI
             ],
             data: cpi_data,
         },
@@ -85,6 +95,11 @@ pub fn handler(ctx: Context<RegisterInvestor>, cpi_data: Vec<u8>) -> Result<()> 
             ctx.accounts.identity_account.to_account_info(),
             ctx.accounts.wallet_identity.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.event_authority_identity_registry.to_account_info(),
+            ctx.accounts.event_authority_identity_metadata_registry.to_account_info(),
+            ctx.accounts
+                .identity_metadata_registry_program
+                .to_account_info(),
         ],
         signers_seeds,
     )?;

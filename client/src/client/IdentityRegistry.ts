@@ -5,10 +5,13 @@ import { RwaRbac } from "../types/generated/rwa_rbac";
 import {
   AttachDetachWalletArgs,
   RefreshLevelArgs,
+  RevokeIdentityArgs,
 } from "../types/instructions";
 import {
   AddLevelToIdentityAccountArgs,
+  getIdentityAccount,
   getIdentityAccountPda,
+  getIdentityRegistryEventAuthority,
   getIdentityRegistryPda,
   getIdentityRegistryProgram,
   getPolicyEnginePda,
@@ -78,6 +81,7 @@ export class IdentityRegistry {
             args.owner
           ),
           systemProgram: SystemProgram.programId,
+          eventAuthority: getIdentityRegistryEventAuthority(),
         })
         .instruction()
     );
@@ -88,6 +92,53 @@ export class IdentityRegistry {
       ixs: returnIxs,
       signers: [],
     };
+  }
+
+  
+  /**
+   * Asynchronously generates instructions to remove a non-investor user with an identity account.
+   * @param args - {@link SetupUserArgs}
+   * @param authority - RBAC AssetAccessController ControllerAuthority.
+   * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @returns A Promise that resolves to the instructions to setup a user.
+   *
+   * It is required for at least a single user to be setup before issuing tokens.
+   */
+  async removeUserIxn(
+    args: RevokeIdentityArgs,
+    assetAccessController: PublicKey,
+    authorizedUserRole?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const ix = await this.rwaClient.identityRegistry.revokeIdentityAccount(args);
+    const identityAccountAddress = getIdentityAccountPda(args.assetMint, args.owner);
+    const identityAccount = await getIdentityAccount(identityAccountAddress, this.rwaClient.provider);
+
+    const controllerAuthority = deriveControllerAuthorityPda(
+      assetAccessController
+    );
+    const returnIx = await this.rbacProgram.methods
+        .removeIdentityAccount(ix.data)
+        .accountsStrict({
+          payer: args.payer,
+          user: args.signer,
+          controllerAuthority,
+          assetAccessController,
+          authorizedUserRole: authorizedUserRole || null,
+          identityRegistryProgram: identityRegistryProgramId,
+          identityRegistry: getIdentityRegistryPda(args.assetMint),
+          identityAccount: identityAccountAddress,
+          walletIdentity: getWalletIdentityAccountPda(
+            args.assetMint,
+            args.owner
+          ),
+          eventAuthority: getIdentityRegistryEventAuthority(),
+          identityOwner: identityAccount.owner,
+        })
+        .instruction();
+
+
+    return returnIx;
   }
 
   /**
@@ -127,6 +178,7 @@ export class IdentityRegistry {
         policyEngine: getPolicyEnginePda(args.assetMint),
         trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
         assetMint: args.assetMint,
+        eventAuthority: getIdentityRegistryEventAuthority(),
       })
       .instruction();
   }
@@ -168,6 +220,7 @@ export class IdentityRegistry {
         policyEngine: getPolicyEnginePda(args.assetMint),
         trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
         assetMint: args.assetMint,
+        eventAuthority: getIdentityRegistryEventAuthority(),
       })
       .instruction();
   }
@@ -251,6 +304,8 @@ export class IdentityRegistry {
         assetMint: args.assetMint,
         walletIdentity,
         systemProgram: SystemProgram.programId,
+        eventAuthority: getIdentityRegistryEventAuthority(),
+        program: identityRegistryProgramId,
       })
       .instruction();
     return this.rbacProgram.methods
@@ -267,6 +322,7 @@ export class IdentityRegistry {
         assetMint: args.assetMint,
         walletIdentity,
         systemProgram: SystemProgram.programId,
+        eventAuthority: getIdentityRegistryEventAuthority(),
       })
       .instruction();
   }
@@ -302,6 +358,8 @@ export class IdentityRegistry {
         walletIdentity,
         identityAccount,
         identityRegistry,
+        eventAuthority: getIdentityRegistryEventAuthority(),
+        program: identityRegistryProgramId,
       })
       .instruction();
     return this.rbacProgram.methods
@@ -316,6 +374,7 @@ export class IdentityRegistry {
         walletIdentity,
         identityAccount,
         identityRegistry,
+        eventAuthority: getIdentityRegistryEventAuthority(),
       })
       .instruction();
   }

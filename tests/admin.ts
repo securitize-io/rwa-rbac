@@ -127,18 +127,41 @@ describe("Admin Ixs Test", () => {
     const userRoleDataLenPre = (
       await connection.getAccountInfo(setup.userRole1, "processed")
     ).data.length;
+    const usersToAssign = [setup.signer2, setup.signer3, setup.payer];
     const ix = await rwaRbacClient.assignUserRoleIxn({
-      usersToAssign: [setup.signer2, setup.signer3, setup.payer],
+      usersToAssign,
       userRole: setup.userRole1,
       payer: setup.payer,
       user: setup.signer1,
       assetAccessController: setup.assetAccessController,
     });
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
-      setup.payerKp,
-      setup.signer1Kp,
-    ]);
+    const sig = await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(ix),
+      [setup.payerKp, setup.signer1Kp],
+      {
+        commitment: "confirmed",
+      }
+    );
 
+    const txLogs = await connection.getTransaction(sig, {
+      commitment: "confirmed",
+    });
+    const innerIxs = txLogs.meta.innerInstructions[0].instructions;
+    const events = rwaRbacClient.parseEvents(innerIxs);
+
+    // Verify event logging.
+    assert.equal(events.length, 1);
+    const event = events[0];
+    assert.equal(event.name, "assignUserRoleEvent");
+    assert.equal(event.data.role, "Role1");
+    assert(event.data.roleId.eq(setup.roleId1));
+    assert(event.data.sender.equals(setup.signer1));
+    event.data.addresses.forEach((address, idx) => {
+      assert(address.equals(usersToAssign[idx]));
+    });
+
+    // Verify userRole data
     const userRoleAccount =
       await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
     const userRoleDataLenPost = (
@@ -487,20 +510,44 @@ describe("Admin Ixs Test", () => {
     const userRoleAccountPre =
       await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole2);
 
+    const usersToRemove = [userRoleAccountPre.users[0]];
     const ix = await rwaRbacClient.removeUserRoleIxn({
       user: setup.signer2,
       assetAccessController: setup.assetAccessController,
       userRole: setup.userRole2,
       authorizedUserRole: setup.userRole1,
-      usersToRemove: [userRoleAccountPre.users[0]],
+      usersToRemove,
     });
 
     // Removal of a user from UserRole 2 succeeds since signer2 is
     // part of UserRole 1, which has ASSIGN_OR_REMOVE_ANY_USER_ROLE flag.
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
-      setup.signer2Kp,
-    ]);
+    const sig = await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(ix),
+      [setup.signer2Kp],
+      {
+        commitment: "confirmed",
+      }
+    );
 
+    const txLogs = await connection.getTransaction(sig, {
+      commitment: "confirmed",
+    });
+    const innerIxs = txLogs.meta.innerInstructions[0].instructions;
+    const events = rwaRbacClient.parseEvents(innerIxs);
+
+    // Verify event logging.
+    assert.equal(events.length, 1);
+    const event = events[0];
+    assert.equal(event.name, "removeUserRoleEvent");
+    assert.equal(event.data.role, "Role2");
+    assert(event.data.roleId.eq(setup.roleId2));
+    assert(event.data.sender.equals(setup.signer2));
+    event.data.addresses.forEach((address, idx) => {
+      assert(address.equals(usersToRemove[idx]));
+    });
+
+    // Verify userRole
     const userRoleAccountPost =
       await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole2);
     assert.equal(userRoleAccountPost.users.length, 3);

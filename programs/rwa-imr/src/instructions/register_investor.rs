@@ -4,8 +4,9 @@ use anchor_lang::{
 };
 use rbac_utils::{constants::IDENTITY_REGISTRY_ID, is_valid_hash, CREATE_IDENTITY_ACCOUNT_IX};
 
-use crate::{error::ErrorCode, state::*};
+use crate::{error::ErrorCode, events::RegisterInvestorEvent, state::*};
 
+#[event_cpi]
 #[derive(Accounts)]
 #[instruction(investor_id: String)]
 pub struct RegisterInvestor<'info> {
@@ -37,6 +38,8 @@ pub struct RegisterInvestor<'info> {
     #[account(mut)]
     pub wallet_identity: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
+    /// CHECK: Verified in CPI.
+    pub event_authority_identity_registry: UncheckedAccount<'info>,
 }
 
 pub fn handler(
@@ -50,6 +53,15 @@ pub fn handler(
 ) -> Result<()> {
     require!(is_valid_hash(&investor_id), ErrorCode::InvalidHash);
     require!(is_valid_hash(&collision_hash), ErrorCode::InvalidHash);
+
+    emit_cpi!(RegisterInvestorEvent {
+        investor_id: investor_id.clone(),
+        level,
+        expiry,
+        collision_hash: collision_hash.clone(),
+        sender: ctx.accounts.payer.key(),
+        country
+    });
 
     let investor = &mut ctx.accounts.investor;
 
@@ -84,6 +96,8 @@ pub fn handler(
                 AccountMeta::new(ctx.accounts.identity_account.key(), false),
                 AccountMeta::new(ctx.accounts.wallet_identity.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.event_authority_identity_registry.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.identity_registry_program.key(), false),
             ],
             data: cpi_data,
         },
@@ -94,6 +108,8 @@ pub fn handler(
             ctx.accounts.identity_account.to_account_info(),
             ctx.accounts.wallet_identity.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
+            ctx.accounts.event_authority_identity_registry.to_account_info(),
+            ctx.accounts.identity_registry_program.to_account_info(),
         ],
     )?;
     Ok(())

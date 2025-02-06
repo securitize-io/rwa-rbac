@@ -4,9 +4,10 @@ use anchor_lang::{
 };
 use rbac_utils::{constants::IDENTITY_REGISTRY_ID, ADD_LEVEL_TO_IDENTITY_ACCOUNT_IX};
 
-use crate::state::*;
+use crate::{events::AddLevelsEvent, state::*};
 
 #[derive(Accounts)]
+#[event_cpi]
 pub struct AddLevels<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -31,6 +32,8 @@ pub struct AddLevels<'info> {
     pub tracker_account: UncheckedAccount<'info>,
     /// CHECK: checked in cpi
     pub asset_mint: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub event_authority_identity_registry: UncheckedAccount<'info>,
 }
 
 pub fn handler(
@@ -71,6 +74,14 @@ pub fn handler(
     }
     data[offset + expiries.len() * 8..].copy_from_slice(&[enforce_limits as u8]);
 
+    emit_cpi!(AddLevelsEvent {
+        investor_id: investor.investor_id.clone(),
+        sender: ctx.accounts.payer.key(),
+        levels,
+        expiries,
+        proof_hashes,
+    });
+
     invoke(
         &Instruction {
             program_id: ctx.accounts.identity_registry_program.key(),
@@ -84,6 +95,8 @@ pub fn handler(
                 AccountMeta::new(ctx.accounts.policy_engine.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.tracker_account.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.asset_mint.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.event_authority_identity_registry.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.identity_registry_program.key(), false),
             ],
             data,
         },
@@ -97,6 +110,8 @@ pub fn handler(
             ctx.accounts.policy_engine.to_account_info(),
             ctx.accounts.tracker_account.to_account_info(),
             ctx.accounts.asset_mint.to_account_info(),
+            ctx.accounts.event_authority_identity_registry.to_account_info(),
+            ctx.accounts.identity_registry_program.to_account_info(),
         ],
     )?;
     Ok(())

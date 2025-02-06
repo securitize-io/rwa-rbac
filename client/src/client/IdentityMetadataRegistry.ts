@@ -1,5 +1,6 @@
-import { Program } from "@coral-xyz/anchor";
+import { Program, utils } from "@coral-xyz/anchor";
 import {
+  CompiledInstruction,
   PublicKey,
   SystemProgram,
   TransactionInstruction,
@@ -7,7 +8,11 @@ import {
 
 import { RwaRbac } from "../types/generated/rwa_rbac";
 import { RwaImr } from "../types/generated/rwa_imr";
-import { deriveControllerAuthorityPda, deriveInvestorPda } from "../pdas";
+import {
+  deriveControllerAuthorityPda,
+  deriveInvestorPda,
+  getEventAuthority,
+} from "../pdas";
 import {
   getIdentityAccountPda,
   getIdentityRegistryPda,
@@ -20,6 +25,7 @@ import {
   IxReturn,
   policyEngineProgramId,
   RwaClient,
+  getIdentityRegistryEventAuthority,
 } from "@dstoken-solana/rwa-token-sdk";
 import { IMR_PROGRAM } from "../constants";
 import {
@@ -47,6 +53,29 @@ export class IdentityMetadataRegistry {
     this.rwaClient = rwaClient;
     this.rbacProgram = rbacProgram;
     this.imrProgram = imrProgram;
+  }
+
+  /**
+   * Parses inner instructions data field for array of events emitted by program using CPI Events.
+   * @param ixs - Array of CompiledInstruction from a transaction inner instructions.
+   * @returns Array of Events
+   * */
+  parseEvents(ixs: CompiledInstruction[]) {
+    const eventCoder = this.imrProgram.coder.events;
+    const events = ixs
+      .map(({ data }) => {
+        try {
+          const buffer = Buffer.from(utils.bytes.bs58.decode(data));
+          const event = eventCoder.decode(
+            utils.bytes.base64.encode(buffer.slice(8))
+          );
+          return event;
+        } catch (err) {
+          console.error("Error decoding events", err);
+        }
+      })
+      .filter((v) => v != null);
+    return events;
   }
 
   /**
@@ -98,6 +127,9 @@ export class IdentityMetadataRegistry {
           investor.toString() // Investor is owner of IdentityAccount
         ),
         systemProgram: SystemProgram.programId,
+        eventAuthority: getEventAuthority(IMR_PROGRAM),
+        eventAuthorityIdentityRegistry: getIdentityRegistryEventAuthority(),
+        program: identityRegistryProgramId,
       })
       .instruction();
 
@@ -120,6 +152,8 @@ export class IdentityMetadataRegistry {
             investor.toString()
           ),
           systemProgram: SystemProgram.programId,
+          eventAuthorityIdentityMetadataRegistry: getEventAuthority(IMR_PROGRAM),
+          eventAuthorityIdentityRegistry: getIdentityRegistryEventAuthority(),
         })
         .instruction()
     );
@@ -215,6 +249,9 @@ export class IdentityMetadataRegistry {
         policyEngine: getPolicyEnginePda(args.assetMint),
         trackerAccount,
         assetMint: args.assetMint,
+        eventAuthorityIdentityRegistry: getIdentityRegistryEventAuthority(),
+        eventAuthority: getEventAuthority(IMR_PROGRAM),
+        program: IMR_PROGRAM,
       })
       .instruction();
 
@@ -236,6 +273,8 @@ export class IdentityMetadataRegistry {
         policyEngine: getPolicyEnginePda(args.assetMint),
         trackerAccount,
         assetMint: args.assetMint,
+        eventAuthorityIdentityRegistry: getIdentityRegistryEventAuthority(),
+        eventAuthorityIdentityMetadataRegistry: getEventAuthority(IMR_PROGRAM),
       })
       .instruction();
   }
@@ -279,6 +318,7 @@ export class IdentityMetadataRegistry {
         policyEngine: getPolicyEnginePda(args.assetMint),
         trackerAccount,
         assetMint: args.assetMint,
+        eventAuthorityIdentityRegistry: getIdentityRegistryEventAuthority(),
       })
       .instruction();
 
@@ -299,6 +339,7 @@ export class IdentityMetadataRegistry {
         policyEngine: getPolicyEnginePda(args.assetMint),
         trackerAccount,
         assetMint: args.assetMint,
+        eventAuthorityIdentityRegistry: getIdentityRegistryEventAuthority(),
       })
       .instruction();
   }
@@ -343,6 +384,7 @@ export class IdentityMetadataRegistry {
         policyEngine: getPolicyEnginePda(args.assetMint),
         trackerAccount,
         assetMint: args.assetMint,
+        eventAuthorityIdentityRegistry: getIdentityRegistryEventAuthority(),
       })
       .instruction();
 
@@ -364,6 +406,7 @@ export class IdentityMetadataRegistry {
         policyEngine: getPolicyEnginePda(args.assetMint),
         trackerAccount,
         assetMint: args.assetMint,
+        eventAuthorityIdentityRegistry: getIdentityRegistryEventAuthority(),
       })
       .instruction();
   }
@@ -412,6 +455,8 @@ export class IdentityMetadataRegistry {
           args.assetMint,
           investor.toString()
         ),
+        eventAuthorityIdentityMetadataRegistry: getEventAuthority(IMR_PROGRAM),
+        eventAuthorityIdentityRegistry: getIdentityRegistryEventAuthority(),
       })
       .instruction();
   }
@@ -448,6 +493,7 @@ export class IdentityMetadataRegistry {
         identityRegistry,
         assetMint: args.assetMint,
         systemProgram: SystemProgram.programId,
+        eventAuthorityIdentityRegistry: getIdentityRegistryEventAuthority(),
       })
       .instruction();
   }

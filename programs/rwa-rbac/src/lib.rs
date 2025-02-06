@@ -1,6 +1,7 @@
 #![allow(ambiguous_glob_reexports)]
 
 pub mod error;
+pub mod events;
 pub mod helper;
 pub mod instructions;
 pub mod macros;
@@ -180,33 +181,15 @@ pub mod rwa_rbac {
         instructions::detach_wallet_from_identity::handler(ctx, cpi_data)
     }
 
-    pub fn create_investor_locks(ctx: Context<CreateInvestorLocks>) -> Result<()> {
-        instructions::create_investor_locks::handler(ctx)
-    }
-
-    pub fn close_investor_locks(ctx: Context<CloseInvestorLocks>) -> Result<()> {
-        instructions::close_investor_locks::handler(ctx)
-    }
-
-    pub fn add_token_lock<'info>(
-        ctx: Context<'_, '_, '_, 'info, AddTokenLock<'info>>,
-        cpi_data: Vec<u8>,
-    ) -> Result<()> {
-        instructions::add_token_lock::handler(ctx, cpi_data)
-    }
-
-    pub fn remove_token_lock<'info>(
-        ctx: Context<'_, '_, '_, 'info, RemoveTokenLock<'info>>,
-        indices: Vec<u8>,
-    ) -> Result<()> {
-        instructions::remove_token_lock::handler(ctx, indices)
-    }
-
     pub fn create_identity_account(
         ctx: Context<CreateIdentityAccount>,
         cpi_data: Vec<u8>,
     ) -> Result<()> {
         instructions::create_identity_account::handler(ctx, cpi_data)
+    }
+
+    pub fn remove_identity_account(ctx: Context<RemoveIdentityAccount>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::remove_identity_account::handler(ctx, cpi_data)
     }
 
     pub fn add_level_to_identity_account(
@@ -250,5 +233,9 @@ pub mod rwa_rbac {
 
     pub fn remove_lock(ctx: Context<RemoveLock>, cpi_data: Vec<u8>) -> Result<()> {
         instructions::remove_lock::handler(ctx, cpi_data)
+    }
+
+    pub fn set_lut_address(ctx: Context<SetLookuptableAddress>) -> Result<()> {
+        instructions::set_lut_address::handler(ctx)
     }
 }

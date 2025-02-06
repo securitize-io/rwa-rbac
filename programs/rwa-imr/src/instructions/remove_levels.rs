@@ -31,6 +31,8 @@ pub struct RemoveLevels<'info> {
     pub tracker_account: UncheckedAccount<'info>,
     /// CHECK: checked in cpi
     pub asset_mint: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub event_authority_identity_registry: UncheckedAccount<'info>,
 }
 
 pub fn handler(
@@ -68,6 +70,8 @@ pub fn handler(
                 AccountMeta::new(ctx.accounts.policy_engine.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.tracker_account.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.asset_mint.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.event_authority_identity_registry.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.identity_registry_program.key(), false),
             ],
             data,
         },
@@ -81,6 +85,8 @@ pub fn handler(
             ctx.accounts.policy_engine.to_account_info(),
             ctx.accounts.tracker_account.to_account_info(),
             ctx.accounts.asset_mint.to_account_info(),
+            ctx.accounts.event_authority_identity_registry.to_account_info(),
+            ctx.accounts.identity_registry_program.to_account_info(),
         ],
     )?;
     Ok(())

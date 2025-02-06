@@ -43,6 +43,10 @@ pub struct RemoveInvestor<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub tracker_account: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub event_authority_identity_metadata_registry: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub event_authority_identity_registry: UncheckedAccount<'info>,
 }
 
 pub fn handler(ctx: Context<RemoveInvestor>) -> Result<()> {
@@ -73,6 +77,12 @@ pub fn handler(ctx: Context<RemoveInvestor>) -> Result<()> {
                 AccountMeta::new(ctx.accounts.wallet_identity.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.policy_engine_program.key(), false),
                 AccountMeta::new(ctx.accounts.tracker_account.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.event_authority_identity_registry.key(), false), // For Event CPI
+                AccountMeta::new_readonly(ctx.accounts.event_authority_identity_metadata_registry.key(), false), // For Event CPI
+                AccountMeta::new_readonly(
+                    ctx.accounts.identity_metadata_registry_program.key(),
+                    false,
+                ), // For Event CPI
             ],
             data: REMOVE_INVESTOR_IX.to_vec(),
         },
@@ -86,6 +96,11 @@ pub fn handler(ctx: Context<RemoveInvestor>) -> Result<()> {
             ctx.accounts.wallet_identity.to_account_info(),
             ctx.accounts.policy_engine_program.to_account_info(),
             ctx.accounts.tracker_account.to_account_info(),
+            ctx.accounts.event_authority_identity_registry.to_account_info(),
+            ctx.accounts.event_authority_identity_metadata_registry.to_account_info(),
+            ctx.accounts
+                .identity_metadata_registry_program
+                .to_account_info(),
         ],
         signers_seeds,
     )?;

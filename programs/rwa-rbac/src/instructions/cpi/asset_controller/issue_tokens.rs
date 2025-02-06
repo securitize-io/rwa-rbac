@@ -4,12 +4,8 @@ use anchor_lang::{
 };
 use anchor_spl::{associated_token::AssociatedToken, token_2022::Token2022};
 use rbac_utils::{
-    constants::{Level, ASSET_CONTROLLER_ID, POLICY_ENGINE_ID, TOKEN_LOCKS_ID},
+    constants::{ASSET_CONTROLLER_ID, POLICY_ENGINE_ID},
     ISSUE_TOKENS_IX,
-};
-use rbac_utils::{
-    external_accounts::{IdentityAccount, PartialPolicyEngineAccount},
-    ADD_TOKEN_LOCK_IX,
 };
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
@@ -58,6 +54,8 @@ pub struct IssueTokens<'info> {
     pub policy_engine: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     pub wallet_identity_account: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub event_authority: UncheckedAccount<'info>,
 }
 
 impl<'info> IssueTokens<'info> {
@@ -89,6 +87,8 @@ impl<'info> IssueTokens<'info> {
                     AccountMeta::new_readonly(ctx.accounts.policy_engine_program.key(), false),
                     AccountMeta::new(ctx.accounts.policy_engine.key(), false),
                     AccountMeta::new_readonly(ctx.accounts.wallet_identity_account.key(), false),
+                    AccountMeta::new_readonly(ctx.accounts.event_authority.key(), false),
+                    AccountMeta::new_readonly(ctx.accounts.asset_controller_program.key(), false),
                 ],
                 data,
             },
@@ -108,11 +108,14 @@ impl<'info> IssueTokens<'info> {
                 ctx.accounts.policy_engine_program.to_account_info(),
                 ctx.accounts.policy_engine.to_account_info(),
                 ctx.accounts.wallet_identity_account.to_account_info(),
+                ctx.accounts.event_authority.to_account_info(),
+                ctx.accounts.asset_controller_program.to_account_info(),
             ],
             signers_seeds,
         )?;
         Ok(())
     }
+
 }
 
 pub fn handler<'info>(

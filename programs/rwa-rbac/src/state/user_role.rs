@@ -87,6 +87,7 @@ bitflags::bitflags! {
       const MODIFY_USER_ROLE = 1 << 1;
       const ASSIGN_OR_REMOVE_ANY_USER_ROLE = 1 << 2;
       const ASSIGN_OR_REMOVE_CURRENT_USER_ROLE = 1 << 3;
+      const SET_LUT_ADDRESS = 1 << 4;
   }
 
   // CPI Instructions
@@ -121,5 +122,6 @@ bitflags::bitflags! {
       const CHANGE_COUNTRY = 1 << 27;
       const CHANGE_MAPPING = 1 << 28;
       const CHANGE_ISSUANCE_POLICIES = 1 << 29;
+      const REMOVE_IDENTITY_ACCOUNT = 1 << 30;
   }
 }

@@ -31,6 +31,8 @@ pub struct SeizeTokens<'info> {
     #[account(mut)]
     pub source_token_account: UncheckedAccount<'info>,
     pub token_program: Program<'info, Token2022>,
+    /// CHECK: Verified in CPI.
+    pub event_authority: UncheckedAccount<'info>,
 }
 
 pub fn handler<'info>(
@@ -65,6 +67,8 @@ pub fn handler<'info>(
         AccountMeta::new(ctx.accounts.destination_token_account.key(), false),
         AccountMeta::new(ctx.accounts.source_token_account.key(), false),
         AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
+        AccountMeta::new_readonly(ctx.accounts.event_authority.key(), false),
+        AccountMeta::new_readonly(ctx.accounts.asset_controller_program.key(), false),
     ];
 
     let mut account_infos = vec![
@@ -74,6 +78,8 @@ pub fn handler<'info>(
         ctx.accounts.destination_token_account.to_account_info(),
         ctx.accounts.source_token_account.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
+        ctx.accounts.event_authority.to_account_info(),
+        ctx.accounts.asset_controller_program.to_account_info(),
     ];
 
     // Add remaining accounts to vecs.

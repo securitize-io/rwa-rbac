@@ -22,4 +22,7 @@ pub enum ErrorCode {
 
     #[msg("Invalid level")]
     InvalidLevel,
+
+    #[msg("Illegal operation")]
+    IllegalOperation,
 }

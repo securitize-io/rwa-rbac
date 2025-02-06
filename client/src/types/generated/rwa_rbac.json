@@ -79,6 +79,9 @@
         },
         {
           "name": "asset_mint"
+        },
+        {
+          "name": "event_authority"
         }
       ],
       "args": [
@@ -169,6 +172,12 @@
         },
         {
           "name": "asset_mint"
+        },
+        {
+          "name": "event_authority_identity_metadata_registry"
+        },
+        {
+          "name": "event_authority_identity_registry"
         }
       ],
       "args": [
@@ -253,101 +262,6 @@
       ]
     },
     {
-      "name": "add_token_lock",
-      "discriminator": [
-        195,
-        26,
-        109,
-        80,
-        46,
-        7,
-        195,
-        55
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controller_authority",
-          "writable": true,
-          "relations": [
-            "asset_access_controller"
-          ]
-        },
-        {
-          "name": "asset_access_controller",
-          "relations": [
-            "authorized_user_role"
-          ]
-        },
-        {
-          "name": "authorized_user_role",
-          "optional": true
-        },
-        {
-          "name": "token_locks_program",
-          "address": "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
-        },
-        {
-          "name": "investor_locks",
-          "writable": true
-        },
-        {
-          "name": "investor"
-        },
-        {
-          "name": "wallet_identity_account"
-        },
-        {
-          "name": "identity_account"
-        },
-        {
-          "name": "asset_mint",
-          "writable": true
-        },
-        {
-          "name": "unlocked_token_account",
-          "writable": true
-        },
-        {
-          "name": "locked_token_account",
-          "writable": true
-        },
-        {
-          "name": "asset_controller"
-        },
-        {
-          "name": "identity_registry",
-          "writable": true
-        },
-        {
-          "name": "asset_controller_program",
-          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
-        },
-        {
-          "name": "token_program",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "cpi_data",
-          "type": "bytes"
-        }
-      ]
-    },
-    {
       "name": "assign_user_role",
       "discriminator": [
         39,
@@ -387,6 +301,38 @@
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
         }
       ],
       "args": [
@@ -447,6 +393,9 @@
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
         }
       ],
       "args": [
@@ -515,6 +464,9 @@
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
         }
       ],
       "args": [
@@ -573,6 +525,9 @@
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
         }
       ],
       "args": [
@@ -631,6 +586,9 @@
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
         }
       ],
       "args": [
@@ -709,6 +667,9 @@
         },
         {
           "name": "asset_mint"
+        },
+        {
+          "name": "event_authority_identity_registry"
         }
       ],
       "args": [
@@ -763,6 +724,9 @@
         {
           "name": "policy_engine",
           "writable": true
+        },
+        {
+          "name": "event_authority"
         }
       ],
       "args": [
@@ -817,6 +781,9 @@
         {
           "name": "policy_engine",
           "writable": true
+        },
+        {
+          "name": "event_authority"
         }
       ],
       "args": [
@@ -825,69 +792,6 @@
           "type": "bytes"
         }
       ]
-    },
-    {
-      "name": "close_investor_locks",
-      "discriminator": [
-        255,
-        60,
-        220,
-        115,
-        217,
-        104,
-        157,
-        171
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controller_authority",
-          "relations": [
-            "asset_access_controller"
-          ]
-        },
-        {
-          "name": "asset_access_controller",
-          "relations": [
-            "authorized_user_role"
-          ]
-        },
-        {
-          "name": "authorized_user_role",
-          "optional": true
-        },
-        {
-          "name": "token_locks_program",
-          "address": "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
-        },
-        {
-          "name": "investor_locks",
-          "writable": true
-        },
-        {
-          "name": "investor"
-        },
-        {
-          "name": "locked_token_account",
-          "writable": true
-        },
-        {
-          "name": "token_program"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
     },
     {
       "name": "close_mint_account",
@@ -1074,6 +978,9 @@
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
         }
       ],
       "args": [
@@ -1082,84 +989,6 @@
           "type": "bytes"
         }
       ]
-    },
-    {
-      "name": "create_investor_locks",
-      "discriminator": [
-        223,
-        81,
-        139,
-        162,
-        204,
-        48,
-        24,
-        213
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controller_authority",
-          "relations": [
-            "asset_access_controller"
-          ]
-        },
-        {
-          "name": "asset_access_controller",
-          "relations": [
-            "authorized_user_role"
-          ]
-        },
-        {
-          "name": "authorized_user_role",
-          "optional": true
-        },
-        {
-          "name": "token_locks_program",
-          "address": "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
-        },
-        {
-          "name": "investor_locks",
-          "writable": true
-        },
-        {
-          "name": "investor"
-        },
-        {
-          "name": "identity_account"
-        },
-        {
-          "name": "asset_mint",
-          "writable": true
-        },
-        {
-          "name": "locked_token_account",
-          "writable": true
-        },
-        {
-          "name": "asset_controller"
-        },
-        {
-          "name": "asset_controller_program",
-          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
-        },
-        {
-          "name": "token_program",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
     },
     {
       "name": "create_user_role",
@@ -1306,6 +1135,9 @@
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
         }
       ],
       "args": [
@@ -1368,6 +1200,9 @@
         },
         {
           "name": "identity_registry"
+        },
+        {
+          "name": "event_authority"
         }
       ],
       "args": [
@@ -1527,6 +1362,9 @@
         },
         {
           "name": "wallet_identity_account"
+        },
+        {
+          "name": "event_authority"
         }
       ],
       "args": [
@@ -1703,8 +1541,81 @@
           "writable": true
         },
         {
+          "name": "event_authority_identity_metadata_registry"
+        },
+        {
+          "name": "event_authority_identity_registry"
+        },
+        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpi_data",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "remove_identity_account",
+      "discriminator": [
+        78,
+        35,
+        174,
+        50,
+        72,
+        181,
+        12,
+        42
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controller_authority",
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role",
+          "optional": true
+        },
+        {
+          "name": "identity_registry_program",
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
+        },
+        {
+          "name": "identity_registry"
+        },
+        {
+          "name": "identity_account",
+          "writable": true
+        },
+        {
+          "name": "wallet_identity",
+          "writable": true
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "identity_owner"
         }
       ],
       "args": [
@@ -1782,6 +1693,12 @@
         {
           "name": "tracker_account",
           "writable": true
+        },
+        {
+          "name": "event_authority_identity_metadata_registry"
+        },
+        {
+          "name": "event_authority_identity_registry"
         }
       ],
       "args": []
@@ -1858,6 +1775,9 @@
         },
         {
           "name": "asset_mint"
+        },
+        {
+          "name": "event_authority"
         }
       ],
       "args": [
@@ -1940,6 +1860,9 @@
         },
         {
           "name": "asset_mint"
+        },
+        {
+          "name": "event_authority_identity_registry"
         }
       ],
       "args": [
@@ -2024,92 +1947,6 @@
       ]
     },
     {
-      "name": "remove_token_lock",
-      "discriminator": [
-        168,
-        128,
-        173,
-        188,
-        172,
-        228,
-        154,
-        90
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controller_authority",
-          "writable": true,
-          "relations": [
-            "asset_access_controller"
-          ]
-        },
-        {
-          "name": "asset_access_controller",
-          "relations": [
-            "authorized_user_role"
-          ]
-        },
-        {
-          "name": "authorized_user_role",
-          "optional": true
-        },
-        {
-          "name": "token_locks_program",
-          "address": "9bNt3ZiZpDdHqAt5Q1Wq6twFe5RKmMCwA7MJyK2HgGnU"
-        },
-        {
-          "name": "investor_locks",
-          "writable": true
-        },
-        {
-          "name": "investor"
-        },
-        {
-          "name": "wallet_identity_account"
-        },
-        {
-          "name": "identity_account"
-        },
-        {
-          "name": "asset_mint",
-          "writable": true
-        },
-        {
-          "name": "unlocked_token_account",
-          "writable": true
-        },
-        {
-          "name": "locked_token_account",
-          "writable": true
-        },
-        {
-          "name": "asset_controller"
-        },
-        {
-          "name": "identity_registry",
-          "writable": true
-        },
-        {
-          "name": "asset_controller_program",
-          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
-        },
-        {
-          "name": "token_program",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        }
-      ],
-      "args": [
-        {
-          "name": "indices",
-          "type": "bytes"
-        }
-      ]
-    },
-    {
       "name": "remove_user_role",
       "discriminator": [
         43,
@@ -2140,6 +1977,38 @@
         {
           "name": "authorized_user_role",
           "optional": true
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
         }
       ],
       "args": [
@@ -2231,6 +2100,9 @@
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
         }
       ],
       "args": [
@@ -2295,6 +2167,9 @@
         {
           "name": "token_program",
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "event_authority"
         }
       ],
       "args": [
@@ -2349,6 +2224,9 @@
         {
           "name": "policy_engine",
           "writable": true
+        },
+        {
+          "name": "event_authority"
         }
       ],
       "args": [
@@ -2357,6 +2235,40 @@
           "type": "bytes"
         }
       ]
+    },
+    {
+      "name": "set_lut_address",
+      "discriminator": [
+        254,
+        239,
+        106,
+        70,
+        17,
+        87,
+        57,
+        202
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "asset_access_controller",
+          "writable": true,
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role",
+          "optional": true
+        },
+        {
+          "name": "lut_address"
+        }
+      ],
+      "args": []
     },
     {
       "name": "thaw_token_account",
@@ -2652,6 +2564,34 @@
       ]
     }
   ],
+  "events": [
+    {
+      "name": "AssignUserRoleEvent",
+      "discriminator": [
+        66,
+        20,
+        203,
+        47,
+        242,
+        72,
+        213,
+        93
+      ]
+    },
+    {
+      "name": "RemoveUserRoleEvent",
+      "discriminator": [
+        213,
+        162,
+        73,
+        7,
+        11,
+        89,
+        226,
+        140
+      ]
+    }
+  ],
   "errors": [
     {
       "code": 6000,
@@ -2687,6 +2627,11 @@
       "code": 6006,
       "name": "InvalidLevel",
       "msg": "Invalid level"
+    },
+    {
+      "code": 6007,
+      "name": "IllegalOperation",
+      "msg": "Illegal operation"
     }
   ],
   "types": [
@@ -2729,6 +2674,73 @@
               "Number of UserRoles created since initialization. Used for deriving all created UserRole PDAs."
             ],
             "type": "u64"
+          },
+          {
+            "name": "lut_address",
+            "docs": [
+              "Address of the lookup table."
+            ],
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssignUserRoleEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "addresses",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "role",
+            "type": "string"
+          },
+          {
+            "name": "role_id",
+            "type": "u64"
+          },
+          {
+            "name": "sender",
+            "type": "pubkey"
+          },
+          {
+            "name": "seed",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemoveUserRoleEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "addresses",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "role",
+            "type": "string"
+          },
+          {
+            "name": "role_id",
+            "type": "u64"
+          },
+          {
+            "name": "sender",
+            "type": "pubkey"
+          },
+          {
+            "name": "seed",
+            "type": "pubkey"
           }
         ]
       }

@@ -1,7 +1,8 @@
 use anchor_lang::prelude::*;
 
-use crate::{state::*, verify_admin_signer};
+use crate::{events::RemoveUserRoleEvent, state::*, verify_admin_signer};
 
+#[event_cpi]
 #[derive(Accounts)]
 pub struct RemoveUserRole<'info> {
     pub user: Signer<'info>,
@@ -37,7 +38,15 @@ pub fn handler(ctx: Context<RemoveUserRole>, users_to_remove: Vec<Pubkey>) -> Re
     )?;
 
     // Remove users from role.
-    user_role.remove_users(users_to_remove);
+    user_role.remove_users(users_to_remove.clone());
+
+    emit_cpi!(RemoveUserRoleEvent {
+        addresses: users_to_remove,
+        role: user_role.name.clone(),
+        role_id: user_role.id,
+        sender: ctx.accounts.user.key(),
+        seed: ctx.accounts.asset_access_controller.unique_seed,
+    });
 
     Ok(())
 }

@@ -273,17 +273,31 @@ describe("CPI End to End Tests", () => {
       setup.userRole1
     );
 
-    // Sending in separate transactions as workaround to an unexplained local websocket error.
-    const tx1 = new Transaction().add(...ixReturn.ixs.slice(0, -1));
-    await sendAndConfirmTransaction(connection, tx1, [
-      setup.payerKp,
-      setup.signer1Kp,
-    ]);
-    const tx2 = new Transaction().add(...ixReturn.ixs.slice(-1));
-    await sendAndConfirmTransaction(connection, tx2, [
-      setup.payerKp,
-      setup.signer1Kp,
-    ]);
+    const tx = new Transaction().add(...ixReturn.ixs);
+    const sig = await sendAndConfirmTransaction(
+      connection,
+      tx,
+      [setup.payerKp, setup.signer1Kp],
+      {
+        commitment: "confirmed",
+      }
+    );
+
+    const txLogs = await connection.getTransaction(sig, {
+      commitment: "confirmed",
+    });
+    const innerIxs = txLogs.meta.innerInstructions[0].instructions;
+    const events = rwaRbacClient.identityMetadataRegistry.parseEvents(innerIxs);
+
+    // Verify event logging.
+    assert.equal(events.length, 1);
+    const event = events[0];
+    assert.equal(event.name, "registerInvestorEvent");
+    assert.equal(event.data.investorId, args.investorId);
+    assert.equal(event.data.level, args.levels[0]);
+    assert(event.data.expiry.eq(args.expiries[0]));
+    assert.equal(event.data.collisionHash, args.collisionHash);
+    assert(event.data.sender.equals(new PublicKey(args.payer)));
 
     // Validate Investor and IdentityAccount
     const identityAccountPda = getIdentityAccountPda(mint, investorPda);
@@ -470,6 +484,37 @@ describe("CPI End to End Tests", () => {
     assert.equal(identityAccount.levels.length, 1);
     assert.equal(identityAccount.levels[0].level, args.levels[0]);
     assert(identityAccount.levels[0].expiry.eq(args.expiries[0]));
+  });
+
+  
+  
+  it("CPI: Remove Identity Account for non-Investor", async () => {
+    const args = {
+      payer: setup.payer.toString(), // Payer Account
+      signer: setup.signer1.toString(), // User Account
+      owner: setup.user2.toString(), // Target Account
+      assetMint: mint,
+      authority: setup.controllerAuthority.toString(),
+    };
+    const ixReturn = await rwaRbacClient.identityRegistry.removeUserIxn(
+      args,
+      setup.assetAccessController,
+      setup.userRole1
+    );
+
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(ixReturn),
+      [setup.payerKp, setup.signer1Kp]
+    );
+
+    // Validate IdentityAccount
+    const identityAccount = await getIdentityAccountFromOwner(
+      mint,
+      setup.user2,
+      rwaRbacClient.provider
+    );
+    assert.isUndefined(identityAccount);
   });
 
   it("CPI: Add Levels through Investor", async () => {
@@ -1016,23 +1061,39 @@ describe("CPI End to End Tests", () => {
         setup.assetAccessController,
         setup.userRole1
       );
-
+    const args = {
+        payer: setup.payer.toString(), // Payer Account
+        signer: setup.signer1.toString(), // User Account
+        assetMint: mint,
+        investorId: INVESTOR_ID,
+    };
     const removeIx =
       await rwaRbacClient.identityMetadataRegistry.removeInvestor(
-        {
-          payer: setup.payer.toString(), // Payer Account
-          signer: setup.signer1.toString(), // User Account
-          assetMint: mint,
-          investorId: INVESTOR_ID,
-        },
+        args,
         setup.assetAccessController,
         setup.userRole1
       );
-    await sendAndConfirmTransaction(
+    const sig = await sendAndConfirmTransaction(
       connection,
       new Transaction().add(...[detachIx, removeIx]),
-      [setup.payerKp, setup.signer1Kp]
+      [setup.payerKp, setup.signer1Kp],
+      {
+        commitment: "confirmed",
+      }
     );
+
+    const txLogs = await connection.getTransaction(sig, {
+      commitment: "confirmed",
+    });
+    const innerIxs = txLogs.meta.innerInstructions[1].instructions; // second ix in tx
+    const events = rwaRbacClient.identityMetadataRegistry.parseEvents(innerIxs);
+
+    // Verify event logging.
+    assert.equal(events.length, 1);
+    const event = events[0];
+    assert.equal(event.name, "removeInvestorEvent");
+    assert.equal(event.data.investorId, args.investorId);
+    assert(event.data.sender.equals(new PublicKey(args.payer)));
 
     // Validate Investor and IdentityAccount
     const identityAccountPda = getIdentityAccountPda(

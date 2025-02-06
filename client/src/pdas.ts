@@ -81,3 +81,9 @@ export const deriveUserRolePda = (
     programId
   )[0];
 };
+
+export const getEventAuthority = (programId: PublicKey) =>
+  PublicKey.findProgramAddressSync(
+    [Buffer.from("__event_authority")],
+    programId
+  )[0];
