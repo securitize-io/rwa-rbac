@@ -30,6 +30,10 @@ pub struct DetachWalletFromIdentity<'info> {
     /// CHECK: Verified in CPI.
     pub identity_registry: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
+    pub token_account: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
+    pub asset_mint: UncheckedAccount<'info>,
+    /// CHECK: Verified in CPI.
     pub event_authority: UncheckedAccount<'info>,
 }
 
@@ -63,6 +67,8 @@ pub fn handler(ctx: Context<DetachWalletFromIdentity>, cpi_data: Vec<u8>) -> Res
                 AccountMeta::new(ctx.accounts.wallet_identity.key(), false),
                 AccountMeta::new(ctx.accounts.identity_account.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.token_account.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.asset_mint.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.event_authority.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.identity_registry_program.key(), false),
             ],
@@ -74,6 +80,8 @@ pub fn handler(ctx: Context<DetachWalletFromIdentity>, cpi_data: Vec<u8>) -> Res
             ctx.accounts.wallet_identity.to_account_info(),
             ctx.accounts.identity_account.to_account_info(),
             ctx.accounts.identity_registry.to_account_info(),
+            ctx.accounts.token_account.to_account_info(),
+            ctx.accounts.asset_mint.to_account_info(),
             ctx.accounts.event_authority.to_account_info(),
             ctx.accounts.identity_registry_program.to_account_info(),
         ],

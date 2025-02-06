@@ -28,10 +28,6 @@ address = "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
 program = "./deps/asset_controller.so"
 
 [[test.genesis]]
-address = "JDxF8P4SctW8rB5s5FbupPFYecKFqLSv7fTES3cFei3b"
-program = "./deps/data_registry.so"
-
-[[test.genesis]]
 address = "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
 program = "./deps/identity_registry.so"
 

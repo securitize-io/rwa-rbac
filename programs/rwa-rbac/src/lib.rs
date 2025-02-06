@@ -160,13 +160,6 @@ pub mod rwa_rbac {
         instructions::remove_levels::handler(ctx, cpi_data)
     }
 
-    pub fn refresh_level_to_identity_account(
-        ctx: Context<RefreshLevelToIdentityAccount>,
-        cpi_data: Vec<u8>,
-    ) -> Result<()> {
-        instructions::refresh_level_to_identity_account::handler(ctx, cpi_data)
-    }
-
     pub fn attach_wallet_to_identity(
         ctx: Context<AttachWalletToIdentity>,
         cpi_data: Vec<u8>,
@@ -190,22 +183,6 @@ pub mod rwa_rbac {
 
     pub fn remove_identity_account(ctx: Context<RemoveIdentityAccount>, cpi_data: Vec<u8>) -> Result<()> {
         instructions::remove_identity_account::handler(ctx, cpi_data)
-    }
-
-    pub fn add_level_to_identity_account(
-        ctx: Context<AddLevelToIdentityAccount>,
-        level: u8,
-        expiry: i64,
-        enforce_limits: bool,
-    ) -> Result<()> {
-        instructions::add_level_to_identity_account::handler(ctx, level, expiry, enforce_limits)
-    }
-
-    pub fn remove_level_from_identity_account(
-        ctx: Context<RemoveLevelFromIdentityAccount>,
-        cpi_data: Vec<u8>,
-    ) -> Result<()> {
-        instructions::remove_level_from_identity_account::handler(ctx, cpi_data)
     }
 
     pub fn change_country(ctx: Context<ChangeCountry>, cpi_data: Vec<u8>) -> Result<()> {

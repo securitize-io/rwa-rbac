@@ -14,98 +14,6 @@ export type RwaRbac = {
   },
   "instructions": [
     {
-      "name": "addLevelToIdentityAccount",
-      "discriminator": [
-        102,
-        204,
-        64,
-        169,
-        252,
-        177,
-        192,
-        232
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controllerAuthority",
-          "relations": [
-            "assetAccessController"
-          ]
-        },
-        {
-          "name": "assetAccessController",
-          "relations": [
-            "authorizedUserRole"
-          ]
-        },
-        {
-          "name": "authorizedUserRole",
-          "optional": true
-        },
-        {
-          "name": "identityRegistryProgram",
-          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
-        },
-        {
-          "name": "identityRegistry"
-        },
-        {
-          "name": "identityAccount",
-          "writable": true
-        },
-        {
-          "name": "identityAccountOwner",
-          "docs": [
-            "to ensure that it is not an Investor account. If it is an Investor account,",
-            "CPI to IdentityMetadataRegistry should be called."
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "policyEngineProgram"
-        },
-        {
-          "name": "policyEngine",
-          "writable": true
-        },
-        {
-          "name": "trackerAccount"
-        },
-        {
-          "name": "assetMint"
-        },
-        {
-          "name": "eventAuthority"
-        }
-      ],
-      "args": [
-        {
-          "name": "level",
-          "type": "u8"
-        },
-        {
-          "name": "expiry",
-          "type": "i64"
-        },
-        {
-          "name": "enforceLimits",
-          "type": "bool"
-        }
-      ]
-    },
-    {
       "name": "addLevels",
       "discriminator": [
         101,
@@ -1208,6 +1116,12 @@ export type RwaRbac = {
           "name": "identityRegistry"
         },
         {
+          "name": "tokenAccount"
+        },
+        {
+          "name": "assetMint"
+        },
+        {
           "name": "eventAuthority"
         }
       ],
@@ -1425,63 +1339,6 @@ export type RwaRbac = {
         {
           "name": "allowedMediciIxs",
           "type": "u64"
-        }
-      ]
-    },
-    {
-      "name": "refreshLevelToIdentityAccount",
-      "discriminator": [
-        23,
-        68,
-        237,
-        111,
-        144,
-        169,
-        239,
-        91
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controllerAuthority",
-          "relations": [
-            "assetAccessController"
-          ]
-        },
-        {
-          "name": "assetAccessController",
-          "relations": [
-            "authorizedUserRole"
-          ]
-        },
-        {
-          "name": "authorizedUserRole",
-          "optional": true
-        },
-        {
-          "name": "identityRegistryProgram",
-          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
-        },
-        {
-          "name": "identityRegistry"
-        },
-        {
-          "name": "identityAccount",
-          "writable": true
-        }
-      ],
-      "args": [
-        {
-          "name": "cpiData",
-          "type": "bytes"
         }
       ]
     },
@@ -1708,90 +1565,6 @@ export type RwaRbac = {
         }
       ],
       "args": []
-    },
-    {
-      "name": "removeLevelFromIdentityAccount",
-      "discriminator": [
-        194,
-        231,
-        187,
-        54,
-        197,
-        136,
-        170,
-        55
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controllerAuthority",
-          "relations": [
-            "assetAccessController"
-          ]
-        },
-        {
-          "name": "assetAccessController",
-          "relations": [
-            "authorizedUserRole"
-          ]
-        },
-        {
-          "name": "authorizedUserRole",
-          "optional": true
-        },
-        {
-          "name": "identityRegistryProgram",
-          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
-        },
-        {
-          "name": "identityRegistry"
-        },
-        {
-          "name": "identityAccount",
-          "writable": true
-        },
-        {
-          "name": "identityAccountOwner",
-          "docs": [
-            "to ensure that it is not an Investor account. If it is an Investor account,",
-            "CPI to IdentityMetadataRegistry should be called."
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "policyEngineProgram"
-        },
-        {
-          "name": "policyEngine",
-          "writable": true
-        },
-        {
-          "name": "trackerAccount"
-        },
-        {
-          "name": "assetMint"
-        },
-        {
-          "name": "eventAuthority"
-        }
-      ],
-      "args": [
-        {
-          "name": "cpiData",
-          "type": "bytes"
-        }
-      ]
     },
     {
       "name": "removeLevels",

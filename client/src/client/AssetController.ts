@@ -47,7 +47,6 @@ import {
   SeizeTokensArgs,
   TransferTokensArgs,
   UpdateAssetMetadataArgs,
-  VoidTokensArgs,
 } from "@dstoken-solana/rwa-token-sdk";
 import { TL_PROGRAM } from "../constants";
 import {
@@ -188,15 +187,6 @@ export class AssetController {
   }
 
   /**
-   * Asynchronously generates instructions to revoke assets.
-   * @param args - {@link VoidTokensArgs}
-   * @returns A Promise that resolves to the instructions to revoke assets.
-   */
-  async voidTokenIxns(args: VoidTokensArgs): Promise<TransactionInstruction> {
-    return this.rwaClient.assetController.voidTokenIxns(args);
-  }
-
-  /**
    * Executes a token transfer.
    * @param args - {@link TransferTokensArgs}
    * @returns A promise that resolves to transaction instruction.
@@ -281,17 +271,17 @@ export class AssetController {
   /**
    * Asynchronously generates instructions to revoke tokens from a user.
    * @param args - {@link RevokeTokensArgs}
-   * @param payer - Payer public key.
    * @param signer - User signer public key.
    * @param assetAccessController - RBAC AssetAccessController account.
+   * @param investorId - Optional investorId. Required if user is not an investor.
    * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
    * @returns A Promise that resolves to the instructions to revoke.
    */
   async revokeTokenIxn(
     args: RevokeTokensArgs,
-    investorId: string,
     signer: PublicKey,
     assetAccessController: PublicKey,
+    investorId?: string,
     authorizedUserRole?: PublicKey
   ): Promise<TransactionInstruction> {
     if (!args.wallet) {
@@ -302,7 +292,7 @@ export class AssetController {
 
     const revokeIx = await getRevokeTokensIx(args, this.rwaClient.provider);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
-    const investorPda = deriveInvestorPda(investorId, identityRegistry);
+    const investorPda = investorId ? deriveInvestorPda(investorId, identityRegistry) : null;
     const ixData = revokeIx.data;
     const assetController = getAssetControllerPda(args.assetMint);
     const revokeTokenAccount = getAssociatedTokenAddressSync(
@@ -326,11 +316,11 @@ export class AssetController {
         identityRegistry,
         identityAccount: getIdentityAccountPda(
           args.assetMint,
-          investorPda.toString()
+          investorId ? investorPda.toString() : args.owner
         ),
         trackerAccount: getTrackerAccountPda(
           args.assetMint,
-          investorPda.toString()
+          investorId ? investorPda.toString() : args.owner
         ),
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),

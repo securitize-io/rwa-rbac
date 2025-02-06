@@ -27,6 +27,7 @@ import {
 } from "@dstoken-solana/rwa-token-sdk";
 import { deriveControllerAuthorityPda } from "../pdas";
 import { SystemProgram } from "@solana/web3.js";
+import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
 /**
  * Represents the role-based access client for Identity Registry for an RWA.
@@ -142,132 +143,6 @@ export class IdentityRegistry {
   }
 
   /**
-   * Asynchronously update a non-investor user identity account level.
-   * @param args - {@link AddLevelToIdentityAccountArgs}
-   * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
-   * @returns A Promise that resolves to the instructions to update user account identity.
-   * */
-  async addIdentityLevelToUserAccount(
-    args: AddLevelToIdentityAccountArgs,
-    assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
-  ): Promise<TransactionInstruction> {
-    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
-    const controllerAuthority = deriveControllerAuthorityPda(
-      assetAccessController
-    );
-    return this.rbacProgram.methods
-      .addLevelToIdentityAccount(
-        args.levels[0],
-        args.expiries[0],
-        args.ignorePolicy ?? false
-      )
-      .accountsStrict({
-        payer: args.payer,
-        user: args.signer,
-        controllerAuthority,
-        assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
-        identityRegistryProgram: identityRegistryProgramId,
-        identityRegistry: getIdentityRegistryPda(args.assetMint),
-        identityAccount,
-        identityAccountOwner: args.owner,
-        systemProgram: SystemProgram.programId,
-        policyEngineProgram: policyEngineProgramId,
-        policyEngine: getPolicyEnginePda(args.assetMint),
-        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
-        assetMint: args.assetMint,
-        eventAuthority: getIdentityRegistryEventAuthority(),
-      })
-      .instruction();
-  }
-  /**
-   * Asynchronously reduces a non-Investor user identity account level.
-   * @param args - {@link RemoveLevelFromIdentityAccount}
-   * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
-   * @returns A Promise that resolves to the instructions to reduce the level of a user identity account.
-   */
-  async removeIdentityLevelFromUserAccount(
-    args: RemoveLevelFromIdentityAccountArgs,
-    assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
-  ): Promise<TransactionInstruction> {
-    const removeLevelIx = await getRemoveLevelFromIdentityAccount(
-      args,
-      this.rwaClient.provider
-    );
-    const ixData = removeLevelIx.data;
-    const controllerAuthority = deriveControllerAuthorityPda(
-      assetAccessController
-    );
-    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
-    return this.rbacProgram.methods
-      .removeLevelFromIdentityAccount(ixData)
-      .accountsStrict({
-        payer: args.payer,
-        user: args.signer,
-        controllerAuthority,
-        assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
-        identityRegistryProgram: identityRegistryProgramId,
-        identityRegistry: getIdentityRegistryPda(args.assetMint),
-        identityAccount,
-        identityAccountOwner: args.owner,
-        systemProgram: SystemProgram.programId,
-        policyEngineProgram: policyEngineProgramId,
-        policyEngine: getPolicyEnginePda(args.assetMint),
-        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
-        assetMint: args.assetMint,
-        eventAuthority: getIdentityRegistryEventAuthority(),
-      })
-      .instruction();
-  }
-
-  /**
-   * Asynchronously generates instruction to refresh expiry on an Identity Account level.
-   * @param args - {@link RefreshLevelArgs}
-   * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
-   * @returns A Promise that resolves to refresh expiry on an Identity Account level.
-   * */
-  async refreshLevelToIdentityAccountIxn(
-    args: RefreshLevelArgs,
-    assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
-  ): Promise<TransactionInstruction> {
-    const identityProgram = getIdentityRegistryProgram(this.rwaClient.provider);
-    const identityRegistry = getIdentityRegistryPda(args.assetMint);
-    const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
-    const controllerAuthority = deriveControllerAuthorityPda(
-      assetAccessController
-    );
-    const refreshIx = await identityProgram.methods
-      .refreshLevelToIdentityAccount(args.level, args.expiry)
-      .accountsStrict({
-        payer: args.payer,
-        signer: controllerAuthority,
-        identityRegistry,
-        identityAccount,
-      })
-      .instruction();
-    return this.rbacProgram.methods
-      .refreshLevelToIdentityAccount(refreshIx.data)
-      .accountsStrict({
-        payer: args.payer,
-        user: args.signer,
-        controllerAuthority,
-        assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
-        identityRegistryProgram: identityRegistryProgramId,
-        identityRegistry,
-        identityAccount,
-      })
-      .instruction();
-  }
-
-  /**
    * Asynchronously generates instruction to attach wallet to identity.
    * @param args - {@link AttachDetachWalletArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
@@ -349,6 +224,13 @@ export class IdentityRegistry {
       args.assetMint,
       args.wallet.toString()
     );
+    
+    const tokenAccount = getAssociatedTokenAddressSync(
+      new PublicKey(args.assetMint),
+      new PublicKey(args.wallet),
+      false,
+      TOKEN_2022_PROGRAM_ID
+    );
 
     const ix = await identityProgram.methods
       .detachWalletFromIdentity()
@@ -360,6 +242,8 @@ export class IdentityRegistry {
         identityRegistry,
         eventAuthority: getIdentityRegistryEventAuthority(),
         program: identityRegistryProgramId,
+        tokenAccount: tokenAccount,
+        assetMint: args.assetMint,
       })
       .instruction();
     return this.rbacProgram.methods
@@ -375,6 +259,8 @@ export class IdentityRegistry {
         identityAccount,
         identityRegistry,
         eventAuthority: getIdentityRegistryEventAuthority(),
+        tokenAccount: tokenAccount,
+        assetMint: args.assetMint,
       })
       .instruction();
   }

@@ -2,7 +2,6 @@ use anchor_lang::{prelude::Pubkey, pubkey};
 
 pub const POLICY_ENGINE_ID: Pubkey = pubkey!("FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2");
 pub const ASSET_CONTROLLER_ID: Pubkey = pubkey!("7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP");
-pub const DATA_REGISTRY_ID: Pubkey = pubkey!("JDxF8P4SctW8rB5s5FbupPFYecKFqLSv7fTES3cFei3b");
 pub const IDENTITY_METADATA_REGISTRY_ID: Pubkey =
     pubkey!("D2V7wTBbNCKgYwirgRUnSmc2QyKnHSVmRotWJ4rz8Jp9");
 pub const IDENTITY_REGISTRY_ID: Pubkey = pubkey!("GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA");
