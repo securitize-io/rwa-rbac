@@ -4,30 +4,28 @@ import { PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { RwaRbac } from "../types/generated/rwa_rbac";
 import {
   AttachDetachWalletArgs,
-  RefreshLevelArgs,
   RevokeIdentityArgs,
 } from "../types/instructions";
 import {
-  AddLevelToIdentityAccountArgs,
   getIdentityAccount,
   getIdentityAccountPda,
   getIdentityRegistryEventAuthority,
   getIdentityRegistryPda,
   getIdentityRegistryProgram,
-  getPolicyEnginePda,
-  getRemoveLevelFromIdentityAccount,
   getTrackerAccountPda,
   getWalletIdentityAccountPda,
   identityRegistryProgramId,
   IxReturn,
   policyEngineProgramId,
-  RemoveLevelFromIdentityAccountArgs,
   RwaClient,
   SetupUserArgs,
 } from "@dstoken-solana/rwa-token-sdk";
 import { deriveControllerAuthorityPda } from "../pdas";
 import { SystemProgram } from "@solana/web3.js";
-import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import {
+  getAssociatedTokenAddressSync,
+  TOKEN_2022_PROGRAM_ID,
+} from "@solana/spl-token";
 
 /**
  * Represents the role-based access client for Identity Registry for an RWA.
@@ -46,7 +44,7 @@ export class IdentityRegistry {
    * @param args - {@link SetupUserArgs}
    * @param authority - RBAC AssetAccessController ControllerAuthority.
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instructions to setup a user.
    *
    * It is required for at least a single user to be setup before issuing tokens.
@@ -60,7 +58,6 @@ export class IdentityRegistry {
     const returnIxs = [];
 
     const identityAccountIx = ixs[0];
-    const trackerAccountIx = ixs[1];
     const controllerAuthority = deriveControllerAuthorityPda(
       assetAccessController
     );
@@ -83,11 +80,12 @@ export class IdentityRegistry {
           ),
           systemProgram: SystemProgram.programId,
           eventAuthority: getIdentityRegistryEventAuthority(),
+          policyEngineProgram: policyEngineProgramId,
+          trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+          assetMint: args.assetMint,
         })
         .instruction()
     );
-
-    returnIxs.push(trackerAccountIx);
 
     return {
       ixs: returnIxs,
@@ -95,13 +93,12 @@ export class IdentityRegistry {
     };
   }
 
-  
   /**
    * Asynchronously generates instructions to remove a non-investor user with an identity account.
    * @param args - {@link SetupUserArgs}
    * @param authority - RBAC AssetAccessController ControllerAuthority.
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instructions to setup a user.
    *
    * It is required for at least a single user to be setup before issuing tokens.
@@ -111,9 +108,17 @@ export class IdentityRegistry {
     assetAccessController: PublicKey,
     authorizedUserRole?: PublicKey
   ): Promise<TransactionInstruction> {
-    const ix = await this.rwaClient.identityRegistry.revokeIdentityAccount(args);
-    const identityAccountAddress = getIdentityAccountPda(args.assetMint, args.owner);
-    const identityAccount = await getIdentityAccount(identityAccountAddress, this.rwaClient.provider);
+    const ix = await this.rwaClient.identityRegistry.revokeIdentityAccount(
+      args
+    );
+    const identityAccountAddress = getIdentityAccountPda(
+      args.assetMint,
+      args.owner
+    );
+    const identityAccount = await getIdentityAccount(
+      identityAccountAddress,
+      this.rwaClient.provider
+    );
 
     const controllerAuthority = deriveControllerAuthorityPda(
       assetAccessController
@@ -135,9 +140,11 @@ export class IdentityRegistry {
           ),
           eventAuthority: getIdentityRegistryEventAuthority(),
           identityOwner: identityAccount.owner,
+          policyEngineProgram: policyEngineProgramId,
+          trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+          assetMint: args.assetMint,
         })
         .instruction();
-
 
     return returnIx;
   }
@@ -146,7 +153,7 @@ export class IdentityRegistry {
    * Asynchronously generates instruction to attach wallet to identity.
    * @param args - {@link AttachDetachWalletArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to attach wallet.
    * */
   async attachWalletToIdentityIxn(
@@ -206,7 +213,7 @@ export class IdentityRegistry {
    * Asynchronously generates instruction to detach wallet from identity.
    * @param args - {@link AttachDetachWalletArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to detach wallet.
    * */
   async detachWalletFromIdentityIxn(
@@ -224,7 +231,7 @@ export class IdentityRegistry {
       args.assetMint,
       args.wallet.toString()
     );
-    
+
     const tokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
       new PublicKey(args.wallet),

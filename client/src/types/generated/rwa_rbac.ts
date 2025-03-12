@@ -48,8 +48,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "identityMetadataRegistryProgram",
@@ -136,8 +135,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "policyEngineProgram",
@@ -199,6 +197,7 @@ export type RwaRbac = {
         },
         {
           "name": "assetAccessController",
+          "writable": true,
           "relations": [
             "userRole",
             "authorizedUserRole"
@@ -293,8 +292,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "policyEngineProgram",
@@ -354,8 +352,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "identityRegistryProgram",
@@ -425,8 +422,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "policyEngineProgram",
@@ -486,8 +482,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "policyEngineProgram",
@@ -547,8 +542,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "identityMetadataRegistryProgram",
@@ -628,8 +622,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "policyEngineProgram",
@@ -685,8 +678,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "policyEngineProgram",
@@ -698,63 +690,6 @@ export type RwaRbac = {
         },
         {
           "name": "eventAuthority"
-        }
-      ],
-      "args": [
-        {
-          "name": "cpiData",
-          "type": "bytes"
-        }
-      ]
-    },
-    {
-      "name": "closeMintAccount",
-      "discriminator": [
-        14,
-        121,
-        72,
-        246,
-        96,
-        224,
-        42,
-        162
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controllerAuthority",
-          "writable": true,
-          "relations": [
-            "assetAccessController"
-          ]
-        },
-        {
-          "name": "assetAccessController",
-          "relations": [
-            "authorizedUserRole"
-          ]
-        },
-        {
-          "name": "authorizedUserRole",
-          "optional": true
-        },
-        {
-          "name": "assetControllerProgram",
-          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
-        },
-        {
-          "name": "assetMint",
-          "writable": true
-        },
-        {
-          "name": "assetController"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
         }
       ],
       "args": [
@@ -792,8 +727,8 @@ export type RwaRbac = {
           "pda": {
             "seeds": [
               {
-                "kind": "arg",
-                "path": "uniqueSeed"
+                "kind": "account",
+                "path": "assetMint"
               },
               {
                 "kind": "const",
@@ -825,14 +760,61 @@ export type RwaRbac = {
           }
         },
         {
+          "name": "assetAccessControllerAuthority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "assetAccessController"
+              }
+            ]
+          }
+        },
+        {
+          "name": "assetController",
+          "writable": true
+        },
+        {
+          "name": "assetMint",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "extraMetasAccount",
+          "writable": true
+        },
+        {
+          "name": "policyEngineAccount",
+          "writable": true
+        },
+        {
+          "name": "identityRegistryAccount",
+          "writable": true
+        },
+        {
+          "name": "policyEngineProgram"
+        },
+        {
+          "name": "identityRegistryProgram"
+        },
+        {
+          "name": "assetControllerProgram"
+        },
+        {
+          "name": "assetControllerEventAuthority"
+        },
+        {
+          "name": "tokenProgram"
+        },
+        {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "uniqueSeed",
-          "type": "pubkey"
+          "name": "cpiData",
+          "type": "bytes"
         }
       ]
     },
@@ -871,8 +853,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "identityRegistryProgram",
@@ -888,6 +869,16 @@ export type RwaRbac = {
         {
           "name": "walletIdentity",
           "writable": true
+        },
+        {
+          "name": "policyEngineProgram"
+        },
+        {
+          "name": "trackerAccount",
+          "writable": true
+        },
+        {
+          "name": "assetMint"
         },
         {
           "name": "systemProgram",
@@ -958,6 +949,10 @@ export type RwaRbac = {
         {
           "name": "allowedMediciIxs",
           "type": "u64"
+        },
+        {
+          "name": "isMasterRole",
+          "type": "bool"
         }
       ]
     },
@@ -1035,8 +1030,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "policyEngineProgram",
@@ -1097,8 +1091,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "identityRegistryProgram",
@@ -1162,8 +1155,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "assetControllerProgram",
@@ -1228,8 +1220,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "assetControllerProgram",
@@ -1377,8 +1368,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "identityMetadataRegistryProgram",
@@ -1402,6 +1392,16 @@ export type RwaRbac = {
         {
           "name": "walletIdentity",
           "writable": true
+        },
+        {
+          "name": "policyEngineProgram"
+        },
+        {
+          "name": "trackerAccount",
+          "writable": true
+        },
+        {
+          "name": "assetMint"
         },
         {
           "name": "eventAuthorityIdentityMetadataRegistry"
@@ -1456,8 +1456,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "identityRegistryProgram",
@@ -1479,6 +1478,16 @@ export type RwaRbac = {
         },
         {
           "name": "identityOwner"
+        },
+        {
+          "name": "policyEngineProgram"
+        },
+        {
+          "name": "trackerAccount",
+          "writable": true
+        },
+        {
+          "name": "assetMint"
         }
       ],
       "args": [
@@ -1523,8 +1532,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "identityMetadataRegistryProgram",
@@ -1562,6 +1570,9 @@ export type RwaRbac = {
         },
         {
           "name": "eventAuthorityIdentityRegistry"
+        },
+        {
+          "name": "assetMint"
         }
       ],
       "args": []
@@ -1601,8 +1612,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "identityMetadataRegistryProgram",
@@ -1686,8 +1696,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "policyEngineProgram",
@@ -1830,8 +1839,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "assetControllerProgram",
@@ -1922,8 +1930,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "assetControllerProgram",
@@ -1993,8 +2000,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "policyEngineProgram",
@@ -2079,8 +2085,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "assetControllerProgram",
@@ -2092,10 +2097,6 @@ export type RwaRbac = {
         },
         {
           "name": "assetController"
-        },
-        {
-          "name": "identityRegistryAccount",
-          "writable": true
         },
         {
           "name": "tokenAccount",
@@ -2149,8 +2150,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "assetControllerProgram",
@@ -2244,8 +2244,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "assetControllerProgram",
@@ -2291,11 +2290,8 @@ export type RwaRbac = {
           "writable": true
         },
         {
-          "name": "admin",
-          "signer": true,
-          "relations": [
-            "assetAccessController"
-          ]
+          "name": "user",
+          "signer": true
         },
         {
           "name": "controllerAuthority",
@@ -2305,7 +2301,14 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "assetAccessController"
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
         },
         {
           "name": "systemProgram",
@@ -2411,6 +2414,36 @@ export type RwaRbac = {
       "code": 6007,
       "name": "illegalOperation",
       "msg": "Illegal operation"
+    },
+    {
+      "code": 6008,
+      "name": "invalidFlags",
+      "msg": "Invalid flag bits"
+    },
+    {
+      "code": 6009,
+      "name": "cannotEmptyMasterRole",
+      "msg": "Cannot empty master role of users"
+    },
+    {
+      "code": 6010,
+      "name": "cannotVoidAuthority",
+      "msg": "Cannot void authority"
+    },
+    {
+      "code": 6011,
+      "name": "invalidMasterRole",
+      "msg": "Invalid master role"
+    },
+    {
+      "code": 6012,
+      "name": "cannotDeleteMasterRole",
+      "msg": "Cannot delete master role"
+    },
+    {
+      "code": 6013,
+      "name": "unauthorizedSigner",
+      "msg": "Unauthorized admin signer"
     }
   ],
   "types": [
@@ -2441,9 +2474,9 @@ export type RwaRbac = {
             "type": "pubkey"
           },
           {
-            "name": "uniqueSeed",
+            "name": "assetMint",
             "docs": [
-              "Unique seed used for creating this account."
+              "Asset mint that is going to be managed by this controller."
             ],
             "type": "pubkey"
           },
@@ -2453,6 +2486,13 @@ export type RwaRbac = {
               "Number of UserRoles created since initialization. Used for deriving all created UserRole PDAs."
             ],
             "type": "u64"
+          },
+          {
+            "name": "hasMasterRole",
+            "docs": [
+              "Whether a master role exists."
+            ],
+            "type": "bool"
           },
           {
             "name": "lutAddress",
@@ -2488,7 +2528,7 @@ export type RwaRbac = {
             "type": "pubkey"
           },
           {
-            "name": "seed",
+            "name": "assetMint",
             "type": "pubkey"
           }
         ]
@@ -2518,7 +2558,7 @@ export type RwaRbac = {
             "type": "pubkey"
           },
           {
-            "name": "seed",
+            "name": "assetMint",
             "type": "pubkey"
           }
         ]
@@ -2563,6 +2603,13 @@ export type RwaRbac = {
               "Bitflag of allowed Medici CPI instructions."
             ],
             "type": "u64"
+          },
+          {
+            "name": "isMasterRole",
+            "docs": [
+              "If true, this is the master role."
+            ],
+            "type": "bool"
           },
           {
             "name": "users",

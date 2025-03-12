@@ -74,7 +74,10 @@ pub fn handler(ctx: Context<AttachWalletByInvestor>, new_wallet: Pubkey) -> Resu
                 AccountMeta::new_readonly(ctx.accounts.asset_mint.key(), false),
                 AccountMeta::new(ctx.accounts.new_wallet_identity.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
-                AccountMeta::new_readonly(ctx.accounts.event_authority_identity_registry.key(), false),
+                AccountMeta::new_readonly(
+                    ctx.accounts.event_authority_identity_registry.key(),
+                    false,
+                ),
                 AccountMeta::new_readonly(ctx.accounts.identity_registry_program.key(), false),
             ],
             data: cpi_data,
@@ -87,7 +90,9 @@ pub fn handler(ctx: Context<AttachWalletByInvestor>, new_wallet: Pubkey) -> Resu
             ctx.accounts.asset_mint.to_account_info(),
             ctx.accounts.new_wallet_identity.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
-            ctx.accounts.event_authority_identity_registry.to_account_info(),
+            ctx.accounts
+                .event_authority_identity_registry
+                .to_account_info(),
             ctx.accounts.identity_registry_program.to_account_info(),
         ],
         signers_seeds,

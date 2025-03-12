@@ -11,11 +11,14 @@ pub struct AssetAccessController {
     /// Admin keypair that's allowed to manage this controller.
     pub admin: Pubkey,
 
-    /// Unique seed used for creating this account.
-    pub unique_seed: Pubkey,
+    /// Asset mint that is going to be managed by this controller.
+    pub asset_mint: Pubkey,
 
     /// Number of UserRoles created since initialization. Used for deriving all created UserRole PDAs.
     pub user_roles_count: u64,
+
+    /// Whether a master role exists.
+    pub has_master_role: bool,
 
     /// Address of the lookup table.
     pub lut_address: Pubkey,

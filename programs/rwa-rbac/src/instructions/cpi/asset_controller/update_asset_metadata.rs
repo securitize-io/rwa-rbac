@@ -18,7 +18,7 @@ pub struct UpdateAssetMetadata<'info> {
     #[account(has_one = controller_authority)]
     pub asset_access_controller: Account<'info, AssetAccessController>,
     #[account(has_one = asset_access_controller)]
-    pub authorized_user_role: Option<Account<'info, UserRole>>,
+    pub authorized_user_role: Box<Account<'info, UserRole>>,
     /// CHECK: Checked against known program address.
     #[account(address = ASSET_CONTROLLER_ID)]
     pub asset_controller_program: UncheckedAccount<'info>,
@@ -36,11 +36,10 @@ pub struct UpdateAssetMetadata<'info> {
 pub fn handler(ctx: Context<UpdateAssetMetadata>, cpi_data: Vec<u8>) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
-    // Verify that signer is either a controller admin or has authorized user role.
+    // Verify that signer has authorized user role.
     verify_medici_signer(
-        ctx.accounts.user.key(),
-        controller,
-        ctx.accounts.authorized_user_role.clone(),
+        &ctx.accounts.user.key(),
+        &ctx.accounts.authorized_user_role,
         MediciFlags::UPDATE_ASSET_METADATA,
     )?;
 

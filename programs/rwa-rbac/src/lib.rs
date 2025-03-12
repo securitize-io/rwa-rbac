@@ -21,9 +21,9 @@ pub mod rwa_rbac {
 
     pub fn create_controller(
         ctx: Context<CreateAssetAccessController>,
-        unique_seed: Pubkey,
+        cpi_data: Vec<u8>,
     ) -> Result<()> {
-        instructions::create_controller::handler(ctx, unique_seed)
+        instructions::create_controller::handler(ctx, cpi_data)
     }
 
     pub fn update_controller_admin(
@@ -42,8 +42,9 @@ pub mod rwa_rbac {
         name: String,
         allowed_admin_ixs: u64,
         allowed_medici_ixs: u64,
+        is_master_role: bool,
     ) -> Result<()> {
-        instructions::create_user_role::handler(ctx, name, allowed_admin_ixs, allowed_medici_ixs)
+        instructions::create_user_role::handler(ctx, name, allowed_admin_ixs, allowed_medici_ixs, is_master_role)
     }
 
     pub fn modify_user_role(
@@ -74,7 +75,8 @@ pub mod rwa_rbac {
     }
 
     pub fn issue_tokens<'info>(
-        ctx: Context<'_, '_, '_, 'info, IssueTokens<'info>>, cpi_data: Vec<u8>
+        ctx: Context<'_, '_, '_, 'info, IssueTokens<'info>>,
+        cpi_data: Vec<u8>,
     ) -> Result<()> {
         instructions::issue_tokens::handler(ctx, cpi_data)
     }
@@ -106,10 +108,6 @@ pub mod rwa_rbac {
         cpi_data: Vec<u8>,
     ) -> Result<()> {
         instructions::revoke_tokens::handler(ctx, cpi_data)
-    }
-
-    pub fn close_mint_account(ctx: Context<CloseMintAccount>, cpi_data: Vec<u8>) -> Result<()> {
-        instructions::close_mint_account::handler(ctx, cpi_data)
     }
 
     pub fn update_interest_bearing_mint_rate(
@@ -181,7 +179,10 @@ pub mod rwa_rbac {
         instructions::create_identity_account::handler(ctx, cpi_data)
     }
 
-    pub fn remove_identity_account(ctx: Context<RemoveIdentityAccount>, cpi_data: Vec<u8>) -> Result<()> {
+    pub fn remove_identity_account(
+        ctx: Context<RemoveIdentityAccount>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
         instructions::remove_identity_account::handler(ctx, cpi_data)
     }
 

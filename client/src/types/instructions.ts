@@ -6,7 +6,12 @@ import { CommonArgs } from "@dstoken-solana/rwa-token-sdk";
 export type CreateControllerArgs = {
   payer: PublicKey;
   admin: PublicKey;
-  uniqueSeed: PublicKey;
+  assetMint: PublicKey;
+  decimals: number;
+  name: string;
+  uri: string;
+  symbol: string;
+  interestRate?: number;
 };
 
 /** Args used to update admin on AssetAccessController  */
@@ -25,6 +30,7 @@ export type SetupUserRoleArgs = {
   allowedAdminIxs: number;
   allowedMediciIxs: number;
   authorizedUserRole?: PublicKey;
+  isMasterRole?: boolean;
 };
 
 /** Args used to modify a UserRole */
@@ -72,6 +78,7 @@ export type WithdrawExcessRentArgs = {
   admin: PublicKey;
   controllerAuthority: PublicKey;
   assetAccessController: PublicKey;
+  authorizedUserRole?: PublicKey;
 };
 
 /** Args used to seize tokens  */

@@ -42,8 +42,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "identity_metadata_registry_program",
@@ -130,8 +129,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "policy_engine_program",
@@ -193,6 +191,7 @@
         },
         {
           "name": "asset_access_controller",
+          "writable": true,
           "relations": [
             "user_role",
             "authorized_user_role"
@@ -287,8 +286,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "policy_engine_program",
@@ -348,8 +346,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "identity_registry_program",
@@ -419,8 +416,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "policy_engine_program",
@@ -480,8 +476,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "policy_engine_program",
@@ -541,8 +536,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "identity_metadata_registry_program",
@@ -622,8 +616,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "policy_engine_program",
@@ -679,8 +672,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "policy_engine_program",
@@ -692,63 +684,6 @@
         },
         {
           "name": "event_authority"
-        }
-      ],
-      "args": [
-        {
-          "name": "cpi_data",
-          "type": "bytes"
-        }
-      ]
-    },
-    {
-      "name": "close_mint_account",
-      "discriminator": [
-        14,
-        121,
-        72,
-        246,
-        96,
-        224,
-        42,
-        162
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controller_authority",
-          "writable": true,
-          "relations": [
-            "asset_access_controller"
-          ]
-        },
-        {
-          "name": "asset_access_controller",
-          "relations": [
-            "authorized_user_role"
-          ]
-        },
-        {
-          "name": "authorized_user_role",
-          "optional": true
-        },
-        {
-          "name": "asset_controller_program",
-          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
-        },
-        {
-          "name": "asset_mint",
-          "writable": true
-        },
-        {
-          "name": "asset_controller"
-        },
-        {
-          "name": "token_program",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
         }
       ],
       "args": [
@@ -786,8 +721,8 @@
           "pda": {
             "seeds": [
               {
-                "kind": "arg",
-                "path": "unique_seed"
+                "kind": "account",
+                "path": "asset_mint"
               },
               {
                 "kind": "const",
@@ -819,14 +754,61 @@
           }
         },
         {
+          "name": "asset_access_controller_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_access_controller"
+              }
+            ]
+          }
+        },
+        {
+          "name": "asset_controller",
+          "writable": true
+        },
+        {
+          "name": "asset_mint",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "extra_metas_account",
+          "writable": true
+        },
+        {
+          "name": "policy_engine_account",
+          "writable": true
+        },
+        {
+          "name": "identity_registry_account",
+          "writable": true
+        },
+        {
+          "name": "policy_engine_program"
+        },
+        {
+          "name": "identity_registry_program"
+        },
+        {
+          "name": "asset_controller_program"
+        },
+        {
+          "name": "asset_controller_event_authority"
+        },
+        {
+          "name": "token_program"
+        },
+        {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "unique_seed",
-          "type": "pubkey"
+          "name": "cpi_data",
+          "type": "bytes"
         }
       ]
     },
@@ -865,8 +847,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "identity_registry_program",
@@ -882,6 +863,16 @@
         {
           "name": "wallet_identity",
           "writable": true
+        },
+        {
+          "name": "policy_engine_program"
+        },
+        {
+          "name": "tracker_account",
+          "writable": true
+        },
+        {
+          "name": "asset_mint"
         },
         {
           "name": "system_program",
@@ -952,6 +943,10 @@
         {
           "name": "allowed_medici_ixs",
           "type": "u64"
+        },
+        {
+          "name": "is_master_role",
+          "type": "bool"
         }
       ]
     },
@@ -1029,8 +1024,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "policy_engine_program",
@@ -1091,8 +1085,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "identity_registry_program",
@@ -1156,8 +1149,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "asset_controller_program",
@@ -1222,8 +1214,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "asset_controller_program",
@@ -1371,8 +1362,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "identity_metadata_registry_program",
@@ -1396,6 +1386,16 @@
         {
           "name": "wallet_identity",
           "writable": true
+        },
+        {
+          "name": "policy_engine_program"
+        },
+        {
+          "name": "tracker_account",
+          "writable": true
+        },
+        {
+          "name": "asset_mint"
         },
         {
           "name": "event_authority_identity_metadata_registry"
@@ -1450,8 +1450,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "identity_registry_program",
@@ -1473,6 +1472,16 @@
         },
         {
           "name": "identity_owner"
+        },
+        {
+          "name": "policy_engine_program"
+        },
+        {
+          "name": "tracker_account",
+          "writable": true
+        },
+        {
+          "name": "asset_mint"
         }
       ],
       "args": [
@@ -1517,8 +1526,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "identity_metadata_registry_program",
@@ -1556,6 +1564,9 @@
         },
         {
           "name": "event_authority_identity_registry"
+        },
+        {
+          "name": "asset_mint"
         }
       ],
       "args": []
@@ -1595,8 +1606,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "identity_metadata_registry_program",
@@ -1680,8 +1690,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "policy_engine_program",
@@ -1824,8 +1833,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "asset_controller_program",
@@ -1916,8 +1924,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "asset_controller_program",
@@ -1987,8 +1994,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "policy_engine_program",
@@ -2073,8 +2079,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "asset_controller_program",
@@ -2086,10 +2091,6 @@
         },
         {
           "name": "asset_controller"
-        },
-        {
-          "name": "identity_registry_account",
-          "writable": true
         },
         {
           "name": "token_account",
@@ -2143,8 +2144,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "asset_controller_program",
@@ -2238,8 +2238,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "asset_controller_program",
@@ -2285,11 +2284,8 @@
           "writable": true
         },
         {
-          "name": "admin",
-          "signer": true,
-          "relations": [
-            "asset_access_controller"
-          ]
+          "name": "user",
+          "signer": true
         },
         {
           "name": "controller_authority",
@@ -2299,7 +2295,14 @@
           ]
         },
         {
-          "name": "asset_access_controller"
+          "name": "asset_access_controller",
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role",
+          "optional": true
         },
         {
           "name": "system_program",
@@ -2405,6 +2408,36 @@
       "code": 6007,
       "name": "IllegalOperation",
       "msg": "Illegal operation"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidFlags",
+      "msg": "Invalid flag bits"
+    },
+    {
+      "code": 6009,
+      "name": "CannotEmptyMasterRole",
+      "msg": "Cannot empty master role of users"
+    },
+    {
+      "code": 6010,
+      "name": "CannotVoidAuthority",
+      "msg": "Cannot void authority"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidMasterRole",
+      "msg": "Invalid master role"
+    },
+    {
+      "code": 6012,
+      "name": "CannotDeleteMasterRole",
+      "msg": "Cannot delete master role"
+    },
+    {
+      "code": 6013,
+      "name": "UnauthorizedSigner",
+      "msg": "Unauthorized admin signer"
     }
   ],
   "types": [
@@ -2435,9 +2468,9 @@
             "type": "pubkey"
           },
           {
-            "name": "unique_seed",
+            "name": "asset_mint",
             "docs": [
-              "Unique seed used for creating this account."
+              "Asset mint that is going to be managed by this controller."
             ],
             "type": "pubkey"
           },
@@ -2447,6 +2480,13 @@
               "Number of UserRoles created since initialization. Used for deriving all created UserRole PDAs."
             ],
             "type": "u64"
+          },
+          {
+            "name": "has_master_role",
+            "docs": [
+              "Whether a master role exists."
+            ],
+            "type": "bool"
           },
           {
             "name": "lut_address",
@@ -2482,7 +2522,7 @@
             "type": "pubkey"
           },
           {
-            "name": "seed",
+            "name": "asset_mint",
             "type": "pubkey"
           }
         ]
@@ -2512,7 +2552,7 @@
             "type": "pubkey"
           },
           {
-            "name": "seed",
+            "name": "asset_mint",
             "type": "pubkey"
           }
         ]
@@ -2557,6 +2597,13 @@
               "Bitflag of allowed Medici CPI instructions."
             ],
             "type": "u64"
+          },
+          {
+            "name": "is_master_role",
+            "docs": [
+              "If true, this is the master role."
+            ],
+            "type": "bool"
           },
           {
             "name": "users",

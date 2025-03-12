@@ -11,7 +11,12 @@ pub struct ChangeCountry<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub authority: Signer<'info>,
-    #[account(mut, has_one = authority)]
+    #[account(
+        mut,
+        has_one = authority,
+        has_one = identity_account,
+        has_one = identity_registry,
+    )]
     pub investor: Account<'info, Investor>,
     /// CHECK: Checked against known program address.
     #[account(address = IDENTITY_REGISTRY_ID)]
@@ -58,7 +63,10 @@ pub fn handler(ctx: Context<ChangeCountry>, new_country: u8, enforce_limits: boo
                 AccountMeta::new(ctx.accounts.policy_engine.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.tracker_account.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.asset_mint.key(), false),
-                AccountMeta::new_readonly(ctx.accounts.event_authority_identity_registry.key(), false),
+                AccountMeta::new_readonly(
+                    ctx.accounts.event_authority_identity_registry.key(),
+                    false,
+                ),
                 AccountMeta::new_readonly(ctx.accounts.identity_registry_program.key(), false),
             ],
             data: data,
@@ -72,7 +80,9 @@ pub fn handler(ctx: Context<ChangeCountry>, new_country: u8, enforce_limits: boo
             ctx.accounts.policy_engine.to_account_info(),
             ctx.accounts.tracker_account.to_account_info(),
             ctx.accounts.asset_mint.to_account_info(),
-            ctx.accounts.event_authority_identity_registry.to_account_info(),
+            ctx.accounts
+                .event_authority_identity_registry
+                .to_account_info(),
             ctx.accounts.identity_registry_program.to_account_info(),
         ],
     )?;

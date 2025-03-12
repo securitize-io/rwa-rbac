@@ -2,12 +2,10 @@ import { Program } from "@coral-xyz/anchor";
 import {
   PublicKey,
   SystemProgram,
-  SYSVAR_INSTRUCTIONS_PUBKEY,
   TransactionInstruction,
 } from "@solana/web3.js";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccountInstruction,
   getAssociatedTokenAddressSync,
   TOKEN_2022_PROGRAM_ID,
 } from "@solana/spl-token";
@@ -20,12 +18,10 @@ import {
 import { RwaRbac } from "../types/generated/rwa_rbac";
 import {
   assetControllerProgramId,
-  CloseMintArgs,
   CreateAssetControllerIx,
   FreezeTokenArgs,
   getAssetControllerEventAuthority,
   getAssetControllerPda,
-  getCloseMintIx,
   getCreateAssetControllerIx,
   getExtraMetasListPda,
   getFreezeTokenIx,
@@ -40,7 +36,6 @@ import {
   getUpdateInterestBearingMintRateIx,
   getWalletIdentityAccountPda,
   identityRegistryProgramId,
-  IssueTokenArgs,
   policyEngineProgramId,
   RevokeTokensArgs,
   RwaClient,
@@ -48,13 +43,9 @@ import {
   TransferTokensArgs,
   UpdateAssetMetadataArgs,
 } from "@dstoken-solana/rwa-token-sdk";
-import { TL_PROGRAM } from "../constants";
 import {
-  deriveInvestorLocks,
   deriveControllerAuthorityPda,
   deriveInvestorPda,
-  deriveLockedTokenAccount,
-  getEventAuthority,
 } from "../pdas";
 
 /**
@@ -74,7 +65,7 @@ export class AssetController {
    * @param args - {@link CreateAssetControllerIx}
    * @returns A Promise that resolves to the instructions to create an asset controller.
    */
-  async setupNewRegistry(args: CreateAssetControllerIx) {
+  async setupNewRegistry(args: CreateAssetControllerIx): Promise<TransactionInstruction> {
     return getCreateAssetControllerIx(args, this.rwaClient.provider);
   }
 
@@ -82,13 +73,13 @@ export class AssetController {
    * Update the asset controller's metadata.
    * @param args - {@link UpdateAssetMetadataArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instructions to update the asset controller's metadata.
    * */
   async updateAssetMetadata(
     args: UpdateAssetMetadataArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
     const updateIx = await this.rwaClient.assetController.updateAssetMetadata(
       args
@@ -116,11 +107,13 @@ export class AssetController {
    * Asynchronously generates instructions to issue tokens and lock tokens according to issuance policy.
    * @param args - {@link IssueTokensWithLockArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    */
-  async issueTokenIxns(args: IssueTokensArgs,
+  async issueTokenIxns(
+    args: IssueTokensArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey): Promise<TransactionInstruction>  {
+    authorizedUserRole: PublicKey
+  ): Promise<TransactionInstruction> {
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const controllerAuthority = deriveControllerAuthorityPda(
       assetAccessController
@@ -147,11 +140,11 @@ export class AssetController {
 
     const ixData = issueTokensIxs[0].data;
     const tokenAccount = getAssociatedTokenAddressSync(
-        new PublicKey(args.assetMint),
-        new PublicKey(args.wallet),
-        false,
-        TOKEN_2022_PROGRAM_ID
-      );
+      new PublicKey(args.assetMint),
+      new PublicKey(args.wallet),
+      false,
+      TOKEN_2022_PROGRAM_ID
+    );
 
     return await this.rbacProgram.methods
       .issueTokens(ixData)
@@ -199,13 +192,13 @@ export class AssetController {
    * Asynchronously generates instruction to freeze a token account.
    * @param args - {@link FreezeTokenArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instruction to freeze.
    */
   async freezeTokenIxn(
     args: FreezeTokenArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
     const freezeIx = await getFreezeTokenIx(args, this.rwaClient.provider);
     const ixData = freezeIx.data;
@@ -235,13 +228,13 @@ export class AssetController {
    * Asynchronously generates instruction to thaw a token account.
    * @param args - {@link FreezeTokenArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instruction to thaw.
    */
   async thawTokenIxn(
     args: FreezeTokenArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
     const thawIx = await getThawTokenIx(args, this.rwaClient.provider);
     const ixData = thawIx.data;
@@ -261,7 +254,6 @@ export class AssetController {
         assetControllerProgram: assetControllerProgramId,
         assetMint: args.assetMint,
         assetController: getAssetControllerPda(args.assetMint),
-        identityRegistryAccount: getIdentityRegistryPda(args.assetMint),
         tokenAccount,
         tokenProgram: TOKEN_2022_PROGRAM_ID,
       })
@@ -273,16 +265,16 @@ export class AssetController {
    * @param args - {@link RevokeTokensArgs}
    * @param signer - User signer public key.
    * @param assetAccessController - RBAC AssetAccessController account.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @param investorId - Optional investorId. Required if user is not an investor.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
    * @returns A Promise that resolves to the instructions to revoke.
    */
   async revokeTokenIxn(
     args: RevokeTokensArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    investorId?: string,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey,
+    investorId?: string
   ): Promise<TransactionInstruction> {
     if (!args.wallet) {
       throw new Error("Use wallet arg for wallet to revoke tokens from.");
@@ -292,7 +284,9 @@ export class AssetController {
 
     const revokeIx = await getRevokeTokensIx(args, this.rwaClient.provider);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
-    const investorPda = investorId ? deriveInvestorPda(investorId, identityRegistry) : null;
+    const investorPda = investorId
+      ? deriveInvestorPda(investorId, identityRegistry)
+      : null;
     const ixData = revokeIx.data;
     const assetController = getAssetControllerPda(args.assetMint);
     const revokeTokenAccount = getAssociatedTokenAddressSync(
@@ -337,45 +331,16 @@ export class AssetController {
   }
 
   /**
-   * Asynchronously generates instruction to close mint.
-   * @param args - {@link CloseMintArgs}
-   * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
-   * @returns A Promise that resolves to the instruction to close mint.
-   */
-  async closeMintIxn(
-    args: CloseMintArgs,
-    assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
-  ): Promise<TransactionInstruction> {
-    const closeIx = await getCloseMintIx(args, this.rwaClient.provider);
-    const ixData = closeIx.data;
-    return this.rbacProgram.methods
-      .closeMintAccount(ixData)
-      .accountsStrict({
-        user: args.signer,
-        controllerAuthority: args.authority,
-        assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
-        assetControllerProgram: assetControllerProgramId,
-        assetMint: args.assetMint,
-        assetController: getAssetControllerPda(args.assetMint),
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
-      })
-      .instruction();
-  }
-
-  /**
    * Asynchronously generates instruction to update mint interest rate.
    * @param args - {@link UpdateInterestBearingMintRateArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instruction to update mint interest rate.
    */
   async updateInterestBearingMintRateIxn(
     args: UpdateInterestBearingMintRateArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
     const updateIx = await getUpdateInterestBearingMintRateIx(
       args,
@@ -403,7 +368,7 @@ export class AssetController {
    * @param args - {@link SeizeTokensArgs}
    * @param signer - User signer public key.
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instruction to seize.
    */
   async seizeTokensIxn(
@@ -411,11 +376,14 @@ export class AssetController {
     investorId: string,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investorPda = deriveInvestorPda(investorId, identityRegistry);
-    const [_, seizeIx] = await getSeizeTokensIx({...args, wallet: args.from, from: investorPda.toString()}, this.rwaClient.provider);
+    const [_, seizeIx] = await getSeizeTokensIx(
+      { ...args, wallet: args.from, from: investorPda.toString() },
+      this.rwaClient.provider
+    );
     return this.rbacProgram.methods
       .seizeTokens(seizeIx.data)
       .accountsStrict({

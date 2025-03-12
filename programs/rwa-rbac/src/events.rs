@@ -6,7 +6,7 @@ pub struct AssignUserRoleEvent {
     pub role: String,
     pub role_id: u64,
     pub sender: Pubkey,
-    pub seed: Pubkey,
+    pub asset_mint: Pubkey,
 }
 
 #[event]
@@ -15,5 +15,5 @@ pub struct RemoveUserRoleEvent {
     pub role: String,
     pub role_id: u64,
     pub sender: Pubkey,
-    pub seed: Pubkey,
+    pub asset_mint: Pubkey,
 }

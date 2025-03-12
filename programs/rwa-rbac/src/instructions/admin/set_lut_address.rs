@@ -15,9 +15,7 @@ pub struct SetLookuptableAddress<'info> {
     pub lut_address: UncheckedAccount<'info>,
 }
 
-pub fn handler(
-    ctx: Context<SetLookuptableAddress>,
-) -> Result<()> {
+pub fn handler(ctx: Context<SetLookuptableAddress>) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
     // Verify that signer is either a controller admin or has authorized user role.

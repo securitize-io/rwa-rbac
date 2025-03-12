@@ -41,11 +41,17 @@
           "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
-          "name": "identity_registry"
+          "name": "identity_registry",
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "identity_account",
-          "writable": true
+          "writable": true,
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "system_program",
@@ -224,11 +230,17 @@
           "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
-          "name": "identity_registry"
+          "name": "identity_registry",
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "identity_account",
-          "writable": true
+          "writable": true,
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "policy_engine_program"
@@ -326,6 +338,16 @@
         {
           "name": "wallet_identity",
           "writable": true
+        },
+        {
+          "name": "policy_engine_program"
+        },
+        {
+          "name": "tracker_account",
+          "writable": true
+        },
+        {
+          "name": "asset_mint"
         },
         {
           "name": "system_program",
@@ -428,11 +450,17 @@
           "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
-          "name": "identity_registry"
+          "name": "identity_registry",
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "identity_account",
-          "writable": true
+          "writable": true,
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "wallet_identity",
@@ -448,6 +476,9 @@
         },
         {
           "name": "event_authority_identity_registry"
+        },
+        {
+          "name": "asset_mint"
         },
         {
           "name": "event_authority",
@@ -518,11 +549,17 @@
           "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
-          "name": "identity_registry"
+          "name": "identity_registry",
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "identity_account",
-          "writable": true
+          "writable": true,
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "system_program",

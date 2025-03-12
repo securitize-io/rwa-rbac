@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{state::*, verify_admin_signer};
+use crate::{state::*, verify_admin_signer, error::ErrorCode};
 
 #[derive(Accounts)]
 pub struct DeleteUserRole<'info> {
@@ -27,6 +27,11 @@ pub fn handler(ctx: Context<DeleteUserRole>) -> Result<()> {
         ctx.accounts.authorized_user_role.clone(),
         AdminFlags::CREATE_OR_DELETE_USER_ROLE,
     )?;
+
+    require!(
+        !ctx.accounts.user_role.is_master_role,
+        ErrorCode::CannotDeleteMasterRole
+    );
 
     Ok(())
 }

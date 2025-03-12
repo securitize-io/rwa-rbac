@@ -1,10 +1,12 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Wallet } from "@coral-xyz/anchor";
 import {
+  ComputeBudgetProgram,
   Connection,
   Keypair,
   sendAndConfirmTransaction,
   Transaction,
+  SystemProgram,
 } from "@solana/web3.js";
 import { setupTests } from "./utils";
 import {
@@ -31,15 +33,47 @@ describe("Admin Ixs Test", () => {
     rwaRbacClient = new RwaRbacClient(setup.config, provider);
   });
 
+  it("Fails to create AssetAccessController with unauthorized signer", async () => {
+    const ix = await rwaRbacClient.createAssetAccessControllerIxn({
+      payer: setup.payer,
+      admin: setup.signer2,
+      assetMint: setup.assetMint,
+      decimals: 2,
+      name: "Test Class Asset",
+      uri: "https://test.com",
+      symbol: "TFT",
+      interestRate: null,
+    });
+    const cb = ComputeBudgetProgram.setComputeUnitLimit({ units: 300_000 });
+
+    try {
+      await sendAndConfirmTransaction(
+        connection,
+        new Transaction().add(cb, ix),
+        [setup.payerKp, setup.signer2Kp, setup.assetMintKp]
+      );
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("UnauthorizedSigner"));
+    }
+  });
+
   it("Create AssetAccessController successfully", async () => {
     const ix = await rwaRbacClient.createAssetAccessControllerIxn({
       payer: setup.payer,
       admin: setup.signer1,
-      uniqueSeed: setup.uniqueSeed,
+      assetMint: setup.assetMint,
+      decimals: 2,
+      name: "Test Class Asset",
+      uri: "https://test.com",
+      symbol: "TFT",
+      interestRate: null,
     });
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+    const cb = ComputeBudgetProgram.setComputeUnitLimit({ units: 300_000 });
+    await sendAndConfirmTransaction(connection, new Transaction().add(cb, ix), [
       setup.payerKp,
       setup.signer1Kp,
+      setup.assetMintKp,
     ]);
     const controllerAccount =
       await rwaRbacClient.rbacProgram.account.assetAccessController.fetch(
@@ -53,8 +87,32 @@ describe("Admin Ixs Test", () => {
       setup.controllerAuthorityBump
     );
     assert(controllerAccount.admin.equals(setup.signer1));
-    assert(controllerAccount.uniqueSeed.equals(setup.uniqueSeed));
+    assert(controllerAccount.assetMint.equals(setup.assetMint));
     assert(controllerAccount.userRolesCount.eqn(0));
+  });
+
+  it("Fails to create UserRole with invalid flag bits", async () => {
+    const name = "Role1";
+    const allowedAdminIxs = 1 << 20;
+    const allowedMediciIxs = computeFlags(MediciFlags.ADD_LEVELS);
+
+    try {
+      const ix = await rwaRbacClient.createUserRoleIxn({
+        name,
+        allowedAdminIxs,
+        allowedMediciIxs,
+        payer: setup.payer,
+        user: setup.signer1,
+        assetAccessController: setup.assetAccessController,
+      });
+      await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+        setup.payerKp,
+        setup.signer1Kp,
+      ]);
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("InvalidFlags"));
+    }
   });
 
   it("Create UserRole 1 successfully with Admin", async () => {
@@ -204,8 +262,8 @@ describe("Admin Ixs Test", () => {
       await connection.getAccountInfo(setup.userRole1)
     ).data.length;
 
-    // Extra space allocated even when users already exist.
-    assert.equal(userRoleDataLenPost - userRoleDataLenPre, 160);
+    // No extra space allocated when users already exist.
+    assert.equal(userRoleDataLenPost - userRoleDataLenPre, 0);
 
     // No change to user assignment list expected.
     assert.equal(userRoleAccount.users.length, 3);
@@ -256,7 +314,8 @@ describe("Admin Ixs Test", () => {
     const allowedAdminIxs = computeFlags(
       AdminFlags.MODIFY_USER_ROLE,
       AdminFlags.CREATE_OR_DELETE_USER_ROLE,
-      AdminFlags.ASSIGN_OR_REMOVE_CURRENT_ROLE
+      AdminFlags.ASSIGN_OR_REMOVE_CURRENT_ROLE,
+      AdminFlags.WITHDRAW_EXCESS_RENT
     );
     const allowedMediciIxs = computeFlags(MediciFlags.ATTACH_TO_POLICY_ACCOUNT);
 
@@ -303,6 +362,34 @@ describe("Admin Ixs Test", () => {
       setup.userRole1
     );
     assert.equal(userRoleAccount.name, "hello world");
+  });
+
+  it("Withdraw Excess Rent successfully with Admin", async () => {
+    const ix = await rwaRbacClient.withdrawExcessRentIxn({
+      receiver: setup.payer,
+      admin: setup.signer1,
+      controllerAuthority: setup.controllerAuthority,
+      assetAccessController: setup.assetAccessController,
+    });
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+  });
+
+  it("Withdraw Excess Rent successfully with role permission", async () => {
+    const ix = await rwaRbacClient.withdrawExcessRentIxn({
+      receiver: setup.payer,
+      admin: setup.signer2,
+      controllerAuthority: setup.controllerAuthority,
+      assetAccessController: setup.assetAccessController,
+      authorizedUserRole: setup.userRole1,
+    });
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer2Kp,
+    ]);
+    //assert(false);
   });
 
   it("Fail to Modify User Role with Invalid Name length", async () => {
@@ -435,6 +522,26 @@ describe("Admin Ixs Test", () => {
     assert.equal(userRoleAccount.users.length, 2);
     assert(userRoleAccount.users[0].equals(newUser1.publicKey));
     assert(userRoleAccount.users[1].equals(newUser2.publicKey));
+  });
+  
+  
+  it("Withdraw Excess Rent fails with wrong role permission", async () => {
+    try {
+      const ix = await rwaRbacClient.withdrawExcessRentIxn({
+        receiver: setup.payer,
+        admin: setup.signer2,
+        controllerAuthority: setup.controllerAuthority,
+        assetAccessController: setup.assetAccessController,
+        authorizedUserRole: setup.userRole2,
+    });
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer2Kp,
+    ]);
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("InvalidUserRole"));
+    }
   });
 
   it("Assign user to different role succeeds with both assign flags", async () => {
@@ -673,6 +780,140 @@ describe("Admin Ixs Test", () => {
     assert(postBalance - preBalance > 0);
   });
 
+  it("Create Master role successfully", async () => {
+    const name = "Master";
+    const allowedAdminIxs = AdminFlags.ALL;
+    const allowedMediciIxs = MediciFlags.ALL;
+
+    const ix = await rwaRbacClient.createUserRoleIxn({
+      name,
+      allowedAdminIxs,
+      allowedMediciIxs,
+      payer: setup.payer,
+      user: setup.signer1,
+      assetAccessController: setup.assetAccessController,
+      isMasterRole: true,
+    });
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.payerKp,
+      setup.signer1Kp,
+    ]);
+
+    const userRoleAccount =
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole3);
+    assert(
+      userRoleAccount.assetAccessController.equals(setup.assetAccessController)
+    );
+    assert(userRoleAccount.id.eq(setup.roleId3));
+    assert.equal(userRoleAccount.name, name);
+
+    assert(userRoleAccount.allowedAdminIxs.toNumber() === allowedAdminIxs);
+    assert(userRoleAccount.allowedMediciIxs.toNumber() === allowedMediciIxs);
+    assert(userRoleAccount.isMasterRole);
+    assert.equal(userRoleAccount.users.length, 0);
+
+    const controllerAccount =
+      await rwaRbacClient.rbacProgram.account.assetAccessController.fetch(
+        setup.assetAccessController
+      );
+    assert(!controllerAccount.hasMasterRole);
+  });
+
+  it("Fail to void authority", async () => {
+    try {
+      const ix = await rwaRbacClient.updateControllerAdminIxn({
+        admin: setup.signer1, // Admin Key
+        assetAccessController: setup.assetAccessController,
+        newAdmin: SystemProgram.programId,
+      });
+      await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+        setup.signer1Kp,
+      ]);
+
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("CannotVoidAuthority"));
+    }
+  });
+
+  it("Assign users to master role successfully with Admin", async () => {
+    const usersToAssign = [setup.signer2];
+    const ix = await rwaRbacClient.assignUserRoleIxn({
+      usersToAssign,
+      userRole: setup.userRole3,
+      payer: setup.payer,
+      user: setup.signer1,
+      assetAccessController: setup.assetAccessController,
+    });
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(ix),
+      [setup.payerKp, setup.signer1Kp],
+      {
+        commitment: "confirmed",
+      }
+    );
+
+    // Verify userRole data
+    const userRoleAccount =
+      await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole3);
+    assert.equal(userRoleAccount.users.length, 1);
+    assert(userRoleAccount.users[0].equals(setup.signer2));
+
+    const controllerAccount =
+      await rwaRbacClient.rbacProgram.account.assetAccessController.fetch(
+        setup.assetAccessController
+      );
+    assert(controllerAccount.hasMasterRole);
+  });
+
+  it("Fails to remove last user from master role", async () => {
+    try {
+      const userRoleAccountPre =
+        await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole3);
+
+      const usersToRemove = [userRoleAccountPre.users[0]];
+      const ix = await rwaRbacClient.removeUserRoleIxn({
+        user: setup.signer1,
+        assetAccessController: setup.assetAccessController,
+        userRole: setup.userRole3,
+        authorizedUserRole: setup.userRole3,
+        usersToRemove,
+      });
+
+      await sendAndConfirmTransaction(
+        connection,
+        new Transaction().add(ix),
+        [setup.signer1Kp],
+        {
+          commitment: "confirmed",
+        }
+      );
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("CannotEmptyMasterRole"));
+    }
+  });
+
+  it("Fail to delete master role", async () => {
+    try {
+      const ix = await rwaRbacClient.deleteUserRoleIxn({
+        receiver: setup.payer,
+        user: setup.signer1, // Admin Key
+        assetAccessController: setup.assetAccessController,
+        userRole: setup.userRole3,
+      });
+      await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+        setup.payerKp,
+        setup.signer1Kp,
+      ]);
+
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes("CannotDeleteMasterRole"));
+    }
+  });
+
   it("Update Controller Admin successfully", async () => {
     const ix = await rwaRbacClient.updateControllerAdminIxn({
       admin: setup.signer1, // Admin Key
@@ -696,7 +937,25 @@ describe("Admin Ixs Test", () => {
       setup.controllerAuthorityBump
     );
     assert(controllerAccount.admin.equals(setup.signer2));
-    assert(controllerAccount.uniqueSeed.equals(setup.uniqueSeed));
-    assert(controllerAccount.userRolesCount.eqn(2));
+    assert(controllerAccount.assetMint.equals(setup.assetMint));
+    assert(controllerAccount.userRolesCount.eqn(3));
+  });
+
+  it("Void Controller Admin successfully", async () => {
+    const ix = await rwaRbacClient.updateControllerAdminIxn({
+      admin: setup.signer2, // Admin Key
+      assetAccessController: setup.assetAccessController,
+      newAdmin: SystemProgram.programId,
+    });
+    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+      setup.signer2Kp,
+    ]);
+
+    const controllerAccount =
+      await rwaRbacClient.rbacProgram.account.assetAccessController.fetch(
+        setup.assetAccessController,
+        "processed"
+      );
+    assert(controllerAccount.admin.equals(SystemProgram.programId));
   });
 });

@@ -9,6 +9,7 @@ pub struct AssignUserRole<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub user: Signer<'info>,
+    #[account(mut)]
     pub asset_access_controller: Account<'info, AssetAccessController>,
     #[account(
         mut,
@@ -43,30 +44,31 @@ pub fn handler(ctx: Context<AssignUserRole>, users_to_assign: Vec<Pubkey>) -> Re
 
     // Check if there's sufficient space to add new users.
     let user_role_info = user_role.to_account_info();
-    let data_len = user_role_info.data_len();
-    let to_add = users_to_assign.len();
-
-    if !user_role.has_sufficient_users_capacity(data_len, to_add) {
-        // Increase account size by asssignment length. Note that not all space assigned
-        // will be fully used if there are duplicated keys in assignment list.
-        let new_len = data_len + 32 * to_add;
-        transfer_lamports_for_realloc(
-            ctx.accounts.payer.to_account_info(),
-            user_role_info.clone(),
-            new_len,
-        )?;
-        user_role_info.realloc(new_len, false)?;
-    }
 
     // Assign users to role.
     user_role.assign_users(users_to_assign.clone());
+
+    let space_needed = UserRole::BASE_SIZE + user_role.users.len() * 32;
+    if space_needed > user_role_info.data_len() {
+        // Increase account to size of spaced_needed.
+        transfer_lamports_for_realloc(
+            ctx.accounts.payer.to_account_info(),
+            user_role_info.clone(),
+            space_needed,
+        )?;
+        user_role_info.realloc(space_needed, false)?;
+    }
+
+    if user_role.is_master_role && user_role.users.len() > 0 {
+        ctx.accounts.asset_access_controller.has_master_role = true;
+    }
 
     emit_cpi!(AssignUserRoleEvent {
         addresses: users_to_assign,
         role: user_role.name.clone(),
         role_id: user_role.id,
         sender: ctx.accounts.user.key(),
-        seed: ctx.accounts.asset_access_controller.unique_seed,
+        asset_mint: ctx.accounts.asset_access_controller.asset_mint,
     });
 
     Ok(())

@@ -10,6 +10,7 @@ import { PolicyEngine } from "./PolicyEngine";
 import { IdentityRegistry } from "./IdentityRegistry";
 import {
   deriveAssetAccessControllerPda,
+  deriveControllerAuthorityPda,
   deriveUserRolePda,
   getEventAuthority,
 } from "../pdas";
@@ -24,10 +25,11 @@ import {
   UpdateControllerAdminArgs,
   WithdrawExcessRentArgs,
 } from "../types/instructions";
-import { RwaClient } from "@dstoken-solana/rwa-token-sdk";
+import { getAssetControllerEventAuthority, RwaClient } from "@dstoken-solana/rwa-token-sdk";
 import { Config } from "@dstoken-solana/rwa-token-sdk";
 import { IdentityMetadataRegistry } from "./IdentityMetadataRegistry";
 import { RBAC_PROGRAM } from "../constants";
+import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
 export class RwaRbacClient {
   rbacProgram: Program<RwaRbac>;
@@ -87,13 +89,38 @@ export class RwaRbacClient {
    * @returns A Promise that resolves to the instruction to create AssetAccessController.
    */
   async createAssetAccessControllerIxn(args: CreateControllerArgs) {
+    const assetAccessController = deriveAssetAccessControllerPda(args.assetMint);
+    const assetAccessControllerAuthority = deriveControllerAuthorityPda(assetAccessController);
+
+    const cpiInstruction = await this.assetController.setupNewRegistry({
+      decimals: args.decimals,
+      authority: assetAccessControllerAuthority.toString(),
+      name: args.name,
+      uri: args.uri,
+      symbol: args.symbol,
+      interestRate: args.interestRate,
+      assetMint: args.assetMint.toString(),
+      payer: args.payer.toString(),
+    });
+    
     return this.rbacProgram.methods
-      .createController(args.uniqueSeed)
+      .createController(cpiInstruction.data)
       .accountsStrict({
         payer: args.payer,
         admin: args.admin,
-        assetAccessController: deriveAssetAccessControllerPda(args.uniqueSeed),
+        assetAccessController,
+        assetAccessControllerAuthority,
+        assetMint: args.assetMint,
+        assetController: cpiInstruction.keys[2].pubkey,
+        extraMetasAccount: cpiInstruction.keys[4].pubkey,
+        policyEngineAccount: cpiInstruction.keys[5].pubkey,
+        identityRegistryAccount: cpiInstruction.keys[6].pubkey,
+        policyEngineProgram: cpiInstruction.keys[7].pubkey,
+        identityRegistryProgram: cpiInstruction.keys[8].pubkey,
+        assetControllerProgram: cpiInstruction.programId,
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
+        assetControllerEventAuthority: getAssetControllerEventAuthority(),
       })
       .instruction();
   }
@@ -129,7 +156,8 @@ export class RwaRbacClient {
       .createUserRole(
         args.name,
         new BN(args.allowedAdminIxs),
-        new BN(args.allowedMediciIxs)
+        new BN(args.allowedMediciIxs),
+        args.isMasterRole || false
       )
       .accountsStrict({
         payer: args.payer,
@@ -234,10 +262,11 @@ export class RwaRbacClient {
       .withdrawExcessRent()
       .accountsStrict({
         receiver: args.receiver,
-        admin: args.admin,
+        user: args.admin,
         controllerAuthority: args.controllerAuthority,
         assetAccessController: args.assetAccessController,
         systemProgram: SystemProgram.programId,
+        authorizedUserRole: args.authorizedUserRole || null,
       })
       .instruction();
   }

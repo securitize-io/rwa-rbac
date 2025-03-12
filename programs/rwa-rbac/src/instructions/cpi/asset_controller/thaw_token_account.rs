@@ -15,7 +15,7 @@ pub struct ThawTokenAccount<'info> {
     #[account(has_one = controller_authority)]
     pub asset_access_controller: Account<'info, AssetAccessController>,
     #[account(has_one = asset_access_controller)]
-    pub authorized_user_role: Option<Account<'info, UserRole>>,
+    pub authorized_user_role: Box<Account<'info, UserRole>>,
     /// CHECK: Checked against known program address.
     #[account(address = ASSET_CONTROLLER_ID)]
     pub asset_controller_program: UncheckedAccount<'info>,
@@ -26,9 +26,6 @@ pub struct ThawTokenAccount<'info> {
     pub asset_controller: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     #[account(mut)]
-    pub identity_registry_account: UncheckedAccount<'info>,
-    /// CHECK: Verified in CPI.
-    #[account(mut)]
     pub token_account: UncheckedAccount<'info>,
     pub token_program: Program<'info, Token2022>,
 }
@@ -36,11 +33,10 @@ pub struct ThawTokenAccount<'info> {
 pub fn handler(ctx: Context<ThawTokenAccount>, cpi_data: Vec<u8>) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
-    // Verify that signer is either a controller admin or has authorized user role.
+    // Verify that signer has authorized user role.
     verify_medici_signer(
-        ctx.accounts.user.key(),
-        controller,
-        ctx.accounts.authorized_user_role.clone(),
+        &ctx.accounts.user.key(),
+        &ctx.accounts.authorized_user_role,
         MediciFlags::THAW_TOKEN_ACCOUNT,
     )?;
 
@@ -61,7 +57,6 @@ pub fn handler(ctx: Context<ThawTokenAccount>, cpi_data: Vec<u8>) -> Result<()> 
                 AccountMeta::new_readonly(ctx.accounts.controller_authority.key(), true),
                 AccountMeta::new(ctx.accounts.asset_mint.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.asset_controller.key(), false),
-                AccountMeta::new(ctx.accounts.identity_registry_account.key(), false),
                 AccountMeta::new(ctx.accounts.token_account.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
             ],
@@ -71,7 +66,6 @@ pub fn handler(ctx: Context<ThawTokenAccount>, cpi_data: Vec<u8>) -> Result<()> 
             ctx.accounts.controller_authority.to_account_info(),
             ctx.accounts.asset_mint.to_account_info(),
             ctx.accounts.asset_controller.to_account_info(),
-            ctx.accounts.identity_registry_account.to_account_info(),
             ctx.accounts.token_account.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
         ],

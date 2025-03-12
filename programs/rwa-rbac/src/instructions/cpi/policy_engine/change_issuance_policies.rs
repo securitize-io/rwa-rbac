@@ -16,7 +16,7 @@ pub struct ChangeIssuancePolicies<'info> {
     #[account(has_one = controller_authority)]
     pub asset_access_controller: Account<'info, AssetAccessController>,
     #[account(has_one = asset_access_controller)]
-    pub authorized_user_role: Option<Account<'info, UserRole>>,
+    pub authorized_user_role: Box<Account<'info, UserRole>>,
     /// CHECK: Checked against known program address.
     #[account(address = POLICY_ENGINE_ID)]
     pub policy_engine_program: UncheckedAccount<'info>,
@@ -30,11 +30,10 @@ pub struct ChangeIssuancePolicies<'info> {
 pub fn handler(ctx: Context<ChangeIssuancePolicies>, cpi_data: Vec<u8>) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
-    // Verify that signer is either a controller admin or has authorized user role.
+    // Verify that signer has authorized user role.
     verify_medici_signer(
-        ctx.accounts.user.key(),
-        controller,
-        ctx.accounts.authorized_user_role.clone(),
+        &ctx.accounts.user.key(),
+        &ctx.accounts.authorized_user_role,
         MediciFlags::CHANGE_ISSUANCE_POLICIES,
     )?;
 

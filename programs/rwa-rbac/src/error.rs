@@ -25,4 +25,22 @@ pub enum ErrorCode {
 
     #[msg("Illegal operation")]
     IllegalOperation,
+
+    #[msg("Invalid flag bits")]
+    InvalidFlags,
+
+    #[msg("Cannot empty master role of users")]
+    CannotEmptyMasterRole,
+
+    #[msg("Cannot void authority")]
+    CannotVoidAuthority,
+
+    #[msg("Invalid master role")]
+    InvalidMasterRole,
+
+    #[msg("Cannot delete master role")]
+    CannotDeleteMasterRole,
+
+    #[msg("Unauthorized admin signer")]
+    UnauthorizedSigner,
 }

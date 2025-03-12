@@ -5,14 +5,22 @@ import {
   LAMPORTS_PER_SOL,
   PublicKey,
 } from "@solana/web3.js";
-import { deriveAssetAccessControllerPda, deriveUserRolePda, RBAC_PROGRAM } from "../client/src";
+import {
+  deriveAssetAccessControllerPda,
+  deriveUserRolePda,
+  RBAC_PROGRAM,
+} from "../client/src";
 import { Config } from "@dstoken-solana/rwa-token-sdk";
+import { readFileSync } from "fs";
 
 export async function setupTests() {
-  const payerKp = new Keypair();
-  const signer1Kp = new Keypair();
+  const keypairData = new Uint8Array(
+    JSON.parse(readFileSync("tests/testSigner.json", "utf-8"))
+  );
+  const signer1Kp = Keypair.fromSecretKey(keypairData);
   const signer2Kp = new Keypair();
   const signer3Kp = new Keypair();
+  const payerKp = new Keypair();
   const user1Kp = new Keypair();
   const user2Kp = new Keypair();
   const user3Kp = new Keypair();
@@ -33,12 +41,15 @@ export async function setupTests() {
     txns.map((txn) => provider.connection.confirmTransaction(txn, "finalized"))
   );
 
-  const uniqueSeed = Keypair.generate().publicKey;
-  const controller = deriveAssetAccessControllerPda(uniqueSeed);
+  const assetMintKp = Keypair.generate();
+  const assetMint = assetMintKp.publicKey;
+  const controller = deriveAssetAccessControllerPda(assetMint);
   const roleId1 = new BN(1);
   const roleId2 = new BN(2);
+  const roleId3 = new BN(3);
   const userRole1 = deriveUserRolePda(roleId1, controller);
   const userRole2 = deriveUserRolePda(roleId2, controller);
+  const userRole3 = deriveUserRolePda(roleId3, controller);
 
   const [controllerAuthority, controllerAuthorityBump] =
     PublicKey.findProgramAddressSync([controller.toBuffer()], RBAC_PROGRAM);
@@ -72,14 +83,17 @@ export async function setupTests() {
     user2: user2Kp.publicKey,
     user3Kp,
     user3: user3Kp.publicKey,
-    uniqueSeed,
+    assetMint,
+    assetMintKp,
     assetAccessController: controller,
     controllerAuthority,
     controllerAuthorityBump,
     roleId1,
     roleId2,
+    roleId3,
     userRole1,
     userRole2,
+    userRole3,
   };
 }
 

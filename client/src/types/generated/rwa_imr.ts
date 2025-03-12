@@ -47,11 +47,17 @@ export type RwaImr = {
           "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
-          "name": "identityRegistry"
+          "name": "identityRegistry",
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "identityAccount",
-          "writable": true
+          "writable": true,
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "systemProgram",
@@ -230,11 +236,17 @@ export type RwaImr = {
           "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
-          "name": "identityRegistry"
+          "name": "identityRegistry",
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "identityAccount",
-          "writable": true
+          "writable": true,
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "policyEngineProgram"
@@ -332,6 +344,16 @@ export type RwaImr = {
         {
           "name": "walletIdentity",
           "writable": true
+        },
+        {
+          "name": "policyEngineProgram"
+        },
+        {
+          "name": "trackerAccount",
+          "writable": true
+        },
+        {
+          "name": "assetMint"
         },
         {
           "name": "systemProgram",
@@ -434,11 +456,17 @@ export type RwaImr = {
           "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
-          "name": "identityRegistry"
+          "name": "identityRegistry",
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "identityAccount",
-          "writable": true
+          "writable": true,
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "walletIdentity",
@@ -454,6 +482,9 @@ export type RwaImr = {
         },
         {
           "name": "eventAuthorityIdentityRegistry"
+        },
+        {
+          "name": "assetMint"
         },
         {
           "name": "eventAuthority",
@@ -524,11 +555,17 @@ export type RwaImr = {
           "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
         },
         {
-          "name": "identityRegistry"
+          "name": "identityRegistry",
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "identityAccount",
-          "writable": true
+          "writable": true,
+          "relations": [
+            "investor"
+          ]
         },
         {
           "name": "systemProgram",

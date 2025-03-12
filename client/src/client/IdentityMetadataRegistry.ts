@@ -83,7 +83,7 @@ export class IdentityMetadataRegistry {
    * @param args - {@link SetupInvestorArgs}
    * @param authority - RBAC AssetAccessController ControllerAuthority.
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instructions to setup an investor.
    *
    * It is required for at least a single user to be setup before issuing tokens.
@@ -130,6 +130,12 @@ export class IdentityMetadataRegistry {
         eventAuthority: getEventAuthority(IMR_PROGRAM),
         eventAuthorityIdentityRegistry: getIdentityRegistryEventAuthority(),
         program: identityRegistryProgramId,
+        policyEngineProgram: policyEngineProgramId,
+        trackerAccount: getTrackerAccountPda(
+          args.assetMint,
+          investor.toString()
+        ),
+        assetMint: assetMintKey,
       })
       .instruction();
 
@@ -152,29 +158,15 @@ export class IdentityMetadataRegistry {
             investor.toString()
           ),
           systemProgram: SystemProgram.programId,
-          eventAuthorityIdentityMetadataRegistry: getEventAuthority(IMR_PROGRAM),
+          eventAuthorityIdentityMetadataRegistry:
+            getEventAuthority(IMR_PROGRAM),
           eventAuthorityIdentityRegistry: getIdentityRegistryEventAuthority(),
-        })
-        .instruction()
-    );
-
-    const policyProgram = getPolicyEngineProgram(this.imrProgram.provider);
-    const trackerAccount = PublicKey.findProgramAddressSync(
-      [assetMintKey.toBuffer(), identityAccount.toBuffer()],
-      policyProgram.programId
-    )[0];
-    returnIxs.push(
-      await policyProgram.methods
-        .createTrackerAccount()
-        .accountsStrict({
-          payer: args.payer,
-          trackerAccount,
-          systemProgram: SystemProgram.programId,
-          program: policyProgram.programId,
+          policyEngineProgram: policyEngineProgramId,
+          trackerAccount: getTrackerAccountPda(
+            args.assetMint,
+            investor.toString()
+          ),
           assetMint: assetMintKey,
-          eventAuthority: getPolicyEngineEventAuthority(),
-          identityRegistry,
-          identityAccount,
         })
         .instruction()
     );
@@ -208,7 +200,7 @@ export class IdentityMetadataRegistry {
    * Asynchronously add levels to investor.
    * @param args - {@link AddLevelsArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instructions to add levels.
    * */
   async addLevels(
@@ -283,7 +275,7 @@ export class IdentityMetadataRegistry {
    * Asynchronously change country for the Investor.
    * @param args - {@link ChangeCountryArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instructions to change the country.
    * */
   async changeCountry(
@@ -348,7 +340,7 @@ export class IdentityMetadataRegistry {
    * Asynchronously remove levels from an investor.
    * @param args - {@link RemoveLevelsArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instructions to remove levels.
    * */
   async removeLevels(
@@ -415,7 +407,7 @@ export class IdentityMetadataRegistry {
    * Asynchronously remove an investor.
    * @param args - {@link RemoveLevelsArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instructions to remove an investor.
    * */
   async removeInvestor(
@@ -457,6 +449,7 @@ export class IdentityMetadataRegistry {
         ),
         eventAuthorityIdentityMetadataRegistry: getEventAuthority(IMR_PROGRAM),
         eventAuthorityIdentityRegistry: getIdentityRegistryEventAuthority(),
+        assetMint: args.assetMint,
       })
       .instruction();
   }

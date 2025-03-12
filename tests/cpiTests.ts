@@ -1,5 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { BN, Wallet } from "@coral-xyz/anchor";
+import { BN } from "@coral-xyz/anchor";
 import {
   ComputeBudgetProgram,
   Connection,
@@ -9,11 +9,9 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import { assert } from "chai";
-
 import { setupTests } from "./utils";
-import { AdminFlags, MediciFlags, RwaRbacClient } from "../client/src/index";
+import { AdminFlags, deriveInvestorPda, MediciFlags, RwaRbacClient } from "../client/src/index";
 import {
-  CreateAssetControllerIx,
   getIdentityAccountFromOwner,
   getIdentityAccountPda,
   getIdentityRegistryPda,
@@ -21,11 +19,9 @@ import {
   getTrackerAccountPda,
   getWalletIdentityAccount,
   getWalletIdentityAccountPda,
-  policyEngineProgramId,
 } from "@dstoken-solana/rwa-token-sdk";
-import { deriveInvestorPda } from "../client/src/pdas";
-import { IssueTokensArgs, IssueTokensWithLockArgs } from "../client/src/types/instructions";
-import { createAssociatedTokenAccount, createAssociatedTokenAccountInstruction, getAccount, getAssociatedTokenAddressSync, getOrCreateAssociatedTokenAccount, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import { IssueTokensArgs } from "../client/src/types/instructions";
+import { createAssociatedTokenAccountInstruction, getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
 describe("CPI End to End Tests", () => {
   // Configure the client to use the local cluster.
@@ -43,6 +39,11 @@ describe("CPI End to End Tests", () => {
 
   before(async () => {
     setup = await setupTests();
+    mint = setup.assetMint.toString();
+    investorPda = deriveInvestorPda(
+      INVESTOR_ID,
+      getIdentityRegistryPda(mint)
+    ).toString();
     connection = setup.config.connection;
     rwaRbacClient = new RwaRbacClient(setup.config, provider);
   });
@@ -51,11 +52,19 @@ describe("CPI End to End Tests", () => {
     const ix = await rwaRbacClient.createAssetAccessControllerIxn({
       payer: setup.payer,
       admin: setup.signer1,
-      uniqueSeed: setup.uniqueSeed,
+      assetMint: setup.assetMint,
+      decimals: 2,
+      name: "Test Class Asset",
+      uri: "https://test.com",
+      symbol: "TFT",
+      interestRate: null,
     });
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
+
+    const cb = ComputeBudgetProgram.setComputeUnitLimit({ units: 300_000 });
+    await sendAndConfirmTransaction(connection, new Transaction().add(cb, ix), [
       setup.payerKp,
       setup.signer1Kp,
+      setup.assetMintKp,
     ]);
     const controllerAccount =
       await rwaRbacClient.rbacProgram.account.assetAccessController.fetch(
@@ -69,45 +78,14 @@ describe("CPI End to End Tests", () => {
       setup.controllerAuthorityBump
     );
     assert(controllerAccount.admin.equals(setup.signer1));
-    assert(controllerAccount.uniqueSeed.equals(setup.uniqueSeed));
+    assert(controllerAccount.assetMint.equals(setup.assetMint));
     assert(controllerAccount.userRolesCount.eqn(0));
-  });
-
-  it("Initialize Asset Controller", async () => {
-    const assetMintKp = Keypair.generate();
-    const args: CreateAssetControllerIx = {
-      authority: setup.controllerAuthority.toString(),
-      decimals: 2,
-      payer: setup.payer.toString(),
-      delegate: null,
-      name: "Test Class Asset",
-      uri: "https://test.com",
-      symbol: "TFT",
-      interestRate: null,
-      assetMint: assetMintKp.publicKey.toString(),
-    };
-    const setupIx = await rwaRbacClient.assetController.setupNewRegistry(args);
-    await sendAndConfirmTransaction(
-      connection,
-      new Transaction().add(
-        ComputeBudgetProgram.setComputeUnitLimit({ units: 400000 }),
-        setupIx
-      ),
-      [setup.payerKp, assetMintKp]
-    );
-
-    // Store values for later reuse
-    mint = args.assetMint;
-    investorPda = deriveInvestorPda(
-      INVESTOR_ID,
-      getIdentityRegistryPda(mint)
-    ).toString();
   });
 
   it("Create UserRole 1 successfully", async () => {
     const name = "Role1";
     const allowedAdminIxs = AdminFlags.NONE;
-    const allowedMediciIxs = MediciFlags.NONE;
+    const allowedMediciIxs = MediciFlags.ALL; // Allow All
 
     const ix = await rwaRbacClient.createUserRoleIxn({
       name,
@@ -117,10 +95,25 @@ describe("CPI End to End Tests", () => {
       user: setup.signer1,
       assetAccessController: setup.assetAccessController,
     });
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix), [
-      setup.payerKp,
-      setup.signer1Kp,
-    ]);
+    const ix2 = await rwaRbacClient.assignUserRoleIxn({
+      usersToAssign: [setup.signer1],
+      userRole: setup.userRole1,
+      payer: setup.payer,
+      user: setup.signer1,
+      assetAccessController: setup.assetAccessController,
+    });
+
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(...[ix, ix2]),
+      [setup.payerKp, setup.signer1Kp]
+    );
+
+    const controllerAccount =
+      await rwaRbacClient.rbacProgram.account.assetAccessController.fetch(
+        setup.assetAccessController
+      );
+    assert(controllerAccount.userRolesCount.eqn(1));
 
     const userRoleAccount =
       await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
@@ -130,14 +123,8 @@ describe("CPI End to End Tests", () => {
     assert(userRoleAccount.id.eq(setup.roleId1));
     assert.equal(userRoleAccount.name, name);
     assert(userRoleAccount.allowedAdminIxs.eqn(allowedAdminIxs));
-    assert(userRoleAccount.allowedMediciIxs.eqn(allowedMediciIxs));
-    assert.equal(userRoleAccount.users.length, 0);
-
-    const controllerAccount =
-      await rwaRbacClient.rbacProgram.account.assetAccessController.fetch(
-        setup.assetAccessController
-      );
-    assert(controllerAccount.userRolesCount.eqn(1));
+    assert.equal(userRoleAccount.allowedMediciIxs.toNumber(), allowedMediciIxs);
+    assert.equal(userRoleAccount.users.length, 1);
   });
 
   it("CPI: Update Asset Metadata", async () => {
@@ -342,7 +329,18 @@ describe("CPI End to End Tests", () => {
       setup.assetAccessController,
       setup.userRole1
     );
-    const ix2 = await createAssociatedTokenAccountInstruction(setup.payer, getAssociatedTokenAddressSync(new PublicKey(mint), new PublicKey(setup.user2), false, TOKEN_2022_PROGRAM_ID), setup.user2, new PublicKey(mint), TOKEN_2022_PROGRAM_ID);
+    const ix2 = await createAssociatedTokenAccountInstruction(
+      setup.payer,
+      getAssociatedTokenAddressSync(
+        new PublicKey(mint),
+        new PublicKey(setup.user2),
+        false,
+        TOKEN_2022_PROGRAM_ID
+      ),
+      setup.user2,
+      new PublicKey(mint),
+      TOKEN_2022_PROGRAM_ID
+    );
 
     await sendAndConfirmTransaction(
       connection,
@@ -356,16 +354,21 @@ describe("CPI End to End Tests", () => {
       setup.user2,
       rwaRbacClient.provider
     );
-    const walletIdentityAccount = await getWalletIdentityAccount(getWalletIdentityAccountPda(mint, setup.user2), rwaRbacClient.provider);
+    const walletIdentityAccount = await getWalletIdentityAccount(
+      getWalletIdentityAccountPda(mint, setup.user2),
+      rwaRbacClient.provider
+    );
     assert.equal(identityAccount.owner.toString(), args.owner);
     assert.equal(identityAccount.levels.length, 1);
     assert.equal(identityAccount.levels[0].level, args.levels[0]);
     assert(identityAccount.levels[0].expiry.eq(args.expiry[0]));
     assert(walletIdentityAccount.wallet.equals(setup.user2));
-    assert(walletIdentityAccount.identityAccount.equals(getIdentityAccountPda(mint, setup.user2)));
+    assert(
+      walletIdentityAccount.identityAccount.equals(
+        getIdentityAccountPda(mint, setup.user2)
+      )
+    );
   });
-
-
 
   it("CPI: Add Levels through Investor", async () => {
     const args = {
@@ -463,7 +466,6 @@ describe("CPI End to End Tests", () => {
     assert.equal(identityAccount.levels[1].level, 5);
   });
 
-
   it("CPI: Attach Wallet to Identity", async () => {
     const args = {
       payer: setup.payer.toString(), // Payer Account
@@ -477,11 +479,23 @@ describe("CPI End to End Tests", () => {
       setup.assetAccessController,
       setup.userRole1
     );
-    const ix2 = await createAssociatedTokenAccountInstruction(setup.payer, getAssociatedTokenAddressSync(new PublicKey(mint), new PublicKey(setup.user1), false, TOKEN_2022_PROGRAM_ID), setup.user1, new PublicKey(mint), TOKEN_2022_PROGRAM_ID);
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix, ix2), [
-      setup.payerKp,
-      setup.signer1Kp,
-    ]);
+    const ix2 = await createAssociatedTokenAccountInstruction(
+      setup.payer,
+      getAssociatedTokenAddressSync(
+        new PublicKey(mint),
+        new PublicKey(setup.user1),
+        false,
+        TOKEN_2022_PROGRAM_ID
+      ),
+      setup.user1,
+      new PublicKey(mint),
+      TOKEN_2022_PROGRAM_ID
+    );
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(ix, ix2),
+      [setup.payerKp, setup.signer1Kp]
+    );
 
     // Check wallet count
     const identityAccount = await getIdentityAccountFromOwner(
@@ -490,7 +504,6 @@ describe("CPI End to End Tests", () => {
       rwaRbacClient.provider
     );
     assert.equal(identityAccount.numWallets, 2);
-
   });
 
   it("Add Wallet by Investor", async () => {
@@ -503,11 +516,23 @@ describe("CPI End to End Tests", () => {
         newWallet: setup.user3,
       });
 
-    const ix2 = await createAssociatedTokenAccountInstruction(setup.payer, getAssociatedTokenAddressSync(new PublicKey(mint), new PublicKey(setup.user3), false, TOKEN_2022_PROGRAM_ID), setup.user3, new PublicKey(mint), TOKEN_2022_PROGRAM_ID);
-    await sendAndConfirmTransaction(connection, new Transaction().add(ix, ix2), [
-      setup.payerKp,
-      setup.user1Kp,
-    ]);
+    const ix2 = await createAssociatedTokenAccountInstruction(
+      setup.payer,
+      getAssociatedTokenAddressSync(
+        new PublicKey(mint),
+        new PublicKey(setup.user3),
+        false,
+        TOKEN_2022_PROGRAM_ID
+      ),
+      setup.user3,
+      new PublicKey(mint),
+      TOKEN_2022_PROGRAM_ID
+    );
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(ix, ix2),
+      [setup.payerKp, setup.user1Kp]
+    );
 
     // Check wallet count
     const identityAccount = await getIdentityAccountFromOwner(
@@ -552,8 +577,6 @@ describe("CPI End to End Tests", () => {
     );
     assert.equal(identityAccount.numWallets, 2);
   });
-
-
 
   it("CPI: Change Country", async () => {
     const args = {
@@ -629,7 +652,6 @@ describe("CPI End to End Tests", () => {
     ]);
   });
 
-
   it("CPI: Issue Tokens", async () => {
     const issueArgs: IssueTokensArgs = {
       payer: setup.payer.toString(), // Payer Account
@@ -653,8 +675,11 @@ describe("CPI End to End Tests", () => {
         skipPreflight: true,
       }
     );
-    
-    const policyEngine = await getPolicyEngineAccount(mint, rwaRbacClient.provider);
+
+    const policyEngine = await getPolicyEngineAccount(
+      mint,
+      rwaRbacClient.provider
+    );
     assert.equal(policyEngine.counters[0].value.toString(), "1");
   });
 
@@ -679,11 +704,13 @@ describe("CPI End to End Tests", () => {
       setup.signer1Kp,
     ]);
 
-    const policyEngine = await getPolicyEngineAccount(mint, rwaRbacClient.provider);
+    const policyEngine = await getPolicyEngineAccount(
+      mint,
+      rwaRbacClient.provider
+    );
     assert.equal(policyEngine.counters[0].value.toString(), "1");
   });
 
-  
   it("CPI: Set Counters", async () => {
     const args = {
       authority: setup.controllerAuthority,
@@ -702,11 +729,13 @@ describe("CPI End to End Tests", () => {
       setup.payerKp,
       setup.signer1Kp,
     ]);
-    
-    const policyEngine = await getPolicyEngineAccount(mint, rwaRbacClient.provider);
+
+    const policyEngine = await getPolicyEngineAccount(
+      mint,
+      rwaRbacClient.provider
+    );
     assert.equal(policyEngine.counters[0].value.toString(), "2");
   });
-
 
   it("CPI: Revoke Tokens from user2", async () => {
     const revokeIx = await rwaRbacClient.assetController.revokeTokenIxn(
@@ -720,8 +749,8 @@ describe("CPI End to End Tests", () => {
       },
       setup.signer1, // User Account
       setup.assetAccessController,
-      null,
-      setup.userRole1
+      setup.userRole1,
+      null
     );
     await sendAndConfirmTransaction(
       connection,
@@ -731,8 +760,11 @@ describe("CPI End to End Tests", () => {
         skipPreflight: true,
       }
     );
-    
-    const policyEngine = await getPolicyEngineAccount(mint, rwaRbacClient.provider);
+
+    const policyEngine = await getPolicyEngineAccount(
+      mint,
+      rwaRbacClient.provider
+    );
     assert.equal(policyEngine.counters[0].value.toString(), "1");
   });
 
@@ -796,7 +828,8 @@ describe("CPI End to End Tests", () => {
         mappingValue: [10],
       },
       setup.signer1,
-      setup.assetAccessController
+      setup.assetAccessController,
+      setup.userRole1
     );
     await sendAndConfirmTransaction(
       connection,
@@ -860,8 +893,8 @@ describe("CPI End to End Tests", () => {
       },
       setup.signer1, // User Account
       setup.assetAccessController,
-      INVESTOR_ID,
-      setup.userRole1
+      setup.userRole1,
+      INVESTOR_ID
     );
     await sendAndConfirmTransaction(
       connection,

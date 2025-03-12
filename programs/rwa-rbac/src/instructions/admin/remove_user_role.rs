@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{events::RemoveUserRoleEvent, state::*, verify_admin_signer};
+use crate::{events::RemoveUserRoleEvent, state::*, verify_admin_signer, error::ErrorCode};
 
 #[event_cpi]
 #[derive(Accounts)]
@@ -40,12 +40,17 @@ pub fn handler(ctx: Context<RemoveUserRole>, users_to_remove: Vec<Pubkey>) -> Re
     // Remove users from role.
     user_role.remove_users(users_to_remove.clone());
 
+    require!(
+        !user_role.is_master_role || user_role.users.len() > 0,
+        ErrorCode::CannotEmptyMasterRole
+    );
+
     emit_cpi!(RemoveUserRoleEvent {
         addresses: users_to_remove,
         role: user_role.name.clone(),
         role_id: user_role.id,
         sender: ctx.accounts.user.key(),
-        seed: ctx.accounts.asset_access_controller.unique_seed,
+        asset_mint: ctx.accounts.asset_access_controller.asset_mint,
     });
 
     Ok(())

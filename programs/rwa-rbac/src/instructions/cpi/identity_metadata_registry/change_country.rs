@@ -19,7 +19,7 @@ pub struct ChangeCountry<'info> {
     #[account(has_one = controller_authority)]
     pub asset_access_controller: Account<'info, AssetAccessController>,
     #[account(has_one = asset_access_controller)]
-    pub authorized_user_role: Option<Account<'info, UserRole>>,
+    pub authorized_user_role: Box<Account<'info, UserRole>>,
     /// CHECK: Checked against known program address.
     #[account(address = IDENTITY_METADATA_REGISTRY_ID)]
     pub identity_metadata_registry_program: UncheckedAccount<'info>,
@@ -50,11 +50,10 @@ pub struct ChangeCountry<'info> {
 pub fn handler(ctx: Context<ChangeCountry>, cpi_data: Vec<u8>) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
-    // Verify that signer is either a controller admin or has authorized user role.
+    // Verify that signer has authorized user role.
     verify_medici_signer(
-        ctx.accounts.user.key(),
-        controller,
-        ctx.accounts.authorized_user_role.clone(),
+        &ctx.accounts.user.key(),
+        &ctx.accounts.authorized_user_role,
         MediciFlags::CHANGE_COUNTRY,
     )?;
 
@@ -82,7 +81,10 @@ pub fn handler(ctx: Context<ChangeCountry>, cpi_data: Vec<u8>) -> Result<()> {
                 AccountMeta::new(ctx.accounts.policy_engine.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.tracker_account.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.asset_mint.key(), false),
-                AccountMeta::new_readonly(ctx.accounts.event_authority_identity_registry.key(), false),
+                AccountMeta::new_readonly(
+                    ctx.accounts.event_authority_identity_registry.key(),
+                    false,
+                ),
             ],
             data: cpi_data,
         },
@@ -97,7 +99,9 @@ pub fn handler(ctx: Context<ChangeCountry>, cpi_data: Vec<u8>) -> Result<()> {
             ctx.accounts.policy_engine.to_account_info(),
             ctx.accounts.tracker_account.to_account_info(),
             ctx.accounts.asset_mint.to_account_info(),
-            ctx.accounts.event_authority_identity_registry.to_account_info(),
+            ctx.accounts
+                .event_authority_identity_registry
+                .to_account_info(),
         ],
         signers_seeds,
     )?;

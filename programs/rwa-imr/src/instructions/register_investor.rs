@@ -37,6 +37,13 @@ pub struct RegisterInvestor<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub wallet_identity: UncheckedAccount<'info>,
+    /// CHECK: checked in cpi
+    pub policy_engine_program: UncheckedAccount<'info>,
+    /// CHECK: checked in cpi
+    #[account(mut)]
+    pub tracker_account: UncheckedAccount<'info>,
+    /// CHECK: checked in cpi
+    pub asset_mint: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
     /// CHECK: Verified in CPI.
     pub event_authority_identity_registry: UncheckedAccount<'info>,
@@ -95,8 +102,14 @@ pub fn handler(
                 AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
                 AccountMeta::new(ctx.accounts.identity_account.key(), false),
                 AccountMeta::new(ctx.accounts.wallet_identity.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.policy_engine_program.key(), false),
+                AccountMeta::new(ctx.accounts.tracker_account.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.asset_mint.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
-                AccountMeta::new_readonly(ctx.accounts.event_authority_identity_registry.key(), false),
+                AccountMeta::new_readonly(
+                    ctx.accounts.event_authority_identity_registry.key(),
+                    false,
+                ),
                 AccountMeta::new_readonly(ctx.accounts.identity_registry_program.key(), false),
             ],
             data: cpi_data,
@@ -107,8 +120,13 @@ pub fn handler(
             ctx.accounts.identity_registry.to_account_info(),
             ctx.accounts.identity_account.to_account_info(),
             ctx.accounts.wallet_identity.to_account_info(),
+            ctx.accounts.policy_engine_program.to_account_info(),
+            ctx.accounts.tracker_account.to_account_info(),
+            ctx.accounts.asset_mint.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
-            ctx.accounts.event_authority_identity_registry.to_account_info(),
+            ctx.accounts
+                .event_authority_identity_registry
+                .to_account_info(),
             ctx.accounts.identity_registry_program.to_account_info(),
         ],
     )?;

@@ -56,19 +56,6 @@ Users can then invoke instructions through the RBAC program to perform the same 
 - We do not verify if a Medici account is intended to be owned by an `AssetAccessController` by its admin. We assume that if the Medici account is allowing `controller_authority` to be its admin, then the associated `AssetAccessController` should have full access to invoke instructions on it.
   - This implies that a third party could theoretically create an asset to be owned by the organization and governed under the user access rules of the associated `AssetAccessController`, without the admin’s involvement. Authorized users can then invoke instructions to manage this asset.
 
-## Token Locks (TL) Program
-
-### Program Design
-
-In the TL program, instead of enforcing locks on transfer, we employ the Permanent Delegate authority of the asset mint to transfer the lock amount into an investor-owned token account that will be frozen. At the end of lock expiry, any user can initate a permissionless instruction to transfer tokens back to the investor. Additional metadata about a lock, including the lock reason is stored in the InvestorLocks account.
-
-There are 4 instructions provided by the TL program:
-
-- `CreateInvestorLocks`: Used by an authorized RBAC user to create an InvestorLocks account for a specific investor wallet, to store token locking information. The locked token account needs to be initialized (and cannot contain) prior to this instruction.
-- `AddTokenLock`: Used by an authorized RBAC user to lock some amount of tokens in an investor wallet for a specific or indefinite period of time.
-- `RemoveTokenLock`: Used by an authorized RBAC user to remove a lock and release frozen tokens back to the investor wallet. If the lock has expired, this instruction can be invoked by any user.
-- `CloseInvestorLocks`: Used by an authorized RBAC user to close an InvestorLocks account after all locks have been removed.
-
 ## Installation
 
 1. Clone dependency with: `git submodule update --init --recursive`
@@ -78,7 +65,12 @@ There are 4 instructions provided by the TL program:
 
 ## Testing
 
-Integration tests in [rwa-rbac/tests](https://github.com/exo-tech-xyz/rwa-rbac/tree/main/tests) can be invoked with `anchor test` command.
+Integration tests in [rwa-rbac/tests](https://github.com/exo-tech-xyz/rwa-rbac/tree/main/tests) can be invoked with `anchor test -- --features localnet` command.
+
+## Deployment
+
+1. Prior to deployment on devnet or mainnet, the list of authorized signers allowed to create AssetAccessController should be updated in `programs/rwa-rbac/src/instructions/admin/create_controller.rs`.
+2. Program should be compiled with `devnet` feature flag and without any feature flag for devnet and mainnet respectively.
 
 ## TypeScript Client
 

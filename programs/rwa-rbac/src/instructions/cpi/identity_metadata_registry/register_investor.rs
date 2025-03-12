@@ -19,7 +19,7 @@ pub struct RegisterInvestor<'info> {
     #[account(has_one = controller_authority)]
     pub asset_access_controller: Account<'info, AssetAccessController>,
     #[account(has_one = asset_access_controller)]
-    pub authorized_user_role: Option<Account<'info, UserRole>>,
+    pub authorized_user_role: Box<Account<'info, UserRole>>,
     /// CHECK: Checked against known program address.
     #[account(address = IDENTITY_METADATA_REGISTRY_ID)]
     pub identity_metadata_registry_program: UncheckedAccount<'info>,
@@ -37,6 +37,13 @@ pub struct RegisterInvestor<'info> {
     /// CHECK: Verified in CPI.
     #[account(mut)]
     pub wallet_identity: UncheckedAccount<'info>,
+    /// CHECK: checked in cpi
+    pub policy_engine_program: UncheckedAccount<'info>,
+    /// CHECK: checked in cpi
+    #[account(mut)]
+    pub tracker_account: UncheckedAccount<'info>,
+    /// CHECK: checked in cpi
+    pub asset_mint: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     pub event_authority_identity_metadata_registry: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
@@ -47,11 +54,10 @@ pub struct RegisterInvestor<'info> {
 pub fn handler(ctx: Context<RegisterInvestor>, cpi_data: Vec<u8>) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
-    // Verify that signer is either a controller admin or has authorized user role.
+    // Verify that signer has authorized user role.
     verify_medici_signer(
-        ctx.accounts.user.key(),
-        controller,
-        ctx.accounts.authorized_user_role.clone(),
+        &ctx.accounts.user.key(),
+        &ctx.accounts.authorized_user_role,
         MediciFlags::REGISTER_INVESTOR,
     )?;
 
@@ -76,9 +82,20 @@ pub fn handler(ctx: Context<RegisterInvestor>, cpi_data: Vec<u8>) -> Result<()> 
                 AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
                 AccountMeta::new(ctx.accounts.identity_account.key(), false),
                 AccountMeta::new(ctx.accounts.wallet_identity.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.policy_engine_program.key(), false),
+                AccountMeta::new(ctx.accounts.tracker_account.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.asset_mint.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
-                AccountMeta::new_readonly(ctx.accounts.event_authority_identity_registry.key(), false), // For Event CPI
-                AccountMeta::new_readonly(ctx.accounts.event_authority_identity_metadata_registry.key(), false), // For Event CPI
+                AccountMeta::new_readonly(
+                    ctx.accounts.event_authority_identity_registry.key(),
+                    false,
+                ), // For Event CPI
+                AccountMeta::new_readonly(
+                    ctx.accounts
+                        .event_authority_identity_metadata_registry
+                        .key(),
+                    false,
+                ), // For Event CPI
                 AccountMeta::new_readonly(
                     ctx.accounts.identity_metadata_registry_program.key(),
                     false,
@@ -94,9 +111,16 @@ pub fn handler(ctx: Context<RegisterInvestor>, cpi_data: Vec<u8>) -> Result<()> 
             ctx.accounts.identity_registry.to_account_info(),
             ctx.accounts.identity_account.to_account_info(),
             ctx.accounts.wallet_identity.to_account_info(),
+            ctx.accounts.policy_engine_program.to_account_info(),
+            ctx.accounts.tracker_account.to_account_info(),
+            ctx.accounts.asset_mint.to_account_info(),
             ctx.accounts.system_program.to_account_info(),
-            ctx.accounts.event_authority_identity_registry.to_account_info(),
-            ctx.accounts.event_authority_identity_metadata_registry.to_account_info(),
+            ctx.accounts
+                .event_authority_identity_registry
+                .to_account_info(),
+            ctx.accounts
+                .event_authority_identity_metadata_registry
+                .to_account_info(),
             ctx.accounts
                 .identity_metadata_registry_program
                 .to_account_info(),

@@ -42,7 +42,7 @@ export class PolicyEngine {
    * @param args - {@link AttachPolicyArgs}
    * @param signer - User signer public key.
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instructions to attach a policy.
    * */
   async attachPolicy(
@@ -74,7 +74,7 @@ export class PolicyEngine {
    * @param args - {@link DetachPolicyArgs}
    * @param signer - User signer public key.
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instructions to detach a policy.
    * */
   async detachPolicy(
@@ -106,7 +106,7 @@ export class PolicyEngine {
    * @param args - {@link ChangeCountersArgs}
    * @param signer - User signer public key.
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instructions to change the counters.
    * */
   async changeCounters(
@@ -138,7 +138,7 @@ export class PolicyEngine {
    * @param args - {@link SetCountersArgs}
    * @param signer - User signer public key.
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instructions to set the counter values.
    * */
   async setCounters(
@@ -169,7 +169,7 @@ export class PolicyEngine {
    * @param args - {@link ChangeCounterLimitsArgs}
    * @param signer - User signer public key.
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * @returns A Promise that resolves to the instructions to change the counters limits.
    * */
   async changeCounterLimits(
@@ -203,7 +203,7 @@ export class PolicyEngine {
    * @param args - {@link ChangeMappingArgs}
    * @param signer - User signer public key.
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * */
   async changeMapping(
     args: ChangeMappingArgs,
@@ -233,7 +233,7 @@ export class PolicyEngine {
    * @param args - {@link ChangeIssuancePoliciesArgs}
    * @param signer - User signer public key.
    * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - Optional UserRole account. Required if user is not an admin.
+   * @param authorizedUserRole - UserRole authorized to invoke instruction.
    * */
   async changeIssuancePolicies(
     args: ChangeIssuancePoliciesArgs,
