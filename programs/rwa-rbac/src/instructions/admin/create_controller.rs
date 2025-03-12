@@ -8,11 +8,23 @@ use crate::{controller_seeds, error::ErrorCode, state::*};
 
 // Default list of admin signers that are allowed for mainnet.
 #[cfg(not(any(feature = "devnet", feature = "localnet")))]
-const ALLOWED_SIGNERS: &[&str] = &[];
+const ALLOWED_SIGNERS: &[&str] = &[
+    "5HfSZLzDmRz9wf8rJkvL94MHFKXU7i7px1bWGtLi1R3C",
+    "4Ej36rbuZKpN39DuMY94T2pKQf1fvK1ZgyN8otvh85kF",
+    "7SDZQ9UraXrzuUVDxGKFApYUaXJehMptH4ZxKWza7sRS",
+    "Csx61X6k5cJbhyFuEjDZYFEWts7dt7S3uuraGjznSQ1K",
+    "7WJ8t2nySGciAHvbWUYyYmK14jiXfMFJZPsLYSvgPALC",
+];
 
 // List of admin signers that are allowed for devnet.
 #[cfg(feature = "devnet")]
-const ALLOWED_SIGNERS: &[&str] = &[];
+const ALLOWED_SIGNERS: &[&str] = &[
+    "4NYQ9MPM7x5U2mA1yraA871B36fEPHjWegxHPZ69qjW4",
+    "F8YqRScWrK9VSYKXK4Thf7GKBp8W1BxzmCYpTH5PYdUm",
+    "4H3nAojLDPKBVyrYodVh7Uo65DFbSKKNQSpi7JHLoyrW",
+    "GKQUVn1Qm8ouiQSjDYZv3Gbznf7iJfN5pQWgowRiXXU6",
+    "3Kcv8Sdw5TQAnsWXhhCEGc7dLavmuvK8Vhf85V5AATnN",
+];
 
 // List of admin signers that are allowed for localnet.
 #[cfg(feature = "localnet")]
