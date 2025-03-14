@@ -110,13 +110,6 @@ pub mod rwa_rbac {
         instructions::revoke_tokens::handler(ctx, cpi_data)
     }
 
-    pub fn update_interest_bearing_mint_rate(
-        ctx: Context<UpdateInterestBearingMintRate>,
-        cpi_data: Vec<u8>,
-    ) -> Result<()> {
-        instructions::update_interest_bearing_mint_rate::handler(ctx, cpi_data)
-    }
-
     pub fn attach_to_policy_engine(
         ctx: Context<AttachToPolicyEngine>,
         cpi_data: Vec<u8>,

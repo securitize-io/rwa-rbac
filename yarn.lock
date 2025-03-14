@@ -43,10 +43,10 @@
     bn.js "^5.1.2"
     buffer-layout "^1.2.0"
 
-"@dstoken-solana/rwa-token-sdk@0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@dstoken-solana/rwa-token-sdk/-/rwa-token-sdk-0.4.0.tgz#38ce9dee7ac11f1154f7365909a842cdd623af36"
-  integrity sha512-5fZQVrEysol0/lPzGq3uKdogcrYQVMUkSFfI6k6fuHvE0Ab0AqMPCwhZpPRf9oqU0Zkwkieg6khoke7XlXHong==
+"@dstoken-solana/rwa-token-sdk@0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@dstoken-solana/rwa-token-sdk/-/rwa-token-sdk-0.4.1.tgz#cbd1a546639fbac8c939d49b0555db97b6a86e60"
+  integrity sha512-9MPopLz5QaxdUN4MREqIvdzNWq4wbBxjHHq/VvKKWhqz4E58pdimbf7MuXN13Vb+4sbPeeTcXkZ5YTdesb+GMQ==
   dependencies:
     "@coral-xyz/anchor" "0.30.1"
     "@solana/spl-token" "0.4.12"

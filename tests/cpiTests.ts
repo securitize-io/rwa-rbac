@@ -146,27 +146,7 @@ describe("CPI End to End Tests", () => {
       [setup.payerKp, setup.signer1Kp]
     );
   });
-
-  it("CPI: Update Interest Bearing Mint Rate", async () => {
-    const updateIx =
-      await rwaRbacClient.assetController.updateInterestBearingMintRateIxn(
-        {
-          authority: setup.controllerAuthority.toString(), // ControllerAuthority
-          payer: setup.payer.toString(), // Payer Account
-          signer: setup.signer1.toString(), // User Account
-          assetMint: mint,
-          rate: 200,
-        },
-        setup.assetAccessController,
-        setup.userRole1
-      );
-    await sendAndConfirmTransaction(
-      connection,
-      new Transaction().add(updateIx),
-      [setup.payerKp, setup.signer1Kp]
-    );
-  });
-
+  
   it("CPI: Attach to Policy Engine", async () => {
     const ix = await rwaRbacClient.policyEngine.attachPolicy(
       {
