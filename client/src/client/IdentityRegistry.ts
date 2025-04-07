@@ -235,7 +235,7 @@ export class IdentityRegistry {
     const tokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
       new PublicKey(args.wallet),
-      false,
+      true,
       TOKEN_2022_PROGRAM_ID
     );
 

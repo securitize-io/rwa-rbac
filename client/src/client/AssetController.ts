@@ -33,7 +33,6 @@ import {
   getSeizeTokensIx,
   getThawTokenIx,
   getTrackerAccountPda,
-  getUpdateInterestBearingMintRateIx,
   getWalletIdentityAccountPda,
   identityRegistryProgramId,
   policyEngineProgramId,
@@ -142,7 +141,7 @@ export class AssetController {
     const tokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
       new PublicKey(args.wallet),
-      false,
+      true,
       TOKEN_2022_PROGRAM_ID
     );
 
@@ -205,7 +204,7 @@ export class AssetController {
     const tokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
       new PublicKey(args.owner),
-      false,
+      true,
       TOKEN_2022_PROGRAM_ID
     );
     return this.rbacProgram.methods
@@ -241,7 +240,7 @@ export class AssetController {
     const tokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
       new PublicKey(args.owner),
-      false,
+      true,
       TOKEN_2022_PROGRAM_ID
     );
     return this.rbacProgram.methods
@@ -292,7 +291,7 @@ export class AssetController {
     const revokeTokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
       new PublicKey(args.wallet),
-      false,
+      true,
       TOKEN_2022_PROGRAM_ID
     );
 
@@ -331,39 +330,6 @@ export class AssetController {
   }
 
   /**
-   * Asynchronously generates instruction to update mint interest rate.
-   * @param args - {@link UpdateInterestBearingMintRateArgs}
-   * @param assetAccessController - RBAC AssetAccessController account.
-   * @param authorizedUserRole - UserRole authorized to invoke instruction.
-   * @returns A Promise that resolves to the instruction to update mint interest rate.
-   */
-  async updateInterestBearingMintRateIxn(
-    args: UpdateInterestBearingMintRateArgs,
-    assetAccessController: PublicKey,
-    authorizedUserRole: PublicKey
-  ): Promise<TransactionInstruction> {
-    const updateIx = await getUpdateInterestBearingMintRateIx(
-      args,
-      this.rwaClient.provider
-    );
-    const ixData = updateIx.data;
-    return this.rbacProgram.methods
-      .updateInterestBearingMintRate(ixData)
-      .accountsStrict({
-        user: args.signer,
-        controllerAuthority: args.authority,
-        assetAccessController: assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
-        assetControllerProgram: assetControllerProgramId,
-        assetMint: args.assetMint,
-        assetController: getAssetControllerPda(args.assetMint),
-        eventAuthority: getAssetControllerEventAuthority(),
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
-      })
-      .instruction();
-  }
-
-  /**
    * Asynchronously generates instruction to seize tokens.
    * @param args - {@link SeizeTokensArgs}
    * @param signer - User signer public key.
@@ -397,7 +363,7 @@ export class AssetController {
         sourceTokenAccount: getAssociatedTokenAddressSync(
           new PublicKey(args.assetMint),
           new PublicKey(args.from),
-          false,
+          true,
           TOKEN_2022_PROGRAM_ID
         ),
         destinationTokenAccount: getAssociatedTokenAddressSync(
