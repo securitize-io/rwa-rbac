@@ -98,7 +98,6 @@ export class RwaRbacClient {
       name: args.name,
       uri: args.uri,
       symbol: args.symbol,
-      interestRate: args.interestRate,
       assetMint: args.assetMint.toString(),
       payer: args.payer.toString(),
     });
