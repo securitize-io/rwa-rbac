@@ -1,4 +1,6 @@
 #![allow(ambiguous_glob_reexports)]
+#![allow(unexpected_cfgs)]
+#![allow(deprecated)]
 
 pub mod error;
 pub mod events;
@@ -44,7 +46,13 @@ pub mod rwa_rbac {
         allowed_medici_ixs: u64,
         is_master_role: bool,
     ) -> Result<()> {
-        instructions::create_user_role::handler(ctx, name, allowed_admin_ixs, allowed_medici_ixs, is_master_role)
+        instructions::create_user_role::handler(
+            ctx,
+            name,
+            allowed_admin_ixs,
+            allowed_medici_ixs,
+            is_master_role,
+        )
     }
 
     pub fn modify_user_role(
