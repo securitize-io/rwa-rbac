@@ -1,79 +1,208 @@
-# Medici Extensions
+# DSToken Role-Based Access Control (RBAC)
 
 ## Background
 
-Medici is composed of 4 different programs: Asset Controller, Policy Engine, Identity Registry and Data Registry. Typically, an organization may create one or more assets representing a RWA they are intending to tokenize. An asset is created by invoking the CreateAssetController instruction which sets up a new token mint, AssetControllerAccount, PolicyEngine, IdentityRegistry and DataRegistry. These accounts and token mint will have an authority, a keypair held by the organization that can authorize instructions to mutate the state of these accounts. A secondary delegate signer can be assigned, with access to a smaller scope of instructions.
+DSToken on Solana is built on top of an extended fork of the RWA Standard, a set of on-chain programs used to issue and manage regulated real-world assets. The core protocol consists of multiple programs that together provide token lifecycle management, identity-based compliance enforcement, and policy configuration.
 
-In addition, there are two new programs built to provide features beyond the scope of the initial Medici design. The Identity Metadata Registry (IMR), serves to store additional investor related metadata and sync levels to the related IdentityAccount, while the Token Locks (TL) program serves to perform the responsibility of managing and enforcing token locks for assets issued by the Medici RWA Token program,
+In the DSToken architecture, **all privileged operations are governed programmatically through role-based access control**, rather than through externally owned authority keypairs. The `rwa-rbac` project implements this access control layer and serves as the primary authority interface for all DSToken-related programs.
+
+The RBAC program works in conjunction with the following on-chain components:
+
+- Asset Controller Program (ACP)
+- Policy Engine Program (PEP)
+- Identity Registry Program (IRP)
+- Identity Metadata Registry Program (IMR)
+
+For each DSToken deployment (per mint), RBAC is configured as the **sole effective authority** controlling token issuance, transfers, compliance configuration, and administrative actions.
+
+---
+
+## Programs Overview
+
+This repository contains two Solana programs:
+
+- **Role-Based Access Control (RBAC) Program**
+- **Identity Metadata Registry (IMR) Program**
+
+These programs extend the RWA Standard to support DSToken-specific access control, investor metadata management, and parity with the Ethereum-based DSToken protocol.
+
+---
+
+## Role-Based Access Control (RBAC) Program
+
+### Program Design
+
+The RBAC program introduces the **AssetAccessController** as its core configuration account.
+
+An `AssetAccessController` is created per DSToken deployment (per mint) and defines:
+
+- An **admin authority**, responsible for configuring roles
+- A **controller authority**, implemented as a **program-derived address (PDA)**
+
+The controller authority PDA acts as the **signer authority** for all governed programs and accounts, including:
+
+- Token-2022 mint
+- Asset Controller account
+- Policy Engine account
+- Identity Registry account
+
+This design intentionally separates the configuration authority (admin) from the operational signer (PDA), enabling programmatic enforcement of permissions and eliminating reliance on externally owned authority keys.
+
+---
+
+### Roles and Permissions
+
+RBAC allows the creation of arbitrary **user roles**, each configured with fine-grained instruction-level permissions using feature flags.
+
+In the context of DSToken, the protocol is typically initialized with the following expected roles:
+
+- **MASTER**
+- **ISSUER**
+- **EXCHANGE**
+- **TRANSFER_AGENT**
+
+Each role defines which instructions it is authorized to execute across the governed programs. Wallets can be assigned to or removed from roles dynamically.
+
+All privileged interactions with ACP, PEP, IRP, and IMR must be performed **through the RBAC program**, which enforces:
+
+1. Role membership validation  
+2. Feature-flag authorization  
+3. Instruction discriminator matching  
+4. CPI execution using the controller authority PDA as signer  
+
+---
+
+### CPI Instruction Model
+
+The RBAC program exposes a set of CPI wrapper instructions that mirror administrative and operational instructions in the underlying programs.
+
+Each CPI follows the same execution pattern:
+
+1. Validate the caller’s role and permissions  
+2. Validate instruction data  
+3. Invoke the underlying program using the controller authority PDA  
+
+This ensures that **all authority checks are centralized and auditable**, and that no privileged instruction can be executed without RBAC approval.
+
+---
+
+### Design Considerations
+
+- **Per-token isolation**  
+  Each DSToken deployment has its own `AssetAccessController`, roles, and permissions. Roles do not implicitly apply across different tokens unless explicitly configured.
+
+- **No ownership verification**  
+  RBAC does not independently verify that a governed account is intended to be managed by a given `AssetAccessController`. If a program or account accepts the controller authority PDA as its authority, RBAC assumes it is valid.
+
+- **Programmatic governance**  
+  All effective control is exercised via PDAs and role checks. No individual wallet directly holds mint, freeze, or compliance authority.
+
+---
 
 ## Identity Metadata Registry (IMR) Program
 
 ### Program Design
 
-In RWA Token program, the intention is to utilize `level` as an enum, where each level (from 0 to 255) could represent either a user’s type and status or country. For example,
+The Identity Metadata Registry extends the Identity Registry Program by storing **investor-specific metadata** that is not required during transfer execution but is needed for compliance and auditability.
 
-- 1 represents `KYC_APPROVED` type + `PENDING` status,
-- 4 represents `ACCREDITED` type + `PENDING` status,
-- 50 represents `US` country.
+IMR maintains this data separately to avoid bloating accounts used in transfer hooks and policy enforcement.
 
-The client would first determine map the user’s attribute and country off-chain to a set of levels, alongside their expiry and proof hash (if they are attributes) . These levels would be push to the IMR, which would subsequently propagate it as levels to store it in `IdentityAccount` for policy enfocement.
+---
 
-In Identity Metadata Registry, there are two accounts `Investor` and `IdentityToInvestor`. `Investor` tracks the metadata associated to an `IdentityAccount` and `IdentityToInvestor` is used for reverse mapping from a wallet to the Investor account.
+### Accounts
 
-A user, after setting up an `AssetAccessController` and `AccessController` using the RBAC, would first invoke `RegisterInvestor` to create an Investor, IdentityToInvestor and IdentityAccount with the associated metadata and initial level, expiry and proof hash. Further levels can be added with `AddLevels` or removed with `RemoveLevels` instructions. Lastly, the accounts created can be removed with `RemoveInvestor`.
+- **Investor Account**  
+  Stores investor metadata such as identifiers, proof hashes, country, and attribute levels.
 
-When a level is added, we perform the following validations:
+- **Identity Mapping**  
+  Provides a mapping between wallets and their associated investor identity, enabling multiple wallets to be linked to a single investor.
 
-- Check if a proof hash is valid (ascii string with <= 32 chars),
-- Check that there are no duplicate levels
-- Check that each attribute type appears only once (TBD)
-- Check that each attribute status for a type appears only once (TBD)
-- Check that there's only a maxiumum of one country (TBD)
-- Maxiumum of only 5 levels
+---
 
-## Medici Role-Based Access Control (RBAC) Program
+### Workflow
 
-### Program Design
+1. An authorized RBAC role registers a new investor using `register_investor`
+2. An IdentityAccount is created in the Identity Registry
+3. Metadata and initial levels are stored in IMR
+4. Levels are synchronized to the Identity Registry for policy enforcement
+5. Additional wallets may be attached or removed
+6. Levels may be added or removed over time
+7. Investors may be fully removed when no longer active
 
-In Medici RBAC, we introduce `AssetAccessController` as the main data structure. The `AssetAccessController` has an `admin` authority and a `controller_authority` , a [program derived address](https://solana.com/docs/core/pda) that serves as the signer authority for all accounts governed by the `AssetAccessController`. This address is intentionally set to be different from the public key of `AssetAccessController`, as `rwa-token` program has instructions that require mutability access to the signer authority.
+All IMR instructions validate authority through the Identity Registry and RBAC.
 
-An organization using the RBAC will first create a `AssetAccessController` , generating a `controller_authority` address. The organization will then invoke `CreateAssetController` using `controller_authority` as the authority. All accounts created as part of that instruction will also share `controller_authority` as the authority, including the Policy Engine, Identity Registry and Token Mint.
+---
 
-The organization admin can then:
+### Level Validation
 
-1. create one or more `UserRole` for the various groups of stakeholders that require access to manage the asset,
-2. configure instructions that a `UserRole` is given access for and
-3. assign or remove wallets from a `UserRole`.
+When adding levels, the IMR enforces the following constraints:
 
-Users can then invoke instructions through the RBAC program to perform the same tasks on Medici and IMR Program, such as adding or modifying a policy or freezing a token account, if they are in a UserRole with authorization to call the associated instruction.
+- Proof hashes must be valid ASCII strings (≤ 32 characters)
+- No duplicate levels
+- Maximum of one country level
+- Maximum of one attribute per type
+- Maximum number of levels per investor
+- Attribute status consistency
 
-### Design Considerations
+Levels are ultimately propagated to the Identity Registry and used by the Policy Engine during transfer validation.
 
-- An organization with multiple assets to be governed under the same user roles can simply invoke `CreateAssetController` with the same `controller_authority` as the authority. Each user role will have the same level of access to each asset controlled.
-  - For example, there are two assets, A and B owned by the `AssetAccessController`. A user role given access to `IssueTokens` ix will be able to call that and issue tokens for both A and B.
-  - To have user roles with independent level of access for each asset, a new `AssetAccessController` should be created for each asset.
-- Medici accounts associated (i.e. PolicyEngine, Token Mint, IdentityRegistry) to a `AssetAccessController` will be recorded and stored off-chain by the organization.
-- We do not verify if a Medici account is intended to be owned by an `AssetAccessController` by its admin. We assume that if the Medici account is allowing `controller_authority` to be its admin, then the associated `AssetAccessController` should have full access to invoke instructions on it.
-  - This implies that a third party could theoretically create an asset to be owned by the organization and governed under the user access rules of the associated `AssetAccessController`, without the admin’s involvement. Authorized users can then invoke instructions to manage this asset.
+---
 
 ## Installation
 
-1. Clone dependency with: `git submodule update --init --recursive`
-2. Run `yarn install` in `deps/rwa-token/clients/rwa-token-sdk`
-3. Run `yarn install` root directory.
-4. Run `yarn install` in `/client` directory.
+```bash
+git submodule update --init --recursive
+```
+
+### Install dependencies:
+
+### RWA Token SDK
+cd deps/rwa-token/clients/rwa-token-sdk
+yarn install
+
+### Root
+cd ../../../..
+yarn install
+
+### Client
+cd client
+yarn install
 
 ## Testing
 
-Integration tests in [rwa-rbac/tests](https://github.com/exo-tech-xyz/rwa-rbac/tree/main/tests) can be invoked with `anchor test -- --features localnet` command.
+Integration tests are located in rwa-rbac/tests.
+
+Run tests with:
+
+anchor test -- --features localnet
 
 ## Deployment
 
-1. Prior to deployment on devnet or mainnet, the list of authorized signers allowed to create AssetAccessController should be updated in `programs/rwa-rbac/src/instructions/admin/create_controller.rs`.
-2. Program should be compiled with `devnet` feature flag and without any feature flag for devnet and mainnet respectively.
+Before deploying to devnet or mainnet:
+
+Update the list of authorized signers allowed to create AssetAccessController in
+programs/rwa-rbac/src/instructions/admin/create_controller.rs
+
+Compile with:
+
+devnet feature flag for devnet
+
+No feature flag for mainnet
 
 ## TypeScript Client
 
-The TypeScript [Client](https://github.com/exo-tech-xyz/rwa-rbac/tree/main/client) can be installed with `yarn install @exo-tech-xyz/rwa-rbac` command. Refer to [integration tests](https://github.com/exo-tech-xyz/rwa-rbac/blob/main/tests/cpiTests.ts) for examples on how to initialize an `RwaRbacClient` and generate instructions for the program.
+A TypeScript client is provided for interacting with the RBAC and IMR programs.
 
-`RwaRbacClient` is intentionally designed to share the same interface as [`RwaClient`](https://github.com/bridgesplit/rwa-token/blob/main/clients/rwa-token-sdk/src/classes/Client.ts) whenever feasible, and is used as the entry point for interacting with the Medici RWA Token, and Investor Metadata Registry Programs.
+Install via:
+```
+yarn install @securitize/rwa-rbac
+```
+
+The RwaRbacClient is designed to align closely with the DSToken and RWA Token SDK interfaces and acts as the primary entry point for:
+
+- Role configuration
+- Investor registration
+- Compliance administration
+- Token lifecycle operations
+
+Refer to the integration tests for end-to-end usage examples.
