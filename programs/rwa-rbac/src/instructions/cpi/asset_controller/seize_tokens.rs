@@ -3,7 +3,7 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 use anchor_spl::token_2022::Token2022;
-use rbac_utils::{constants::ASSET_CONTROLLER_ID, SEIZE_TOKENS_IX};
+use rbac_utils::{SEIZE_TOKENS_IX, constants::ASSET_CONTROLLER_ID};
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
 
@@ -35,10 +35,7 @@ pub struct SeizeTokens<'info> {
     pub event_authority: UncheckedAccount<'info>,
 }
 
-pub fn handler<'info>(
-    ctx: Context<'_, '_, '_, 'info, SeizeTokens<'info>>,
-    cpi_data: Vec<u8>,
-) -> Result<()> {
+pub fn handler<'info>(ctx: Context<'info, SeizeTokens<'info>>, cpi_data: Vec<u8>) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
     // Verify that signer has authorized user role.

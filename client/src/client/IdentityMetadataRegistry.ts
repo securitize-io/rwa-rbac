@@ -1,18 +1,9 @@
-import { Program, utils } from "@coral-xyz/anchor";
-import {
-  CompiledInstruction,
-  PublicKey,
-  SystemProgram,
-  TransactionInstruction,
-} from "@solana/web3.js";
+import { Program, utils } from '@anchor-lang/core';
+import { CompiledInstruction, PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 
-import { RwaRbac } from "../types/generated/rwa_rbac";
-import { RwaImr } from "../types/generated/rwa_imr";
-import {
-  deriveControllerAuthorityPda,
-  deriveInvestorPda,
-  getEventAuthority,
-} from "../pdas";
+import { RwaRbac } from '../types/generated/rwa_rbac';
+import { RwaImr } from '../types/generated/rwa_imr';
+import { deriveControllerAuthorityPda, deriveInvestorPda, getEventAuthority } from '../pdas';
 import {
   getIdentityAccountPda,
   getIdentityRegistryPda,
@@ -26,8 +17,8 @@ import {
   policyEngineProgramId,
   RwaClient,
   getIdentityRegistryEventAuthority,
-} from "@dstoken-solana/rwa-token-sdk";
-import { IMR_PROGRAM } from "../constants";
+} from '@dstoken-solana/rwa-token-sdk';
+import { IMR_PROGRAM } from '../constants';
 import {
   AddLevelsArgs,
   AttachWalletByInvestorArgs,
@@ -35,7 +26,7 @@ import {
   RemoveInvestorArgs,
   RemoveLevelsArgs,
   SetupInvestorArgs,
-} from "../types/instructions";
+} from '../types/instructions';
 
 /**
  * Role-based access client for accessing Identity Metadata Registry.
@@ -45,11 +36,7 @@ export class IdentityMetadataRegistry {
   rbacProgram: Program<RwaRbac>;
   imrProgram: Program<RwaImr>;
 
-  constructor(
-    rwaClient: RwaClient,
-    rbacProgram: Program<RwaRbac>,
-    imrProgram: Program<RwaImr>
-  ) {
+  constructor(rwaClient: RwaClient, rbacProgram: Program<RwaRbac>, imrProgram: Program<RwaImr>) {
     this.rwaClient = rwaClient;
     this.rbacProgram = rbacProgram;
     this.imrProgram = imrProgram;
@@ -66,12 +53,10 @@ export class IdentityMetadataRegistry {
       .map(({ data }) => {
         try {
           const buffer = Buffer.from(utils.bytes.bs58.decode(data));
-          const event = eventCoder.decode(
-            utils.bytes.base64.encode(buffer.slice(8))
-          );
+          const event = eventCoder.decode(utils.bytes.base64.encode(buffer.slice(8)));
           return event;
         } catch (err) {
-          console.error("Error decoding events", err);
+          console.error('Error decoding events', err);
         }
       })
       .filter((v) => v != null);
@@ -91,13 +76,11 @@ export class IdentityMetadataRegistry {
   async setupUserIxns(
     args: SetupInvestorArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<IxReturn> {
     const returnIxs = [];
 
-    const controllerAuthority = deriveControllerAuthorityPda(
-      assetAccessController
-    );
+    const controllerAuthority = deriveControllerAuthorityPda(assetAccessController);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investor = deriveInvestorPda(args.investorId, identityRegistry);
     const identityAccount = getIdentityAccountPda(
@@ -131,10 +114,7 @@ export class IdentityMetadataRegistry {
         eventAuthorityIdentityRegistry: getIdentityRegistryEventAuthority(),
         program: identityRegistryProgramId,
         policyEngineProgram: policyEngineProgramId,
-        trackerAccount: getTrackerAccountPda(
-          args.assetMint,
-          investor.toString()
-        ),
+        trackerAccount: getTrackerAccountPda(args.assetMint, investor.toString()),
         assetMint: assetMintKey,
       })
       .instruction();
@@ -147,25 +127,18 @@ export class IdentityMetadataRegistry {
           user: args.signer,
           controllerAuthority,
           assetAccessController,
-          authorizedUserRole: authorizedUserRole || null,
+          authorizedUserRole,
           identityMetadataRegistryProgram: IMR_PROGRAM,
           investor,
           identityRegistryProgram: identityRegistryProgramId,
           identityRegistry,
           identityAccount,
-          walletIdentity: getWalletIdentityAccountPda(
-            args.assetMint,
-            investor.toString()
-          ),
+          walletIdentity: getWalletIdentityAccountPda(args.assetMint, investor.toString()),
           systemProgram: SystemProgram.programId,
-          eventAuthorityIdentityMetadataRegistry:
-            getEventAuthority(IMR_PROGRAM),
+          eventAuthorityIdentityMetadataRegistry: getEventAuthority(IMR_PROGRAM),
           eventAuthorityIdentityRegistry: getIdentityRegistryEventAuthority(),
           policyEngineProgram: policyEngineProgramId,
-          trackerAccount: getTrackerAccountPda(
-            args.assetMint,
-            investor.toString()
-          ),
+          trackerAccount: getTrackerAccountPda(args.assetMint, investor.toString()),
           assetMint: assetMintKey,
         })
         .instruction()
@@ -206,29 +179,16 @@ export class IdentityMetadataRegistry {
   async addLevels(
     args: AddLevelsArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
-    const controllerAuthority = deriveControllerAuthorityPda(
-      assetAccessController
-    );
+    const controllerAuthority = deriveControllerAuthorityPda(assetAccessController);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investor = deriveInvestorPda(args.investorId, identityRegistry);
-    const identityAccount = getIdentityAccountPda(
-      args.assetMint,
-      investor.toString()
-    );
-    const trackerAccount = getTrackerAccountPda(
-      args.assetMint,
-      investor.toString()
-    );
+    const identityAccount = getIdentityAccountPda(args.assetMint, investor.toString());
+    const trackerAccount = getTrackerAccountPda(args.assetMint, investor.toString());
 
     const ix = await this.imrProgram.methods
-      .addLevels(
-        Buffer.from(args.levels),
-        args.expiries,
-        args.proofHashes,
-        args.enforceLimits ?? false
-      )
+      .addLevels(Buffer.from(args.levels), args.expiries, args.proofHashes, args.enforceLimits ?? false)
       .accountsStrict({
         payer: args.payer,
         authority: controllerAuthority,
@@ -254,7 +214,7 @@ export class IdentityMetadataRegistry {
         user: args.signer,
         controllerAuthority,
         assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
+        authorizedUserRole,
         identityMetadataRegistryProgram: IMR_PROGRAM,
         investor,
         identityRegistryProgram: identityRegistryProgramId,
@@ -281,21 +241,13 @@ export class IdentityMetadataRegistry {
   async changeCountry(
     args: ChangeCountryArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
-    const controllerAuthority = deriveControllerAuthorityPda(
-      assetAccessController
-    );
+    const controllerAuthority = deriveControllerAuthorityPda(assetAccessController);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investor = deriveInvestorPda(args.investorId, identityRegistry);
-    const identityAccount = getIdentityAccountPda(
-      args.assetMint,
-      investor.toString()
-    );
-    const trackerAccount = getTrackerAccountPda(
-      args.assetMint,
-      investor.toString()
-    );
+    const identityAccount = getIdentityAccountPda(args.assetMint, investor.toString());
+    const trackerAccount = getTrackerAccountPda(args.assetMint, investor.toString());
 
     const ix = await this.imrProgram.methods
       .changeCountry(args.country, args.enforceLimits ?? false)
@@ -321,7 +273,7 @@ export class IdentityMetadataRegistry {
         user: args.signer,
         controllerAuthority,
         assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
+        authorizedUserRole,
         identityMetadataRegistryProgram: IMR_PROGRAM,
         investor,
         identityRegistryProgram: identityRegistryProgramId,
@@ -346,21 +298,13 @@ export class IdentityMetadataRegistry {
   async removeLevels(
     args: RemoveLevelsArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
-    const controllerAuthority = deriveControllerAuthorityPda(
-      assetAccessController
-    );
+    const controllerAuthority = deriveControllerAuthorityPda(assetAccessController);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investor = deriveInvestorPda(args.investorId, identityRegistry);
-    const identityAccount = getIdentityAccountPda(
-      args.assetMint,
-      investor.toString()
-    );
-    const trackerAccount = getTrackerAccountPda(
-      args.assetMint,
-      investor.toString()
-    );
+    const identityAccount = getIdentityAccountPda(args.assetMint, investor.toString());
+    const trackerAccount = getTrackerAccountPda(args.assetMint, investor.toString());
 
     const ix = await this.imrProgram.methods
       .removeLevels(Buffer.from(args.levels), args.enforceLimits ?? false)
@@ -387,7 +331,7 @@ export class IdentityMetadataRegistry {
         user: args.signer,
         controllerAuthority,
         assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
+        authorizedUserRole,
         identityMetadataRegistryProgram: IMR_PROGRAM,
         investor,
         identityRegistryProgram: identityRegistryProgramId,
@@ -413,17 +357,12 @@ export class IdentityMetadataRegistry {
   async removeInvestor(
     args: RemoveInvestorArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
-    const controllerAuthority = deriveControllerAuthorityPda(
-      assetAccessController
-    );
+    const controllerAuthority = deriveControllerAuthorityPda(assetAccessController);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investor = deriveInvestorPda(args.investorId, identityRegistry);
-    const identityAccount = getIdentityAccountPda(
-      args.assetMint,
-      investor.toString()
-    );
+    const identityAccount = getIdentityAccountPda(args.assetMint, investor.toString());
 
     return this.rbacProgram.methods
       .removeInvestor()
@@ -432,21 +371,15 @@ export class IdentityMetadataRegistry {
         user: args.signer,
         controllerAuthority,
         assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
+        authorizedUserRole,
         identityMetadataRegistryProgram: IMR_PROGRAM,
         investor,
         identityRegistryProgram: identityRegistryProgramId,
         identityRegistry,
         identityAccount,
-        walletIdentity: getWalletIdentityAccountPda(
-          args.assetMint,
-          investor.toString()
-        ),
+        walletIdentity: getWalletIdentityAccountPda(args.assetMint, investor.toString()),
         policyEngineProgram: policyEngineProgramId,
-        trackerAccount: getTrackerAccountPda(
-          args.assetMint,
-          investor.toString()
-        ),
+        trackerAccount: getTrackerAccountPda(args.assetMint, investor.toString()),
         eventAuthorityIdentityMetadataRegistry: getEventAuthority(IMR_PROGRAM),
         eventAuthorityIdentityRegistry: getIdentityRegistryEventAuthority(),
         assetMint: args.assetMint,
@@ -458,30 +391,19 @@ export class IdentityMetadataRegistry {
    * Asynchronously attach a wallet to IdentityAccouont for the Investor.
    * @param args - {@link AttachWalletByInvestorArgs}
    * */
-  async attachWalletByInvestor(
-    args: AttachWalletByInvestorArgs
-  ): Promise<TransactionInstruction> {
+  async attachWalletByInvestor(args: AttachWalletByInvestorArgs): Promise<TransactionInstruction> {
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investor = deriveInvestorPda(args.investorId, identityRegistry);
-    const identityAccount = getIdentityAccountPda(
-      args.assetMint,
-      investor.toString()
-    );
+    const identityAccount = getIdentityAccountPda(args.assetMint, investor.toString());
     return this.imrProgram.methods
       .attachWalletByInvestor(args.newWallet)
       .accountsStrict({
         payer: args.payer,
         wallet: args.signer,
         investor,
-        walletIdentity: getWalletIdentityAccountPda(
-          args.assetMint,
-          args.signer
-        ),
+        walletIdentity: getWalletIdentityAccountPda(args.assetMint, args.signer),
         identityRegistryProgram: identityRegistryProgramId,
-        newWalletIdentity: getWalletIdentityAccountPda(
-          args.assetMint,
-          args.newWallet.toString()
-        ),
+        newWalletIdentity: getWalletIdentityAccountPda(args.assetMint, args.newWallet.toString()),
         identityAccount,
         identityRegistry,
         assetMint: args.assetMint,

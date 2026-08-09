@@ -8,7 +8,7 @@ export type RwaRbac = {
   "address": "3g6fUgMsJQhjPUYxNjEU5PyzGf8DerbDx8p5Qh4yMnRR",
   "metadata": {
     "name": "rwaRbac",
-    "version": "0.1.0",
+    "version": "1.1.0",
     "spec": "0.1.0",
     "description": "Created with Anchor"
   },
@@ -216,33 +216,7 @@ export type RwaRbac = {
           "address": "11111111111111111111111111111111"
         },
         {
-          "name": "eventAuthority",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  95,
-                  95,
-                  101,
-                  118,
-                  101,
-                  110,
-                  116,
-                  95,
-                  97,
-                  117,
-                  116,
-                  104,
-                  111,
-                  114,
-                  105,
-                  116,
-                  121
-                ]
-              }
-            ]
-          }
+          "name": "eventAuthority"
         },
         {
           "name": "program"
@@ -1767,33 +1741,7 @@ export type RwaRbac = {
           "optional": true
         },
         {
-          "name": "eventAuthority",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  95,
-                  95,
-                  101,
-                  118,
-                  101,
-                  110,
-                  116,
-                  95,
-                  97,
-                  117,
-                  116,
-                  104,
-                  111,
-                  114,
-                  105,
-                  116,
-                  121
-                ]
-              }
-            ]
-          }
+          "name": "eventAuthority"
         },
         {
           "name": "program"
@@ -2211,64 +2159,6 @@ export type RwaRbac = {
         {
           "name": "newAdmin",
           "type": "pubkey"
-        }
-      ]
-    },
-    {
-      "name": "updateInterestBearingMintRate",
-      "discriminator": [
-        29,
-        174,
-        109,
-        163,
-        227,
-        75,
-        2,
-        144
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controllerAuthority",
-          "relations": [
-            "assetAccessController"
-          ]
-        },
-        {
-          "name": "assetAccessController",
-          "relations": [
-            "authorizedUserRole"
-          ]
-        },
-        {
-          "name": "authorizedUserRole"
-        },
-        {
-          "name": "assetControllerProgram",
-          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
-        },
-        {
-          "name": "assetMint",
-          "writable": true
-        },
-        {
-          "name": "assetController"
-        },
-        {
-          "name": "eventAuthority"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        }
-      ],
-      "args": [
-        {
-          "name": "cpiData",
-          "type": "bytes"
         }
       ]
     },

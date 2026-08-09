@@ -1,4 +1,6 @@
 [toolchain]
+anchor_version = "1.1.2"
+package_manager = "yarn"
 
 [features]
 resolution = true
@@ -29,3 +31,13 @@ program = "./deps/identity_registry.so"
 [[test.genesis]]
 address = "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
 program = "./deps/policy_engine.so"
+
+[surfpool]
+startup_wait = 5000
+shutdown_wait = 2000
+rpc_port = 8899
+ws_port = 8900
+host = "127.0.0.1"
+online = true
+datasource_rpc_url = "https://api.devnet.solana.com"
+log_level = "debug"

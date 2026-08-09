@@ -1,8 +1,8 @@
 [package]
 name = "rwa-imr"
-version = "0.1.0"
+version = "1.1.0"
 description = "Created with Anchor"
-edition = "2021"
+edition = "2024"
 
 [lib]
 crate-type = ["cdylib", "lib"]
@@ -19,5 +19,5 @@ devnet = []
 localnet = []
 
 [dependencies]
-anchor-lang = { version = "0.30.1", features = ["event-cpi"] }
+anchor-lang = { version = "1.1.2", features = ["event-cpi"] }
 rbac-utils = { path = "../../rbac-utils" }

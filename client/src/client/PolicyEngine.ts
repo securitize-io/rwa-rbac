@@ -1,11 +1,7 @@
-import { Program } from "@coral-xyz/anchor";
-import {
-  PublicKey,
-  SystemProgram,
-  TransactionInstruction,
-} from "@solana/web3.js";
+import { Program } from '@anchor-lang/core';
+import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 
-import { RwaRbac } from "../types/generated/rwa_rbac";
+import { RwaRbac } from '../types/generated/rwa_rbac';
 import {
   AttachPolicyArgs,
   DetachPolicyArgs,
@@ -23,7 +19,7 @@ import {
   getIdentityAccountPda,
   getTrackerAccountPda,
   getPolicyEngineEventAuthority,
-} from "@dstoken-solana/rwa-token-sdk";
+} from '@dstoken-solana/rwa-token-sdk';
 
 /**
  * Represents the role-based access client for Policy Engine for an RWA.
@@ -49,7 +45,7 @@ export class PolicyEngine {
     args: AttachPolicyArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
     const policyIx = await this.rwaClient.policyEngine.attachPolicy(args);
     const ixData = policyIx.ixs[0].data;
@@ -60,7 +56,7 @@ export class PolicyEngine {
         user: signer,
         controllerAuthority: args.authority,
         assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
+        authorizedUserRole,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         systemProgram: SystemProgram.programId,
@@ -81,7 +77,7 @@ export class PolicyEngine {
     args: DetachPolicyArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
     const policyIx = await this.rwaClient.policyEngine.detachPolicy(args);
     const ixData = policyIx.ixs[0].data;
@@ -92,7 +88,7 @@ export class PolicyEngine {
         user: signer,
         controllerAuthority: args.authority,
         assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
+        authorizedUserRole,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         systemProgram: SystemProgram.programId,
@@ -113,7 +109,7 @@ export class PolicyEngine {
     args: ChangeCountersArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
     const policyIx = await this.rwaClient.policyEngine.changeCounters(args);
     const ixData = policyIx.ixs[0].data;
@@ -124,7 +120,7 @@ export class PolicyEngine {
         user: signer,
         controllerAuthority: args.authority,
         assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
+        authorizedUserRole,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         systemProgram: SystemProgram.programId,
@@ -145,7 +141,7 @@ export class PolicyEngine {
     args: SetCountersArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
     const policyIx = await this.rwaClient.policyEngine.setCounters(args);
     const ixData = policyIx.ixs[0].data;
@@ -156,7 +152,7 @@ export class PolicyEngine {
         user: signer,
         controllerAuthority: args.authority,
         assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
+        authorizedUserRole,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         eventAuthority: getPolicyEngineEventAuthority(),
@@ -176,11 +172,9 @@ export class PolicyEngine {
     args: ChangeCounterLimitsArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
-    const policyIx = await this.rwaClient.policyEngine.changeCounterLimits(
-      args
-    );
+    const policyIx = await this.rwaClient.policyEngine.changeCounterLimits(args);
     const ixData = policyIx.ixs[0].data;
     return this.rbacProgram.methods
       .changeCounterLimits(ixData)
@@ -189,7 +183,7 @@ export class PolicyEngine {
         user: signer,
         controllerAuthority: args.authority,
         assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
+        authorizedUserRole,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         systemProgram: SystemProgram.programId,
@@ -209,7 +203,7 @@ export class PolicyEngine {
     args: ChangeMappingArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
     const policyIx = await this.rwaClient.policyEngine.changeMapping(args);
     const ixData = policyIx.ixs[0].data;
@@ -220,7 +214,7 @@ export class PolicyEngine {
         user: signer,
         controllerAuthority: args.authority,
         assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
+        authorizedUserRole,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         eventAuthority: getPolicyEngineEventAuthority(),
@@ -239,11 +233,9 @@ export class PolicyEngine {
     args: ChangeIssuancePoliciesArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
-    const policyIx = await this.rwaClient.policyEngine.changeIssuancePolicies(
-      args
-    );
+    const policyIx = await this.rwaClient.policyEngine.changeIssuancePolicies(args);
     const ixData = policyIx.ixs[0].data;
     return this.rbacProgram.methods
       .changeIssuancePolicies(ixData)
@@ -252,7 +244,7 @@ export class PolicyEngine {
         user: signer,
         controllerAuthority: args.authority,
         assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
+        authorizedUserRole,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         eventAuthority: getPolicyEngineEventAuthority(),
@@ -264,7 +256,7 @@ export class PolicyEngine {
     args: AddLockArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
     const policyIx = await this.rwaClient.policyEngine.addLock(args);
     const ixData = policyIx.ixs[0].data;
@@ -275,7 +267,7 @@ export class PolicyEngine {
         user: signer,
         controllerAuthority: args.authority,
         assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
+        authorizedUserRole,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         systemProgram: SystemProgram.programId,
@@ -292,7 +284,7 @@ export class PolicyEngine {
     args: RemoveLockArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
     const policyIx = await this.rwaClient.policyEngine.removeLock(args);
     const ixData = policyIx.ixs[0].data;
@@ -303,7 +295,7 @@ export class PolicyEngine {
         user: signer,
         controllerAuthority: args.authority,
         assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
+        authorizedUserRole,
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         systemProgram: SystemProgram.programId,

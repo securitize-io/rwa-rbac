@@ -1,4 +1,5 @@
 #![allow(ambiguous_glob_reexports)]
+#![allow(unexpected_cfgs)]
 
 pub mod error;
 pub mod events;
@@ -44,7 +45,13 @@ pub mod rwa_rbac {
         allowed_medici_ixs: u64,
         is_master_role: bool,
     ) -> Result<()> {
-        instructions::create_user_role::handler(ctx, name, allowed_admin_ixs, allowed_medici_ixs, is_master_role)
+        instructions::create_user_role::handler(
+            ctx,
+            name,
+            allowed_admin_ixs,
+            allowed_medici_ixs,
+            is_master_role,
+        )
     }
 
     pub fn modify_user_role(
@@ -75,7 +82,7 @@ pub mod rwa_rbac {
     }
 
     pub fn issue_tokens<'info>(
-        ctx: Context<'_, '_, '_, 'info, IssueTokens<'info>>,
+        ctx: Context<'info, IssueTokens<'info>>,
         cpi_data: Vec<u8>,
     ) -> Result<()> {
         instructions::issue_tokens::handler(ctx, cpi_data)
@@ -97,14 +104,14 @@ pub mod rwa_rbac {
     }
 
     pub fn seize_tokens<'info>(
-        ctx: Context<'_, '_, '_, 'info, SeizeTokens<'info>>,
+        ctx: Context<'info, SeizeTokens<'info>>,
         cpi_data: Vec<u8>,
     ) -> Result<()> {
         instructions::seize_tokens::handler(ctx, cpi_data)
     }
 
     pub fn revoke_tokens<'info>(
-        ctx: Context<'_, '_, '_, 'info, RevokeTokens<'info>>,
+        ctx: Context<'info, RevokeTokens<'info>>,
         cpi_data: Vec<u8>,
     ) -> Result<()> {
         instructions::revoke_tokens::handler(ctx, cpi_data)

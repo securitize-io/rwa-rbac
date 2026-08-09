@@ -1,6 +1,6 @@
-import { PublicKey } from "@solana/web3.js";
-import { BN } from "@coral-xyz/anchor";
-import { CommonArgs } from "@dstoken-solana/rwa-token-sdk";
+import { PublicKey } from '@solana/web3.js';
+import { BN } from '@anchor-lang/core';
+import { CommonArgs } from '@dstoken-solana/rwa-token-sdk';
 
 /** Args used to setup a AssetAccessController  */
 export type CreateControllerArgs = {

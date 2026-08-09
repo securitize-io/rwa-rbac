@@ -1,22 +1,11 @@
-import { BN, getProvider } from "@coral-xyz/anchor";
-import {
-  Connection,
-  Keypair,
-  LAMPORTS_PER_SOL,
-  PublicKey,
-} from "@solana/web3.js";
-import {
-  deriveAssetAccessControllerPda,
-  deriveUserRolePda,
-  RBAC_PROGRAM,
-} from "../client/src";
-import { Config } from "@dstoken-solana/rwa-token-sdk";
-import { readFileSync } from "fs";
+import { BN, getProvider } from '@anchor-lang/core';
+import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { deriveAssetAccessControllerPda, deriveUserRolePda, RBAC_PROGRAM } from '../client/src';
+import { Config } from '@dstoken-solana/rwa-token-sdk';
+import { readFileSync } from 'fs';
 
 export async function setupTests() {
-  const keypairData = new Uint8Array(
-    JSON.parse(readFileSync("tests/testSigner.json", "utf-8"))
-  );
+  const keypairData = new Uint8Array(JSON.parse(readFileSync('tests/testSigner.json', 'utf-8')));
   const signer1Kp = Keypair.fromSecretKey(keypairData);
   const signer2Kp = new Keypair();
   const signer3Kp = new Keypair();
@@ -37,8 +26,15 @@ export async function setupTests() {
     provider.connection.requestAirdrop(user3Kp.publicKey, LAMPORTS_PER_SOL),
   ]);
 
+  const blockhash = await provider.connection.getLatestBlockhash('processed');
   await Promise.all(
-    txns.map((txn) => provider.connection.confirmTransaction(txn, "finalized"))
+    txns.map((txn) =>
+      provider.connection.confirmTransaction({
+        signature: txn,
+        blockhash: blockhash.blockhash,
+        lastValidBlockHeight: blockhash.lastValidBlockHeight,
+      })
+    )
   );
 
   const assetMintKp = Keypair.generate();
@@ -51,18 +47,20 @@ export async function setupTests() {
   const userRole2 = deriveUserRolePda(roleId2, controller);
   const userRole3 = deriveUserRolePda(roleId3, controller);
 
-  const [controllerAuthority, controllerAuthorityBump] =
-    PublicKey.findProgramAddressSync([controller.toBuffer()], RBAC_PROGRAM);
+  const [controllerAuthority, controllerAuthorityBump] = PublicKey.findProgramAddressSync(
+    [controller.toBuffer()],
+    RBAC_PROGRAM
+  );
 
-  const connectionUrl = process.env.RPC_URL ?? "http://localhost:8899";
-  const connection = new Connection(connectionUrl, "processed");
+  const connectionUrl = process.env.RPC_URL ?? 'http://localhost:8899';
+  const connection = new Connection(connectionUrl, 'processed');
   const config: Config = {
     connection,
     rpcUrl: connectionUrl,
     confirmationOptions: {
       skipPreflight: false,
       maxRetries: 3,
-      commitment: "processed",
+      commitment: 'processed',
     },
   };
 

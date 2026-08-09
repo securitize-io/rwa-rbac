@@ -1,11 +1,8 @@
-import { Program } from "@coral-xyz/anchor";
-import { PublicKey, TransactionInstruction } from "@solana/web3.js";
+import { Program } from '@anchor-lang/core';
+import { PublicKey, TransactionInstruction } from '@solana/web3.js';
 
-import { RwaRbac } from "../types/generated/rwa_rbac";
-import {
-  AttachDetachWalletArgs,
-  RevokeIdentityArgs,
-} from "../types/instructions";
+import { RwaRbac } from '../types/generated/rwa_rbac';
+import { AttachDetachWalletArgs, RevokeIdentityArgs } from '../types/instructions';
 import {
   getIdentityAccount,
   getIdentityAccountPda,
@@ -19,13 +16,10 @@ import {
   policyEngineProgramId,
   RwaClient,
   SetupUserArgs,
-} from "@dstoken-solana/rwa-token-sdk";
-import { deriveControllerAuthorityPda } from "../pdas";
-import { SystemProgram } from "@solana/web3.js";
-import {
-  getAssociatedTokenAddressSync,
-  TOKEN_2022_PROGRAM_ID,
-} from "@solana/spl-token";
+} from '@dstoken-solana/rwa-token-sdk';
+import { deriveControllerAuthorityPda } from '../pdas';
+import { SystemProgram } from '@solana/web3.js';
+import { getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 
 /**
  * Represents the role-based access client for Identity Registry for an RWA.
@@ -52,15 +46,13 @@ export class IdentityRegistry {
   async setupUserIxns(
     args: SetupUserArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<IxReturn> {
     const { ixs } = await this.rwaClient.identityRegistry.setupUserIxns(args);
     const returnIxs = [];
 
     const identityAccountIx = ixs[0];
-    const controllerAuthority = deriveControllerAuthorityPda(
-      assetAccessController
-    );
+    const controllerAuthority = deriveControllerAuthorityPda(assetAccessController);
     const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
     returnIxs.push(
       await this.rbacProgram.methods
@@ -70,14 +62,11 @@ export class IdentityRegistry {
           user: args.signer,
           controllerAuthority,
           assetAccessController,
-          authorizedUserRole: authorizedUserRole || null,
+          authorizedUserRole,
           identityRegistryProgram: identityRegistryProgramId,
           identityRegistry: getIdentityRegistryPda(args.assetMint),
           identityAccount,
-          walletIdentity: getWalletIdentityAccountPda(
-            args.assetMint,
-            args.owner
-          ),
+          walletIdentity: getWalletIdentityAccountPda(args.assetMint, args.owner),
           systemProgram: SystemProgram.programId,
           eventAuthority: getIdentityRegistryEventAuthority(),
           policyEngineProgram: policyEngineProgramId,
@@ -106,45 +95,36 @@ export class IdentityRegistry {
   async removeUserIxn(
     args: RevokeIdentityArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
-    const ix = await this.rwaClient.identityRegistry.revokeIdentityAccount(
-      args
-    );
-    const identityAccountAddress = getIdentityAccountPda(
-      args.assetMint,
-      args.owner
-    );
-    const identityAccount = await getIdentityAccount(
-      identityAccountAddress,
-      this.rwaClient.provider
-    );
+    const ix = await this.rwaClient.identityRegistry.revokeIdentityAccount(args);
+    const identityAccountAddress = getIdentityAccountPda(args.assetMint, args.owner);
+    const identityAccount = await getIdentityAccount(identityAccountAddress, this.rwaClient.provider);
 
-    const controllerAuthority = deriveControllerAuthorityPda(
-      assetAccessController
-    );
+    if (!identityAccount) {
+      throw new Error(`Identity account not found for owner: ${args.owner}`);
+    }
+
+    const controllerAuthority = deriveControllerAuthorityPda(assetAccessController);
     const returnIx = await this.rbacProgram.methods
-        .removeIdentityAccount(ix.data)
-        .accountsStrict({
-          payer: args.payer,
-          user: args.signer,
-          controllerAuthority,
-          assetAccessController,
-          authorizedUserRole: authorizedUserRole || null,
-          identityRegistryProgram: identityRegistryProgramId,
-          identityRegistry: getIdentityRegistryPda(args.assetMint),
-          identityAccount: identityAccountAddress,
-          walletIdentity: getWalletIdentityAccountPda(
-            args.assetMint,
-            args.owner
-          ),
-          eventAuthority: getIdentityRegistryEventAuthority(),
-          identityOwner: identityAccount.owner,
-          policyEngineProgram: policyEngineProgramId,
-          trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
-          assetMint: args.assetMint,
-        })
-        .instruction();
+      .removeIdentityAccount(ix.data)
+      .accountsStrict({
+        payer: args.payer,
+        user: args.signer,
+        controllerAuthority,
+        assetAccessController,
+        authorizedUserRole,
+        identityRegistryProgram: identityRegistryProgramId,
+        identityRegistry: getIdentityRegistryPda(args.assetMint),
+        identityAccount: identityAccountAddress,
+        walletIdentity: getWalletIdentityAccountPda(args.assetMint, args.owner),
+        eventAuthority: getIdentityRegistryEventAuthority(),
+        identityOwner: identityAccount.owner,
+        policyEngineProgram: policyEngineProgramId,
+        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        assetMint: args.assetMint,
+      })
+      .instruction();
 
     return returnIx;
   }
@@ -159,22 +139,14 @@ export class IdentityRegistry {
   async attachWalletToIdentityIxn(
     args: AttachDetachWalletArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
-    const controllerAuthority = deriveControllerAuthorityPda(
-      assetAccessController
-    );
+    const controllerAuthority = deriveControllerAuthorityPda(assetAccessController);
     const identityProgram = getIdentityRegistryProgram(this.rwaClient.provider);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
-    const newWalletIdentityAccount = getIdentityAccountPda(
-      args.assetMint,
-      args.wallet
-    );
-    const walletIdentity = getWalletIdentityAccountPda(
-      args.assetMint,
-      args.wallet.toString()
-    );
+    const newWalletIdentityAccount = getIdentityAccountPda(args.assetMint, args.wallet);
+    const walletIdentity = getWalletIdentityAccountPda(args.assetMint, args.wallet.toString());
 
     const ix = await identityProgram.methods
       .attachWalletToIdentity(new PublicKey(args.wallet))
@@ -197,7 +169,7 @@ export class IdentityRegistry {
         user: args.signer,
         controllerAuthority,
         assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
+        authorizedUserRole,
         identityRegistryProgram: identityRegistryProgramId,
         identityAccount,
         identityRegistry,
@@ -219,18 +191,13 @@ export class IdentityRegistry {
   async detachWalletFromIdentityIxn(
     args: AttachDetachWalletArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
-    const controllerAuthority = deriveControllerAuthorityPda(
-      assetAccessController
-    );
+    const controllerAuthority = deriveControllerAuthorityPda(assetAccessController);
     const identityProgram = getIdentityRegistryProgram(this.rwaClient.provider);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const identityAccount = getIdentityAccountPda(args.assetMint, args.owner);
-    const walletIdentity = getWalletIdentityAccountPda(
-      args.assetMint,
-      args.wallet.toString()
-    );
+    const walletIdentity = getWalletIdentityAccountPda(args.assetMint, args.wallet.toString());
 
     const tokenAccount = getAssociatedTokenAddressSync(
       new PublicKey(args.assetMint),
@@ -260,7 +227,7 @@ export class IdentityRegistry {
         user: args.signer,
         controllerAuthority,
         assetAccessController,
-        authorizedUserRole: authorizedUserRole || null,
+        authorizedUserRole,
         identityRegistryProgram: identityRegistryProgramId,
         walletIdentity,
         identityAccount,

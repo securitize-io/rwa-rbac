@@ -1,19 +1,19 @@
-import { BN, Program, Provider, utils } from "@coral-xyz/anchor";
-import { CompiledInstruction, SystemProgram } from "@solana/web3.js";
+import { BN, Program, Provider, utils } from '@anchor-lang/core';
+import { CompiledInstruction, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 
-import { RwaRbac } from "../types/generated/rwa_rbac";
-import * as rbacIDL from "../types/generated/rwa_rbac.json";
-import { RwaImr } from "../types/generated/rwa_imr";
-import * as imrIDL from "../types/generated/rwa_imr.json";
-import { AssetController } from "./AssetController";
-import { PolicyEngine } from "./PolicyEngine";
-import { IdentityRegistry } from "./IdentityRegistry";
+import { RwaRbac } from '../types/generated/rwa_rbac';
+import * as rbacIDL from '../types/generated/rwa_rbac.json';
+import { RwaImr } from '../types/generated/rwa_imr';
+import * as imrIDL from '../types/generated/rwa_imr.json';
+import { AssetController } from './AssetController';
+import { PolicyEngine } from './PolicyEngine';
+import { IdentityRegistry } from './IdentityRegistry';
 import {
   deriveAssetAccessControllerPda,
   deriveControllerAuthorityPda,
   deriveUserRolePda,
   getEventAuthority,
-} from "../pdas";
+} from '../pdas';
 import {
   AssignUserRoleArgs,
   CreateControllerArgs,
@@ -24,12 +24,12 @@ import {
   SetupUserRoleArgs,
   UpdateControllerAdminArgs,
   WithdrawExcessRentArgs,
-} from "../types/instructions";
-import { getAssetControllerEventAuthority, RwaClient } from "@dstoken-solana/rwa-token-sdk";
-import { Config } from "@dstoken-solana/rwa-token-sdk";
-import { IdentityMetadataRegistry } from "./IdentityMetadataRegistry";
-import { RBAC_PROGRAM } from "../constants";
-import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+} from '../types/instructions';
+import { getAssetControllerEventAuthority, RwaClient } from '@dstoken-solana/rwa-token-sdk';
+import { Config } from '@dstoken-solana/rwa-token-sdk';
+import { IdentityMetadataRegistry } from './IdentityMetadataRegistry';
+import { RBAC_PROGRAM } from '../constants';
+import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 
 export class RwaRbacClient {
   rbacProgram: Program<RwaRbac>;
@@ -44,15 +44,9 @@ export class RwaRbacClient {
     this.rwaClient = new RwaClient(config, provider);
     this.provider = provider;
     this.rbacProgram = new Program(rbacIDL as RwaRbac, this.provider);
-    this.assetController = new AssetController(
-      this.rwaClient,
-      this.rbacProgram
-    );
+    this.assetController = new AssetController(this.rwaClient, this.rbacProgram);
     this.policyEngine = new PolicyEngine(this.rwaClient, this.rbacProgram);
-    this.identityRegistry = new IdentityRegistry(
-      this.rwaClient,
-      this.rbacProgram
-    );
+    this.identityRegistry = new IdentityRegistry(this.rwaClient, this.rbacProgram);
     this.identityMetadataRegistry = new IdentityMetadataRegistry(
       this.rwaClient,
       this.rbacProgram,
@@ -71,12 +65,10 @@ export class RwaRbacClient {
       .map(({ data }) => {
         try {
           const buffer = Buffer.from(utils.bytes.bs58.decode(data));
-          const event = eventCoder.decode(
-            utils.bytes.base64.encode(buffer.slice(8))
-          );
+          const event = eventCoder.decode(utils.bytes.base64.encode(buffer.slice(8)));
           return event;
         } catch (err) {
-          console.error("Error decoding events", err);
+          console.error('Error decoding events', err);
         }
       })
       .filter((v) => v != null);
@@ -88,7 +80,7 @@ export class RwaRbacClient {
    * @param args - {@link CreateControllerArgs}
    * @returns A Promise that resolves to the instruction to create AssetAccessController.
    */
-  async createAssetAccessControllerIxn(args: CreateControllerArgs) {
+  async createAssetAccessControllerIxn(args: CreateControllerArgs): Promise<TransactionInstruction> {
     const assetAccessController = deriveAssetAccessControllerPda(args.assetMint);
     const assetAccessControllerAuthority = deriveControllerAuthorityPda(assetAccessController);
 
@@ -101,7 +93,7 @@ export class RwaRbacClient {
       assetMint: args.assetMint.toString(),
       payer: args.payer.toString(),
     });
-    
+
     return this.rbacProgram.methods
       .createController(cpiInstruction.data)
       .accountsStrict({
@@ -129,7 +121,7 @@ export class RwaRbacClient {
    * @param args - {@link UpdateControllerAdminArgs}
    * @returns A Promise that resolves to the instruction to update admin on AssetAccessController.
    */
-  async updateControllerAdminIxn(args: UpdateControllerAdminArgs) {
+  async updateControllerAdminIxn(args: UpdateControllerAdminArgs): Promise<TransactionInstruction> {
     return this.rbacProgram.methods
       .updateControllerAdmin(args.newAdmin)
       .accountsStrict({
@@ -144,12 +136,9 @@ export class RwaRbacClient {
    * @param args - {@link SetupUserRoleArgs}
    * @returns A Promise that resolves to the instruction to create UserRole.
    */
-  async createUserRoleIxn(args: SetupUserRoleArgs) {
+  async createUserRoleIxn(args: SetupUserRoleArgs): Promise<TransactionInstruction> {
     // Fetch controller to get next UserRole id.
-    const controller =
-      await this.rbacProgram.account.assetAccessController.fetch(
-        args.assetAccessController
-      );
+    const controller = await this.rbacProgram.account.assetAccessController.fetch(args.assetAccessController);
 
     return this.rbacProgram.methods
       .createUserRole(
@@ -161,10 +150,7 @@ export class RwaRbacClient {
       .accountsStrict({
         payer: args.payer,
         user: args.user,
-        newUserRole: deriveUserRolePda(
-          controller.userRolesCount.addn(1),
-          args.assetAccessController
-        ),
+        newUserRole: deriveUserRolePda(controller.userRolesCount.addn(1), args.assetAccessController),
         authorizedUserRole: args.authorizedUserRole || null,
         assetAccessController: args.assetAccessController,
         systemProgram: SystemProgram.programId,
@@ -177,13 +163,9 @@ export class RwaRbacClient {
    * @param args - {@link ModifyUserRoleArgs}
    * @returns A Promise that resolves to the instruction to modify UserRole.
    */
-  async modifyUserRoleIxn(args: ModifyUserRoleArgs) {
+  async modifyUserRoleIxn(args: ModifyUserRoleArgs): Promise<TransactionInstruction> {
     return this.rbacProgram.methods
-      .modifyUserRole(
-        args.name,
-        new BN(args.allowedAdminIxs),
-        new BN(args.allowedMediciIxs)
-      )
+      .modifyUserRole(args.name, new BN(args.allowedAdminIxs), new BN(args.allowedMediciIxs))
       .accountsStrict({
         user: args.user,
         userRole: args.userRole,
@@ -198,7 +180,7 @@ export class RwaRbacClient {
    * @param args - {@link DeleteUserRoleArgs}
    * @returns A Promise that resolves to the instruction to delete UserRole.
    */
-  async deleteUserRoleIxn(args: DeleteUserRoleArgs) {
+  async deleteUserRoleIxn(args: DeleteUserRoleArgs): Promise<TransactionInstruction> {
     return this.rbacProgram.methods
       .deleteUserRole()
       .accountsStrict({
@@ -216,7 +198,7 @@ export class RwaRbacClient {
    * @param args - {@link AssignUserRoleArgs}
    * @returns A Promise that resolves to the instruction to assign UserRole.
    */
-  async assignUserRoleIxn(args: AssignUserRoleArgs) {
+  async assignUserRoleIxn(args: AssignUserRoleArgs): Promise<TransactionInstruction> {
     return this.rbacProgram.methods
       .assignUserRole(args.usersToAssign)
       .accountsStrict({
@@ -237,7 +219,7 @@ export class RwaRbacClient {
    * @param args - {@link RemoveUserRoleArgs}
    * @returns A Promise that resolves to the instruction to remove users from a UserRole.
    */
-  async removeUserRoleIxn(args: RemoveUserRoleArgs) {
+  async removeUserRoleIxn(args: RemoveUserRoleArgs): Promise<TransactionInstruction> {
     return this.rbacProgram.methods
       .removeUserRole(args.usersToRemove)
       .accountsStrict({
@@ -256,7 +238,7 @@ export class RwaRbacClient {
    * @param args - {@link WithdrawExcessRentArgs}
    * @returns A Promise that resolves to the instruction to withdraw excess rent from ControllerAuthority.
    */
-  async withdrawExcessRentIxn(args: WithdrawExcessRentArgs) {
+  async withdrawExcessRentIxn(args: WithdrawExcessRentArgs): Promise<TransactionInstruction> {
     return this.rbacProgram.methods
       .withdrawExcessRent()
       .accountsStrict({
@@ -269,13 +251,13 @@ export class RwaRbacClient {
       })
       .instruction();
   }
-  
+
   /**
    * Asynchronously generates instruction to set lookup table address field in the AssetAccessController.
    * @param args - {@link SetLookuptableAddressArgs}
    * @returns A Promise that resolves to the instruction to set lookup table address.
    */
-  async setLookuptableAddressIxn(args: SetLookuptableAddressArgs) {
+  async setLookuptableAddressIxn(args: SetLookuptableAddressArgs): Promise<TransactionInstruction> {
     return this.rbacProgram.methods
       .setLutAddress()
       .accountsStrict({

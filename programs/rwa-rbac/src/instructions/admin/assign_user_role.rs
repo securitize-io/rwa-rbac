@@ -56,7 +56,7 @@ pub fn handler(ctx: Context<AssignUserRole>, users_to_assign: Vec<Pubkey>) -> Re
             user_role_info.clone(),
             space_needed,
         )?;
-        user_role_info.realloc(space_needed, false)?;
+        user_role_info.resize(space_needed)?;
     }
 
     if user_role.is_master_role && user_role.users.len() > 0 {

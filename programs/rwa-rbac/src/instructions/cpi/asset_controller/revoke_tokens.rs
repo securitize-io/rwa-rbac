@@ -3,7 +3,7 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 use anchor_spl::{associated_token::AssociatedToken, token_2022::Token2022};
-use rbac_utils::{constants::ASSET_CONTROLLER_ID, REVOKE_TOKENS_IX};
+use rbac_utils::{REVOKE_TOKENS_IX, constants::ASSET_CONTROLLER_ID};
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
 
@@ -49,10 +49,7 @@ pub struct RevokeTokens<'info> {
     pub event_authority: UncheckedAccount<'info>,
 }
 
-pub fn handler<'info>(
-    ctx: Context<'_, '_, '_, 'info, RevokeTokens<'info>>,
-    cpi_data: Vec<u8>,
-) -> Result<()> {
+pub fn handler<'info>(ctx: Context<'info, RevokeTokens<'info>>, cpi_data: Vec<u8>) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
     // Verify that signer has authorized user role.

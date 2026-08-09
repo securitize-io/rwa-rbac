@@ -1,21 +1,9 @@
-import { Program } from "@coral-xyz/anchor";
-import {
-  PublicKey,
-  SystemProgram,
-  TransactionInstruction,
-} from "@solana/web3.js";
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  getAssociatedTokenAddressSync,
-  TOKEN_2022_PROGRAM_ID,
-} from "@solana/spl-token";
+import { Program } from '@anchor-lang/core';
+import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
+import { ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 
-import {
-  IssueTokensArgs,
-  IssueTokensWithLockArgs,
-  UpdateInterestBearingMintRateArgs,
-} from "../types/instructions";
-import { RwaRbac } from "../types/generated/rwa_rbac";
+import { IssueTokensArgs, IssueTokensWithLockArgs, UpdateInterestBearingMintRateArgs } from '../types/instructions';
+import { RwaRbac } from '../types/generated/rwa_rbac';
 import {
   assetControllerProgramId,
   CreateAssetControllerIx,
@@ -41,11 +29,8 @@ import {
   SeizeTokensArgs,
   TransferTokensArgs,
   UpdateAssetMetadataArgs,
-} from "@dstoken-solana/rwa-token-sdk";
-import {
-  deriveControllerAuthorityPda,
-  deriveInvestorPda,
-} from "../pdas";
+} from '@dstoken-solana/rwa-token-sdk';
+import { deriveControllerAuthorityPda, deriveInvestorPda } from '../pdas';
 
 /**
  * Represents the role-based access client for Asset Controller for an RWA.
@@ -80,9 +65,7 @@ export class AssetController {
     assetAccessController: PublicKey,
     authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
-    const updateIx = await this.rwaClient.assetController.updateAssetMetadata(
-      args
-    );
+    const updateIx = await this.rwaClient.assetController.updateAssetMetadata(args);
     const ixData = updateIx.data;
     return this.rbacProgram.methods
       .updateAssetMetadata(ixData)
@@ -114,9 +97,7 @@ export class AssetController {
     authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
-    const controllerAuthority = deriveControllerAuthorityPda(
-      assetAccessController
-    );
+    const controllerAuthority = deriveControllerAuthorityPda(assetAccessController);
     const investorPda = deriveInvestorPda(args.investorId, identityRegistry);
 
     const issueTokensIxs = await getIssueTokensIx(
@@ -132,10 +113,7 @@ export class AssetController {
       },
       this.rwaClient.provider
     );
-    const trackerAccount = getTrackerAccountPda(
-      args.assetMint,
-      investorPda.toString()
-    );
+    const trackerAccount = getTrackerAccountPda(args.assetMint, investorPda.toString());
 
     const ixData = issueTokensIxs[0].data;
     const tokenAccount = getAssociatedTokenAddressSync(
@@ -160,19 +138,13 @@ export class AssetController {
         tokenAccount: tokenAccount,
         policyEngine: getPolicyEnginePda(args.assetMint),
         policyEngineProgram: policyEngineProgramId,
-        identityAccount: getIdentityAccountPda(
-          args.assetMint,
-          investorPda.toString()
-        ),
+        identityAccount: getIdentityAccountPda(args.assetMint, investorPda.toString()),
         trackerAccount,
         identityRegistry,
         tokenProgram: TOKEN_2022_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
-        walletIdentityAccount: getWalletIdentityAccountPda(
-          args.assetMint,
-          args.wallet
-        ),
+        walletIdentityAccount: getWalletIdentityAccountPda(args.assetMint, args.wallet),
         eventAuthority: getAssetControllerEventAuthority(),
       })
       .instruction();
@@ -276,16 +248,14 @@ export class AssetController {
     investorId?: string
   ): Promise<TransactionInstruction> {
     if (!args.wallet) {
-      throw new Error("Use wallet arg for wallet to revoke tokens from.");
+      throw new Error('Use wallet arg for wallet to revoke tokens from.');
     }
     // Set owner (even though it is InvestorPda) as wallet to generate ix data.
     args.owner = args.wallet;
 
     const revokeIx = await getRevokeTokensIx(args, this.rwaClient.provider);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
-    const investorPda = investorId
-      ? deriveInvestorPda(investorId, identityRegistry)
-      : null;
+    const investorPda = investorId ? deriveInvestorPda(investorId, identityRegistry) : null;
     const ixData = revokeIx.data;
     const assetController = getAssetControllerPda(args.assetMint);
     const revokeTokenAccount = getAssociatedTokenAddressSync(
@@ -307,20 +277,11 @@ export class AssetController {
         assetController,
         revokeTokenAccount,
         identityRegistry,
-        identityAccount: getIdentityAccountPda(
-          args.assetMint,
-          investorId ? investorPda.toString() : args.owner
-        ),
-        trackerAccount: getTrackerAccountPda(
-          args.assetMint,
-          investorId ? investorPda.toString() : args.owner
-        ),
+        identityAccount: getIdentityAccountPda(args.assetMint, investorId ? investorPda!.toString() : args.owner),
+        trackerAccount: getTrackerAccountPda(args.assetMint, investorId ? investorPda!.toString() : args.owner),
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
-        walletIdentityAccount: getWalletIdentityAccountPda(
-          args.assetMint,
-          args.wallet
-        ),
+        walletIdentityAccount: getWalletIdentityAccountPda(args.assetMint, args.wallet),
         tokenProgram: TOKEN_2022_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
