@@ -7,7 +7,13 @@ import {
   Transaction,
   SystemProgram,
 } from '@solana/web3.js';
-import { setupTests } from './utils';
+import {
+  advanceSurfpoolClock,
+  createAndApproveSquadsVaultTransaction,
+  createTestSquadsMultisig,
+  executeSquadsVaultTransaction,
+  setupTests,
+} from './utils';
 import { RwaRbacClient, AdminFlags, MediciFlags, computeFlags } from '../client/src/index';
 import { assert } from 'chai';
 
@@ -297,6 +303,108 @@ describe('Admin Ixs Test', () => {
 
     userRoleAccount = await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
     assert.equal(userRoleAccount.name, 'hello world');
+  });
+
+  it('Fails to set lookup table without a configured multisig authority', async () => {
+    const userRole = await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
+    const modifyRoleIx = await rwaRbacClient.modifyUserRoleIxn({
+      name: userRole.name,
+      allowedAdminIxs: userRole.allowedAdminIxs.toNumber() | AdminFlags.SET_LUT_ADDRESS,
+      allowedMediciIxs: userRole.allowedMediciIxs.toNumber(),
+      user: setup.signer1,
+      assetAccessController: setup.assetAccessController,
+      userRole: setup.userRole1,
+      multisigAuthority: null,
+    });
+    await sendAndConfirmTransaction(connection, new Transaction().add(modifyRoleIx), [setup.signer1Kp]);
+
+    const controllerBefore = await rwaRbacClient.rbacProgram.account.assetAccessController.fetch(
+      setup.assetAccessController
+    );
+    const lutAddress = Keypair.generate().publicKey;
+    const setLutIx = await rwaRbacClient.setLookuptableAddressIxn({
+      signer: setup.signer2,
+      multisigAuthority: setup.signer3,
+      assetAccessController: setup.assetAccessController,
+      authorizedUserRole: setup.userRole1,
+      lutAddress,
+    });
+
+    try {
+      await sendAndConfirmTransaction(connection, new Transaction().add(setLutIx), [setup.signer2Kp, setup.signer3Kp]);
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes('MissingMultisigAuthority'));
+    }
+
+    const controllerAfter = await rwaRbacClient.rbacProgram.account.assetAccessController.fetch(
+      setup.assetAccessController
+    );
+    assert(controllerAfter.lutAddress.equals(controllerBefore.lutAddress));
+  });
+
+  it('Sets lookup table through a timelocked Squads transaction', async () => {
+    const timeLock = 3;
+    const userRole = await rwaRbacClient.rbacProgram.account.userRole.fetch(setup.userRole1);
+    const { multisigPda, vaultPda } = await createTestSquadsMultisig({
+      connection,
+      creator: setup.signer2Kp,
+      members: userRole.users,
+      timeLock,
+    });
+
+    const modifyRoleIx = await rwaRbacClient.modifyUserRoleIxn({
+      name: userRole.name,
+      allowedAdminIxs: userRole.allowedAdminIxs.toNumber() | AdminFlags.SET_LUT_ADDRESS,
+      allowedMediciIxs: userRole.allowedMediciIxs.toNumber(),
+      user: setup.signer1,
+      assetAccessController: setup.assetAccessController,
+      userRole: setup.userRole1,
+      multisigAuthority: vaultPda,
+    });
+    await sendAndConfirmTransaction(connection, new Transaction().add(modifyRoleIx), [setup.signer1Kp]);
+
+    const lutAddress = Keypair.generate().publicKey;
+    const setLutIx = await rwaRbacClient.setLookuptableAddressIxn({
+      signer: setup.signer2,
+      multisigAuthority: vaultPda,
+      assetAccessController: setup.assetAccessController,
+      authorizedUserRole: setup.userRole1,
+      lutAddress,
+    });
+    const transactionIndex = await createAndApproveSquadsVaultTransaction({
+      connection,
+      multisigPda,
+      vaultPda,
+      member: setup.signer2Kp,
+      feePayer: setup.payerKp,
+      instruction: setLutIx,
+    });
+
+    try {
+      await executeSquadsVaultTransaction({
+        connection,
+        multisigPda,
+        transactionIndex,
+        member: setup.signer2Kp,
+        feePayer: setup.payerKp,
+      });
+      assert(false);
+    } catch (err) {
+      assert(err.toString().includes('TimeLockNotReleased'));
+    }
+
+    await advanceSurfpoolClock(connection, timeLock + 1);
+    await executeSquadsVaultTransaction({
+      connection,
+      multisigPda,
+      transactionIndex,
+      member: setup.signer2Kp,
+      feePayer: setup.payerKp,
+    });
+
+    const controller = await rwaRbacClient.rbacProgram.account.assetAccessController.fetch(setup.assetAccessController);
+    assert(controller.lutAddress.equals(lutAddress));
   });
 
   it('Withdraw Excess Rent successfully with Admin', async () => {

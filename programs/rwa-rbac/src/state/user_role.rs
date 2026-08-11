@@ -24,11 +24,14 @@ pub struct UserRole {
 
     /// List of users assigned with this role.
     pub users: Vec<Pubkey>,
+
+    /// External authority that must co-sign operations protected by gated flags.
+    pub multisig_authority: Option<Pubkey>,
 }
 
 impl UserRole {
     /// Assume name has max size of 64 bytes and includes 8 byte discriminator.
-    pub const BASE_SIZE: usize = 136;
+    pub const BASE_SIZE: usize = 169;
 
     /// Returns true if the user role contains ANY of the admin flags.
     pub fn has_any_admin_flag(&self, flag: AdminFlags) -> bool {
@@ -133,6 +136,12 @@ bitflags::bitflags! {
   }
 }
 
+/// Admin permissions that require both the role user and the role's multisig authority to sign.
+pub const GATED_ADMIN_FLAGS: AdminFlags = AdminFlags::SET_LUT_ADDRESS;
+
+/// No Medici permissions are gated yet.
+pub const GATED_MEDICI_FLAGS: MediciFlags = MediciFlags::empty();
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -147,6 +156,7 @@ mod tests {
             allowed_medici_ixs: 0,
             users: vec![],
             is_master_role: false,
+            multisig_authority: None,
         };
 
         // Check that has_any_admin_flag returns true for each individual flag (since role allows all flags).
@@ -166,6 +176,7 @@ mod tests {
             allowed_medici_ixs: 0,
             users: vec![],
             is_master_role: false,
+            multisig_authority: None,
         };
 
         let matching_flag = AdminFlags::ASSIGN_OR_REMOVE_ANY_USER_ROLE
@@ -185,6 +196,7 @@ mod tests {
             allowed_medici_ixs: MediciFlags::THAW_TOKEN_ACCOUNT.bits(),
             users: vec![],
             is_master_role: false,
+            multisig_authority: None,
         };
         assert!(user_role.has_all_medici_flag(MediciFlags::THAW_TOKEN_ACCOUNT));
     }
@@ -200,6 +212,7 @@ mod tests {
                 | MediciFlags::FREEZE_TOKEN_ACCOUNT.bits()),
             users: vec![],
             is_master_role: false,
+            multisig_authority: None,
         };
 
         assert!(user_role.has_all_medici_flag(MediciFlags::THAW_TOKEN_ACCOUNT));
@@ -217,6 +230,7 @@ mod tests {
                 | MediciFlags::FREEZE_TOKEN_ACCOUNT.bits()),
             users: vec![],
             is_master_role: false,
+            multisig_authority: None,
         };
 
         // Testing for 3 flags while only having 2 should fail.

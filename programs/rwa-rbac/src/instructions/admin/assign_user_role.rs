@@ -40,6 +40,7 @@ pub fn handler(ctx: Context<AssignUserRole>, users_to_assign: Vec<Pubkey>) -> Re
         &ctx.accounts.asset_access_controller,
         ctx.accounts.authorized_user_role.clone(),
         matching_flag,
+        None,
     )?;
 
     // Check if there's sufficient space to add new users.

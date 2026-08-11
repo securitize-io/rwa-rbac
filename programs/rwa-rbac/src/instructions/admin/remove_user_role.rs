@@ -35,6 +35,7 @@ pub fn handler(ctx: Context<RemoveUserRole>, users_to_remove: Vec<Pubkey>) -> Re
         &ctx.accounts.asset_access_controller,
         ctx.accounts.authorized_user_role.clone(),
         matching_flag,
+        None,
     )?;
 
     // Remove users from role.

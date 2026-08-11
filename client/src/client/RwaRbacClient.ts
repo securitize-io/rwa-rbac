@@ -145,7 +145,8 @@ export class RwaRbacClient {
         args.name,
         new BN(args.allowedAdminIxs),
         new BN(args.allowedMediciIxs),
-        args.isMasterRole || false
+        args.isMasterRole || false,
+        args.multisigAuthority || null
       )
       .accountsStrict({
         payer: args.payer,
@@ -164,8 +165,18 @@ export class RwaRbacClient {
    * @returns A Promise that resolves to the instruction to modify UserRole.
    */
   async modifyUserRoleIxn(args: ModifyUserRoleArgs): Promise<TransactionInstruction> {
+    const multisigAuthority =
+      args.multisigAuthority === undefined
+        ? (await this.rbacProgram.account.userRole.fetch(args.userRole)).multisigAuthority
+        : args.multisigAuthority;
+
     return this.rbacProgram.methods
-      .modifyUserRole(args.name, new BN(args.allowedAdminIxs), new BN(args.allowedMediciIxs))
+      .modifyUserRole(
+        args.name,
+        new BN(args.allowedAdminIxs),
+        new BN(args.allowedMediciIxs),
+        multisigAuthority
+      )
       .accountsStrict({
         user: args.user,
         userRole: args.userRole,
@@ -262,8 +273,9 @@ export class RwaRbacClient {
       .setLutAddress()
       .accountsStrict({
         user: args.signer,
+        multisigAuthority: args.multisigAuthority,
         assetAccessController: args.assetAccessController,
-        authorizedUserRole: args.authorizedUserRole || null,
+        authorizedUserRole: args.authorizedUserRole,
         lutAddress: args.lutAddress,
       })
       .instruction();

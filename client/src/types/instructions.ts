@@ -31,6 +31,7 @@ export type SetupUserRoleArgs = {
   allowedMediciIxs: number;
   authorizedUserRole?: PublicKey;
   isMasterRole?: boolean;
+  multisigAuthority?: PublicKey | null;
 };
 
 /** Args used to modify a UserRole */
@@ -42,6 +43,8 @@ export type ModifyUserRoleArgs = {
   allowedAdminIxs: number;
   allowedMediciIxs: number;
   authorizedUserRole?: PublicKey;
+  /** Omit to preserve the current value; pass null to clear it. */
+  multisigAuthority?: PublicKey | null;
 };
 
 /** Args used to delete a UserRole */
@@ -257,5 +260,6 @@ export type SetLookuptableAddressArgs = {
   signer: string;
   assetAccessController: PublicKey;
   lutAddress: PublicKey;
-  authorizedUserRole?: PublicKey;
+  authorizedUserRole: PublicKey;
+  multisigAuthority: PublicKey;
 };

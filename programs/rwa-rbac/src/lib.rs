@@ -44,6 +44,7 @@ pub mod rwa_rbac {
         allowed_admin_ixs: u64,
         allowed_medici_ixs: u64,
         is_master_role: bool,
+        multisig_authority: Option<Pubkey>,
     ) -> Result<()> {
         instructions::create_user_role::handler(
             ctx,
@@ -51,6 +52,7 @@ pub mod rwa_rbac {
             allowed_admin_ixs,
             allowed_medici_ixs,
             is_master_role,
+            multisig_authority,
         )
     }
 
@@ -59,8 +61,15 @@ pub mod rwa_rbac {
         name: String,
         allowed_admin_ixs: u64,
         allowed_medici_ixs: u64,
+        multisig_authority: Option<Pubkey>,
     ) -> Result<()> {
-        instructions::modify_user_role::handler(ctx, name, allowed_admin_ixs, allowed_medici_ixs)
+        instructions::modify_user_role::handler(
+            ctx,
+            name,
+            allowed_admin_ixs,
+            allowed_medici_ixs,
+            multisig_authority,
+        )
     }
 
     pub fn delete_user_role(ctx: Context<DeleteUserRole>) -> Result<()> {

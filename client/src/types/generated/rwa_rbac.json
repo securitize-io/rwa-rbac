@@ -921,6 +921,12 @@
         {
           "name": "is_master_role",
           "type": "bool"
+        },
+        {
+          "name": "multisig_authority",
+          "type": {
+            "option": "pubkey"
+          }
         }
       ]
     },
@@ -1298,6 +1304,12 @@
         {
           "name": "allowed_medici_ixs",
           "type": "u64"
+        },
+        {
+          "name": "multisig_authority",
+          "type": {
+            "option": "pubkey"
+          }
         }
       ]
     },
@@ -1981,6 +1993,10 @@
           "signer": true
         },
         {
+          "name": "multisig_authority",
+          "signer": true
+        },
+        {
           "name": "asset_access_controller",
           "writable": true,
           "relations": [
@@ -1988,8 +2004,7 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "lut_address"
@@ -2328,6 +2343,16 @@
       "code": 6013,
       "name": "UnauthorizedSigner",
       "msg": "Unauthorized admin signer"
+    },
+    {
+      "code": 6014,
+      "name": "MissingMultisigAuthority",
+      "msg": "Missing multisig authority"
+    },
+    {
+      "code": 6015,
+      "name": "InvalidMultisigAuthority",
+      "msg": "Invalid multisig authority"
     }
   ],
   "types": [
@@ -2502,6 +2527,15 @@
             ],
             "type": {
               "vec": "pubkey"
+            }
+          },
+          {
+            "name": "multisig_authority",
+            "docs": [
+              "External authority that must co-sign operations protected by gated flags."
+            ],
+            "type": {
+              "option": "pubkey"
             }
           }
         ]

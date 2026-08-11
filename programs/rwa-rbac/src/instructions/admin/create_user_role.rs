@@ -34,6 +34,7 @@ pub fn handler(
     allowed_admin_ixs: u64,
     allowed_medici_ixs: u64,
     is_master_role: bool,
+    multisig_authority: Option<Pubkey>,
 ) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
@@ -43,6 +44,7 @@ pub fn handler(
         controller,
         ctx.accounts.authorized_user_role.clone(),
         AdminFlags::CREATE_OR_DELETE_USER_ROLE,
+        None,
     )?;
 
     if is_master_role {
@@ -59,6 +61,7 @@ pub fn handler(
     new_user_role.asset_access_controller = controller.key();
     new_user_role.id = controller.user_roles_count + 1;
     new_user_role.update_fields(name, allowed_admin_ixs, allowed_medici_ixs)?;
+    new_user_role.multisig_authority = multisig_authority;
 
     if is_master_role {
         new_user_role.set_master_role();

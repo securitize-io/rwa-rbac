@@ -927,6 +927,12 @@ export type RwaRbac = {
         {
           "name": "isMasterRole",
           "type": "bool"
+        },
+        {
+          "name": "multisigAuthority",
+          "type": {
+            "option": "pubkey"
+          }
         }
       ]
     },
@@ -1304,6 +1310,12 @@ export type RwaRbac = {
         {
           "name": "allowedMediciIxs",
           "type": "u64"
+        },
+        {
+          "name": "multisigAuthority",
+          "type": {
+            "option": "pubkey"
+          }
         }
       ]
     },
@@ -1987,6 +1999,10 @@ export type RwaRbac = {
           "signer": true
         },
         {
+          "name": "multisigAuthority",
+          "signer": true
+        },
+        {
           "name": "assetAccessController",
           "writable": true,
           "relations": [
@@ -1994,8 +2010,7 @@ export type RwaRbac = {
           ]
         },
         {
-          "name": "authorizedUserRole",
-          "optional": true
+          "name": "authorizedUserRole"
         },
         {
           "name": "lutAddress"
@@ -2334,6 +2349,16 @@ export type RwaRbac = {
       "code": 6013,
       "name": "unauthorizedSigner",
       "msg": "Unauthorized admin signer"
+    },
+    {
+      "code": 6014,
+      "name": "missingMultisigAuthority",
+      "msg": "Missing multisig authority"
+    },
+    {
+      "code": 6015,
+      "name": "invalidMultisigAuthority",
+      "msg": "Invalid multisig authority"
     }
   ],
   "types": [
@@ -2508,6 +2533,15 @@ export type RwaRbac = {
             ],
             "type": {
               "vec": "pubkey"
+            }
+          },
+          {
+            "name": "multisigAuthority",
+            "docs": [
+              "External authority that must co-sign operations protected by gated flags."
+            ],
+            "type": {
+              "option": "pubkey"
             }
           }
         ]

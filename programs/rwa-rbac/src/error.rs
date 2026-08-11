@@ -43,4 +43,10 @@ pub enum ErrorCode {
 
     #[msg("Unauthorized admin signer")]
     UnauthorizedSigner,
+
+    #[msg("Missing multisig authority")]
+    MissingMultisigAuthority,
+
+    #[msg("Invalid multisig authority")]
+    InvalidMultisigAuthority,
 }

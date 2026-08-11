@@ -32,7 +32,13 @@ pub fn handler(ctx: Context<WithdrawExcessRent>) -> Result<()> {
     let controller = &ctx.accounts.asset_access_controller;
 
     // verify that the user has the required role permission
-    verify_admin_signer(ctx.accounts.user.key(), controller, ctx.accounts.authorized_user_role.clone(), AdminFlags::WITHDRAW_EXCESS_RENT)?;
+    verify_admin_signer(
+        ctx.accounts.user.key(),
+        controller,
+        ctx.accounts.authorized_user_role.clone(),
+        AdminFlags::WITHDRAW_EXCESS_RENT,
+        None,
+    )?;
 
     let controller_authority = &ctx.accounts.controller_authority;
     let seeds = controller_seeds!(ctx.accounts.asset_access_controller);
