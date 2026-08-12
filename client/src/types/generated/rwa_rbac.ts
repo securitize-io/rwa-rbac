@@ -1312,9 +1312,11 @@ export type RwaRbac = {
           "type": "u64"
         },
         {
-          "name": "multisigAuthority",
+          "name": "multisigAuthorityUpdate",
           "type": {
-            "option": "pubkey"
+            "defined": {
+              "name": "multisigAuthorityUpdate"
+            }
           }
         }
       ]
@@ -2445,6 +2447,29 @@ export type RwaRbac = {
           {
             "name": "assetMint",
             "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "multisigAuthorityUpdate",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "noChange"
+          },
+          {
+            "name": "set",
+            "fields": [
+              {
+                "name": "authority",
+                "type": "pubkey"
+              }
+            ]
+          },
+          {
+            "name": "clear"
           }
         ]
       }

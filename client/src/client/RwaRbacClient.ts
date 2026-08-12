@@ -1,4 +1,4 @@
-import { BN, Program, Provider, utils } from '@anchor-lang/core';
+import { BN, IdlTypes, Program, Provider, utils } from '@anchor-lang/core';
 import { CompiledInstruction, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 
 import { RwaRbac } from '../types/generated/rwa_rbac';
@@ -165,18 +165,15 @@ export class RwaRbacClient {
    * @returns A Promise that resolves to the instruction to modify UserRole.
    */
   async modifyUserRoleIxn(args: ModifyUserRoleArgs): Promise<TransactionInstruction> {
-    const multisigAuthority =
+    const multisigAuthorityUpdate: IdlTypes<RwaRbac>['multisigAuthorityUpdate'] =
       args.multisigAuthority === undefined
-        ? (await this.rbacProgram.account.userRole.fetch(args.userRole)).multisigAuthority
-        : args.multisigAuthority;
+        ? { noChange: {} }
+        : args.multisigAuthority === null
+        ? { clear: {} }
+        : { set: { authority: args.multisigAuthority } };
 
     return this.rbacProgram.methods
-      .modifyUserRole(
-        args.name,
-        new BN(args.allowedAdminIxs),
-        new BN(args.allowedMediciIxs),
-        multisigAuthority
-      )
+      .modifyUserRole(args.name, new BN(args.allowedAdminIxs), new BN(args.allowedMediciIxs), multisigAuthorityUpdate)
       .accountsStrict({
         user: args.user,
         userRole: args.userRole,

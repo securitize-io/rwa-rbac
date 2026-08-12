@@ -29,9 +29,16 @@ pub struct UserRole {
     pub multisig_authority: Option<Pubkey>,
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum MultisigAuthorityUpdate {
+    NoChange,
+    Set { authority: Pubkey },
+    Clear,
+}
+
 impl UserRole {
-    /// Assume name has max size of 64 bytes and includes 8 byte discriminator.
-    pub const BASE_SIZE: usize = 169;
+    /// Maximum serialized size without entries in `users`, including the discriminator.
+    pub const BASE_SIZE: usize = 170;
 
     /// Returns true if the user role contains ANY of the admin flags.
     pub fn has_any_admin_flag(&self, flag: AdminFlags) -> bool {

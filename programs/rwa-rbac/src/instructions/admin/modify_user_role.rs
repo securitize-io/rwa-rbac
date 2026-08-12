@@ -20,7 +20,7 @@ pub fn handler(
     name: String,
     allowed_admin_ixs: u64,
     allowed_medici_ixs: u64,
-    multisig_authority: Option<Pubkey>,
+    multisig_authority_update: MultisigAuthorityUpdate,
 ) -> Result<()> {
     // Verify that signer is either a controller admin or has authorized user role.
     verify_admin_signer(
@@ -34,7 +34,13 @@ pub fn handler(
     // Update user role.
     let user_role = &mut ctx.accounts.user_role;
     user_role.update_fields(name, allowed_admin_ixs, allowed_medici_ixs)?;
-    user_role.multisig_authority = multisig_authority;
+    match multisig_authority_update {
+        MultisigAuthorityUpdate::NoChange => {}
+        MultisigAuthorityUpdate::Set { authority } => {
+            user_role.multisig_authority = Some(authority)
+        }
+        MultisigAuthorityUpdate::Clear => user_role.multisig_authority = None,
+    }
 
     Ok(())
 }

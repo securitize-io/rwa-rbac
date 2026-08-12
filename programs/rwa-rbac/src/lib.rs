@@ -61,14 +61,14 @@ pub mod rwa_rbac {
         name: String,
         allowed_admin_ixs: u64,
         allowed_medici_ixs: u64,
-        multisig_authority: Option<Pubkey>,
+        multisig_authority_update: MultisigAuthorityUpdate,
     ) -> Result<()> {
         instructions::modify_user_role::handler(
             ctx,
             name,
             allowed_admin_ixs,
             allowed_medici_ixs,
-            multisig_authority,
+            multisig_authority_update,
         )
     }
 

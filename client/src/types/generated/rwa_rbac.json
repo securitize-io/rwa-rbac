@@ -1306,9 +1306,11 @@
           "type": "u64"
         },
         {
-          "name": "multisig_authority",
+          "name": "multisig_authority_update",
           "type": {
-            "option": "pubkey"
+            "defined": {
+              "name": "MultisigAuthorityUpdate"
+            }
           }
         }
       ]
@@ -2439,6 +2441,29 @@
           {
             "name": "asset_mint",
             "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MultisigAuthorityUpdate",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NoChange"
+          },
+          {
+            "name": "Set",
+            "fields": [
+              {
+                "name": "authority",
+                "type": "pubkey"
+              }
+            ]
+          },
+          {
+            "name": "Clear"
           }
         ]
       }
