@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../..",
+    "paths": {
+      "@anchor-lang/core": ["node_modules/@anchor-lang/core"],
+      "@coral-xyz/anchor": ["node_modules/@anchor-lang/core"],
+      "@dstoken-solana/rwa-token-sdk": ["node_modules/@dstoken-solana/rwa-token-sdk"],
+      "@solana/web3.js": ["node_modules/@solana/web3.js"]
+    }
+  }
+}
