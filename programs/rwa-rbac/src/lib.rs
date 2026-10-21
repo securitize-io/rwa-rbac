@@ -214,6 +214,11 @@ pub mod rwa_rbac {
         instructions::remove_lock::handler(ctx, cpi_data)
     }
 
+    /// Permanently prune issuance history matured under the current holding period.
+    pub fn prune_issuances(ctx: Context<PruneIssuances>) -> Result<()> {
+        instructions::prune_issuances::handler(ctx)
+    }
+
     pub fn set_lut_address(ctx: Context<SetLookuptableAddress>) -> Result<()> {
         instructions::set_lut_address::handler(ctx)
     }

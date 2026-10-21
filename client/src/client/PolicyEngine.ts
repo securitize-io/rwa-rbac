@@ -6,6 +6,8 @@ import {
 } from "@solana/web3.js";
 
 import { RwaRbac } from "../types/generated/rwa_rbac";
+import { deriveControllerAuthorityPda } from "../pdas";
+import { PruneIssuancesArgs } from "../types/instructions";
 import {
   AttachPolicyArgs,
   DetachPolicyArgs,
@@ -308,6 +310,35 @@ export class PolicyEngine {
         policyEngine: getPolicyEnginePda(args.assetMint),
         systemProgram: SystemProgram.programId,
         assetMint: new PublicKey(args.assetMint),
+        identityRegistry: getIdentityRegistryPda(args.assetMint),
+        identityAccount: getIdentityAccountPda(args.assetMint, args.owner),
+        trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),
+        eventAuthority: getPolicyEngineEventAuthority(),
+      })
+      .instruction();
+  }
+
+  /**
+   * Permanently remove records matured under the current holding period.
+   * Later period increases cannot restore pruned history. Balances, locks,
+   * account allocation and rent are preserved. Requires ISSUE_TOKENS.
+   */
+  async pruneIssuances(
+    args: PruneIssuancesArgs,
+    signer: PublicKey,
+    assetAccessController: PublicKey,
+    authorizedUserRole: PublicKey
+  ): Promise<TransactionInstruction> {
+    return this.rbacProgram.methods
+      .pruneIssuances()
+      .accountsStrict({
+        user: signer,
+        controllerAuthority: deriveControllerAuthorityPda(assetAccessController),
+        assetAccessController,
+        authorizedUserRole,
+        policyEngineProgram: policyEngineProgramId,
+        assetMint: new PublicKey(args.assetMint),
+        policyEngine: getPolicyEnginePda(args.assetMint),
         identityRegistry: getIdentityRegistryPda(args.assetMint),
         identityAccount: getIdentityAccountPda(args.assetMint, args.owner),
         trackerAccount: getTrackerAccountPda(args.assetMint, args.owner),

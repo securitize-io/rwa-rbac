@@ -56,6 +56,12 @@ Users can then invoke instructions through the RBAC program to perform the same 
 - We do not verify if a Medici account is intended to be owned by an `AssetAccessController` by its admin. We assume that if the Medici account is allowing `controller_authority` to be its admin, then the associated `AssetAccessController` should have full access to invoke instructions on it.
   - This implies that a third party could theoretically create an asset to be owned by the organization and governed under the user access rules of the associated `AssetAccessController`, without the admin’s involvement. Authorized users can then invoke instructions to manage this asset.
 
+## Pruning issuance history
+
+Matured issuance history is pruned automatically during issuance, or manually via
+`client.policyEngine.pruneIssuances(...)` using `MediciFlags.ISSUE_TOKENS`.
+Pruning is permanent and preserves balances, locks, account size, and rent.
+
 ## Installation
 
 1. Clone dependency with: `git submodule update --init --recursive`
