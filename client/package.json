@@ -32,7 +32,7 @@
     "@coral-xyz/anchor": "0.30.1",
     "@solana/spl-token": "0.4.12",
     "@solana/web3.js": "1.98.0",
-    "@dstoken-solana/rwa-token-sdk": "0.4.2",
+    "@dstoken-solana/rwa-token-sdk": "0.4.3",
     "bs58": "6.0.0"
   }
 }
