@@ -1,0 +1,12 @@
+{
+  "name": "mainnet-pruning-reproduction",
+  "private": true,
+  "scripts": {
+    "test": "ts-node --project tsconfig.json run.ts",
+    "refresh": "ts-node --project tsconfig.json run.ts --refresh",
+    "inspect": "ts-node --project tsconfig.json inspect.ts",
+    "prepare": "ts-node --project tsconfig.json prepare.ts",
+    "build": "ts-node --project tsconfig.json build.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

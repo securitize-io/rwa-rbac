@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "es2022",
+    "lib": ["es2022", "dom"],
+    "types": ["node", "mocha"],
+    "resolveJsonModule": true,
+    "skipLibCheck": true
+  },
+  "include": ["./*.ts"]
+}
