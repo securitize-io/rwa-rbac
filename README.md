@@ -148,6 +148,12 @@ Levels are ultimately propagated to the Identity Registry and used by the Policy
 
 ---
 
+## Pruning issuance history
+
+Matured issuance history is pruned automatically during issuance, or manually via
+`client.policyEngine.pruneIssuances(...)` using `MediciFlags.ISSUE_TOKENS`.
+Pruning is permanent and preserves balances, locks, account size, and rent.
+
 ## Installation
 
 ```bash

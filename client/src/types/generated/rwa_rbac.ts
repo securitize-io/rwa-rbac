@@ -1334,6 +1334,70 @@ export type RwaRbac = {
       ]
     },
     {
+      "name": "pruneIssuances",
+      "docs": [
+        "Permanently prune issuance history matured under the current holding period."
+      ],
+      "discriminator": [
+        199,
+        99,
+        250,
+        172,
+        179,
+        197,
+        111,
+        37
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controllerAuthority",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "assetAccessController",
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole"
+        },
+        {
+          "name": "policyEngineProgram",
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
+        },
+        {
+          "name": "assetMint",
+          "relations": [
+            "assetAccessController"
+          ]
+        },
+        {
+          "name": "policyEngine"
+        },
+        {
+          "name": "identityRegistry"
+        },
+        {
+          "name": "identityAccount"
+        },
+        {
+          "name": "trackerAccount",
+          "writable": true
+        },
+        {
+          "name": "eventAuthority"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "registerInvestor",
       "discriminator": [
         95,
@@ -2211,64 +2275,6 @@ export type RwaRbac = {
         {
           "name": "newAdmin",
           "type": "pubkey"
-        }
-      ]
-    },
-    {
-      "name": "updateInterestBearingMintRate",
-      "discriminator": [
-        29,
-        174,
-        109,
-        163,
-        227,
-        75,
-        2,
-        144
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controllerAuthority",
-          "relations": [
-            "assetAccessController"
-          ]
-        },
-        {
-          "name": "assetAccessController",
-          "relations": [
-            "authorizedUserRole"
-          ]
-        },
-        {
-          "name": "authorizedUserRole"
-        },
-        {
-          "name": "assetControllerProgram",
-          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
-        },
-        {
-          "name": "assetMint",
-          "writable": true
-        },
-        {
-          "name": "assetController"
-        },
-        {
-          "name": "eventAuthority"
-        },
-        {
-          "name": "tokenProgram",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        }
-      ],
-      "args": [
-        {
-          "name": "cpiData",
-          "type": "bytes"
         }
       ]
     },

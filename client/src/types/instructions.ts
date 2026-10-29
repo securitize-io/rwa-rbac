@@ -2,6 +2,12 @@ import { PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import { CommonArgs } from "@dstoken-solana/rwa-token-sdk";
 
+/** Prune matured history for an identity owner (the Investor PDA for IMR identities). */
+export type PruneIssuancesArgs = {
+  assetMint: string;
+  owner: string;
+};
+
 /** Args used to setup a AssetAccessController  */
 export type CreateControllerArgs = {
   payer: PublicKey;
