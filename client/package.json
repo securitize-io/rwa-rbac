@@ -1,6 +1,6 @@
 {
   "name": "@dstoken-solana/rwa-rbac",
-  "version": "0.4.6",
+  "version": "0.4.8",
   "description": "",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
