@@ -1,4 +1,6 @@
 #![allow(ambiguous_glob_reexports)]
+#![allow(unexpected_cfgs)]
+#![allow(deprecated)]
 
 pub mod error;
 pub mod events;

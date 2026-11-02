@@ -1328,6 +1328,70 @@
       ]
     },
     {
+      "name": "prune_issuances",
+      "docs": [
+        "Permanently prune issuance history matured under the current holding period."
+      ],
+      "discriminator": [
+        199,
+        99,
+        250,
+        172,
+        179,
+        197,
+        111,
+        37
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controller_authority",
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role"
+        },
+        {
+          "name": "policy_engine_program",
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
+        },
+        {
+          "name": "asset_mint",
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "policy_engine"
+        },
+        {
+          "name": "identity_registry"
+        },
+        {
+          "name": "identity_account"
+        },
+        {
+          "name": "tracker_account",
+          "writable": true
+        },
+        {
+          "name": "event_authority"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "register_investor",
       "discriminator": [
         95,
@@ -2205,64 +2269,6 @@
         {
           "name": "new_admin",
           "type": "pubkey"
-        }
-      ]
-    },
-    {
-      "name": "update_interest_bearing_mint_rate",
-      "discriminator": [
-        29,
-        174,
-        109,
-        163,
-        227,
-        75,
-        2,
-        144
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controller_authority",
-          "relations": [
-            "asset_access_controller"
-          ]
-        },
-        {
-          "name": "asset_access_controller",
-          "relations": [
-            "authorized_user_role"
-          ]
-        },
-        {
-          "name": "authorized_user_role"
-        },
-        {
-          "name": "asset_controller_program",
-          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
-        },
-        {
-          "name": "asset_mint",
-          "writable": true
-        },
-        {
-          "name": "asset_controller"
-        },
-        {
-          "name": "event_authority"
-        },
-        {
-          "name": "token_program",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        }
-      ],
-      "args": [
-        {
-          "name": "cpi_data",
-          "type": "bytes"
         }
       ]
     },

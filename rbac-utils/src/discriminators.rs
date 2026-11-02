@@ -56,6 +56,7 @@ define_discriminators! {
   SET_COUNTERS_IX: [127, 151, 147, 141, 171, 53, 28, 135],
   ADD_LOCK_IX: [242, 102, 183, 107, 109, 168, 82, 140],
   REMOVE_LOCK_IX: [1, 17, 121, 74, 62, 241, 127, 120],
+  PRUNE_ISSUANCES_IX: [199, 99, 250, 172, 179, 197, 111, 37],
 }
 
 #[allow(dead_code)]

@@ -104,6 +104,8 @@ export class AssetController {
 
   /**
    * Asynchronously generates instructions to issue tokens and lock tokens according to issuance policy.
+   * The Policy Engine automatically prunes matured issuance history and reuses
+   * tracker allocation before growing it. Already matured issuances add no history.
    * @param args - {@link IssueTokensWithLockArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
    * @param authorizedUserRole - UserRole authorized to invoke instruction.
