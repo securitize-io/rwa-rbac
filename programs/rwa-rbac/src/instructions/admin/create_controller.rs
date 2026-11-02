@@ -9,7 +9,6 @@ use crate::{controller_seeds, error::ErrorCode, state::*};
 // Default list of admin signers that are allowed for mainnet.
 #[cfg(not(any(feature = "devnet", feature = "localnet")))]
 const ALLOWED_SIGNERS: &[&str] = &[
-    "5HfSZLzDmRz9wf8rJkvL94MHFKXU7i7px1bWGtLi1R3C",
     "4Ej36rbuZKpN39DuMY94T2pKQf1fvK1ZgyN8otvh85kF",
     "7SDZQ9UraXrzuUVDxGKFApYUaXJehMptH4ZxKWza7sRS",
     "Csx61X6k5cJbhyFuEjDZYFEWts7dt7S3uuraGjznSQ1K",
