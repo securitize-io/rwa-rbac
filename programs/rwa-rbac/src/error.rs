@@ -44,9 +44,18 @@ pub enum ErrorCode {
     #[msg("Unauthorized admin signer")]
     UnauthorizedSigner,
 
-    #[msg("Missing multisig authority")]
-    MissingMultisigAuthority,
+    #[msg("Missing gate authority")]
+    MissingGateAuthority,
 
-    #[msg("Invalid multisig authority")]
-    InvalidMultisigAuthority,
+    #[msg("Invalid gate authority")]
+    InvalidGateAuthority,
+
+    #[msg("Gate authority derivation program is not allowed")]
+    InvalidGatingProgram,
+
+    #[msg("Missing gate authority derivation proof")]
+    MissingGateAuthorityProof,
+
+    #[msg("Invalid gate authority derivation proof")]
+    InvalidGateAuthorityProof,
 }

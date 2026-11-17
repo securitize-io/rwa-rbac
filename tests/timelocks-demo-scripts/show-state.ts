@@ -8,7 +8,7 @@ run(async () => {
     admin: admin.publicKey,
     member: member.publicKey,
     assetMint: assetMint.publicKey,
-    lutAddress: state.lutAddress,
+    proposedRoleName: state.proposedRoleName,
     assetAccessController: state.assetAccessController,
     userRole: state.userRole,
     multisig: state.multisig,

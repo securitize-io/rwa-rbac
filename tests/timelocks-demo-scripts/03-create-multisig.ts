@@ -2,11 +2,11 @@ import * as multisig from '@sqds/multisig';
 import { context, createSquads, print, run, saveState } from './common';
 
 run(async () => {
-  const { state, member, connection } = context();
+  const { state, admin, member, connection } = context();
   const created = await createSquads({
     connection,
     creator: member,
-    members: [member.publicKey],
+    members: [admin.publicKey, member.publicKey],
     timeLock: state.timeLock,
   });
   state.multisig = created.multisigPda.toBase58();

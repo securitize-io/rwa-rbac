@@ -45,13 +45,16 @@ export class PolicyEngine {
     args: AttachPolicyArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole: PublicKey
+    authorizedUserRole: PublicKey,
+    gateAuthority?: PublicKey
   ): Promise<TransactionInstruction> {
     const policyIx = await this.rwaClient.policyEngine.attachPolicy(args);
     const ixData = policyIx.ixs[0].data;
     return this.rbacProgram.methods
       .attachToPolicyEngine(ixData)
       .accountsStrict({
+        gateAuthority: gateAuthority || null,
+
         payer: args.payer,
         user: signer,
         controllerAuthority: args.authority,
@@ -77,13 +80,16 @@ export class PolicyEngine {
     args: DetachPolicyArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole: PublicKey
+    authorizedUserRole: PublicKey,
+    gateAuthority?: PublicKey
   ): Promise<TransactionInstruction> {
     const policyIx = await this.rwaClient.policyEngine.detachPolicy(args);
     const ixData = policyIx.ixs[0].data;
     return this.rbacProgram.methods
       .detachFromPolicyEngine(ixData)
       .accountsStrict({
+        gateAuthority: gateAuthority || null,
+
         payer: args.payer,
         user: signer,
         controllerAuthority: args.authority,
@@ -109,13 +115,16 @@ export class PolicyEngine {
     args: ChangeCountersArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole: PublicKey
+    authorizedUserRole: PublicKey,
+    gateAuthority?: PublicKey
   ): Promise<TransactionInstruction> {
     const policyIx = await this.rwaClient.policyEngine.changeCounters(args);
     const ixData = policyIx.ixs[0].data;
     return this.rbacProgram.methods
       .changeCounters(ixData)
       .accountsStrict({
+        gateAuthority: gateAuthority || null,
+
         payer: args.payer,
         user: signer,
         controllerAuthority: args.authority,
@@ -141,13 +150,16 @@ export class PolicyEngine {
     args: SetCountersArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole: PublicKey
+    authorizedUserRole: PublicKey,
+    gateAuthority?: PublicKey
   ): Promise<TransactionInstruction> {
     const policyIx = await this.rwaClient.policyEngine.setCounters(args);
     const ixData = policyIx.ixs[0].data;
     return this.rbacProgram.methods
       .setCounters(ixData)
       .accountsStrict({
+        gateAuthority: gateAuthority || null,
+
         payer: args.payer,
         user: signer,
         controllerAuthority: args.authority,
@@ -172,13 +184,16 @@ export class PolicyEngine {
     args: ChangeCounterLimitsArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole: PublicKey
+    authorizedUserRole: PublicKey,
+    gateAuthority?: PublicKey
   ): Promise<TransactionInstruction> {
     const policyIx = await this.rwaClient.policyEngine.changeCounterLimits(args);
     const ixData = policyIx.ixs[0].data;
     return this.rbacProgram.methods
       .changeCounterLimits(ixData)
       .accountsStrict({
+        gateAuthority: gateAuthority || null,
+
         payer: args.payer,
         user: signer,
         controllerAuthority: args.authority,
@@ -203,13 +218,16 @@ export class PolicyEngine {
     args: ChangeMappingArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole: PublicKey
+    authorizedUserRole: PublicKey,
+    gateAuthority?: PublicKey
   ): Promise<TransactionInstruction> {
     const policyIx = await this.rwaClient.policyEngine.changeMapping(args);
     const ixData = policyIx.ixs[0].data;
     return this.rbacProgram.methods
       .changeMapping(ixData)
       .accountsStrict({
+        gateAuthority: gateAuthority || null,
+
         payer: args.payer,
         user: signer,
         controllerAuthority: args.authority,
@@ -233,13 +251,16 @@ export class PolicyEngine {
     args: ChangeIssuancePoliciesArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole: PublicKey
+    authorizedUserRole: PublicKey,
+    gateAuthority?: PublicKey
   ): Promise<TransactionInstruction> {
     const policyIx = await this.rwaClient.policyEngine.changeIssuancePolicies(args);
     const ixData = policyIx.ixs[0].data;
     return this.rbacProgram.methods
       .changeIssuancePolicies(ixData)
       .accountsStrict({
+        gateAuthority: gateAuthority || null,
+
         payer: args.payer,
         user: signer,
         controllerAuthority: args.authority,
@@ -284,13 +305,16 @@ export class PolicyEngine {
     args: RemoveLockArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole: PublicKey
+    authorizedUserRole: PublicKey,
+    gateAuthority?: PublicKey
   ): Promise<TransactionInstruction> {
     const policyIx = await this.rwaClient.policyEngine.removeLock(args);
     const ixData = policyIx.ixs[0].data;
     return this.rbacProgram.methods
       .removeLock(ixData)
       .accountsStrict({
+        gateAuthority: gateAuthority || null,
+
         payer: args.payer,
         user: signer,
         controllerAuthority: args.authority,

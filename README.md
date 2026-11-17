@@ -65,7 +65,127 @@ Users can then invoke instructions through the RBAC program to perform the same 
 
 ## Testing
 
-Integration tests in [rwa-rbac/tests](https://github.com/exo-tech-xyz/rwa-rbac/tree/main/tests) can be invoked with `anchor test -- --features localnet` command.
+Integration tests use Surfpool's local account and clock cheatcodes.
+
+Use the project's pinned Anchor 1.1.2 toolchain:
+
+```sh
+anchor test -- --features localnet
+```
+
+Anchor starts Surfpool by default, loads the RBAC/IMR programs and checked-in
+Medici binaries, runs the TypeScript suites, and stops the validator.
+`yarn test:surfpool` is an alias for this command; there is no custom launcher or test
+program. The test configuration forks the existing Squads program and its program
+configuration from devnet, so the first run requires RPC access.
+
+The tests share helpers in `tests/utils.ts`, use the Squads SDK to create, approve,
+and execute vault transactions, and use `surfnet_timeTravel` to advance past a
+configured delay. Generated local addresses are marked with `surfnet_offlineAccount`
+to avoid unnecessary devnet lookups and rate limits. Surfpool account injection is limited to isolated RBAC fixtures
+and deliberate changes used to test execution-time authorization. The CPI suite
+uses actual downstream asset, investor, token, and policy state.
+
+## External authority gates
+
+Governance configuration remains in `UserRole.gate_authority`. RBAC verifies
+signer privilege and equality with the configured key. The external authority
+implements approvals, timelocks, cancellation, and any emergency policy; RBAC does
+not parse Squads accounts or enforce a particular delay.
+
+All admin flags except `SET_LUT_ADDRESS` are gated. The gated Medici flags are
+`CHANGE_ISSUANCE_POLICIES`, `ATTACH_TO_POLICY_ACCOUNT`,
+`DETACH_FROM_POLICY_ACCOUNT`, `CHANGE_COUNTER_LIMITS`, `CHANGE_COUNTERS`,
+`CHANGE_MAPPING`, `ISSUE_TOKENS`, `SEIZE_TOKENS`, `REVOKE_TOKENS`,
+`THAW_TOKEN_ACCOUNT`, `REMOVE_TOKEN_LOCK`, `CREATE_IDENTITY_ACCOUNT`,
+`CHANGE_COUNTRY`, and `REMOVE_LEVELS`. Both `change_counters` and `set_counters`
+use `CHANGE_COUNTERS`. Assignment and removal also share flags, so both require the
+external authority. Freeze and add-lock operations retain their existing direct
+role authorization.
+
+LUT updates and investor/identity cleanup require role membership and their
+permission but no gate signature. Cleanup remains subject to the token program's
+one-remaining-wallet and zero-tracked-balance constraints. Removing a gate does
+not introduce a controller-admin shortcut.
+
+Direct identity creation can assign initial privileged levels; country changes
+can shorten holding periods; removing levels can release an investor lock.
+Their broad permissions therefore require a gate. Investor registration and
+validated IMR level additions remain direct role operations. IMR is unchanged:
+its existing special-wallet validation for level additions does not apply to
+initial registration. Registration through
+Squads exceeded the five-level CPI limit in the tested runtime while creating its
+tracker account. Higher nesting depends on activation of
+[SIMD-0268](https://solana.com/docs/core/cpi) on the target runtime.
+
+Issuance and revocation retain their RBAC gates until token-native timelocks and
+caps are implemented and verified on every relevant path, including forced burns.
+Changing caps, delays, policy mappings, counters, or their limits must remain
+protected. `WITHDRAW_EXCESS_RENT` also remains gated because it transfers all
+controller-authority lamports to a caller-selected receiver.
+
+Gated calls require the role user, its permission, and `gateAuthority` as an actual
+signer. There is no controller-admin bypass. Medici SDK builders accept
+`gateAuthority` as a final optional parameter, and admin builders accept it in
+their argument object. Creation/modification use `newGateAuthority` for the value
+to store, separately from the signing `gateAuthority`. When setting that value,
+provide `newGateAuthorityProof: { programId, seeds }`, with the complete PDA seeds
+including the bump. The proposed authority is also a required signer, distinct
+from any existing gate approvals. Omitting the signer for a
+gated call fails closed. Ungated builders do not accept a `gateAuthority` argument.
+
+`update_controller_admin` is always gated without a new permission bit: it requires
+the current controller admin, membership in the supplied controller's master role,
+and that role's authority. Add the incoming admin to the master role if it should
+be able to perform a subsequent admin rotation. The existing ability to void the
+controller admin remains available when a master role exists.
+
+Changing or clearing an existing role authority also requires the target role's
+current authority, in addition to authorization through a role with
+`MODIFY_USER_ROLE`. The SDK's `currentGateAuthority` defaults to `gateAuthority`;
+provide it explicitly when the authorizing and target roles use different keys.
+Authorization is evaluated against the role state at execution time.
+
+### First-role bootstrap
+
+For a newly created controller, the first role must be a master role with all
+admin and Medici permissions, a configured authority, and signatures from both
+the controller admin and that authority. Creation assigns the admin to the role
+atomically. Subsequent role creation and assignment use normal gated permissions.
+The bootstrap path is unavailable after any role has been created. A master role
+is reserved at creation, including before any later user assignment.
+
+This change updates instruction account lists and the SDK/IDL together. It does
+not migrate legacy mainnet account layouts or configure existing role authorities.
+Existing deployments need an explicit account migration and governance cutover
+before activating these gates; missing authorities are not an admin recovery path.
+
+### Gate authority provenance
+
+Every authority installation, including bootstrap and replacement, checks the
+instruction-only derivation proof against `ALLOWED_GATING_PROGRAMS` in
+`programs/rwa-rbac/src/constants.rs`. The initial list contains the Squads v4
+program. Extending the list requires a program upgrade. RBAC calls
+`Pubkey::create_program_address` with the supplied seeds and program ID, requires
+the result to match the proposed authority, and requires that authority to sign.
+Ordinary keypair authorities, unapproved programs, malformed seeds, and mismatched
+addresses are rejected. A role may still be created without an authority;
+gated operations then fail closed until a proven authority is installed.
+
+For Squads, the proof seeds are `"multisig"`, the multisig address bytes,
+`"vault"`, the one-byte vault index, and the one-byte bump returned by the SDK's
+`getVaultPda`. The multisig account need not be passed to RBAC or stored in the
+role. A rotation between different vaults requires both authorities' signatures;
+the tests demonstrate nested Squads executions for this approval flow.
+
+The proof is generic: RBAC does not interpret seeds, deserialize Squads accounts,
+or verify a specific vault type or timelock configuration. Account ownership is
+not checked because a standard Squads vault is not owned by Squads. Only the gate
+public key is persisted; the role layout and allocation remain unchanged.
+Subsequent gated calls check the configured key and signer without a proof.
+Existing authorities are not retroactively validated, and removing a program from
+the allowlist does not revoke authorities already installed under it; these must
+be handled explicitly during migration or authority rotation.
 
 ## Deployment
 

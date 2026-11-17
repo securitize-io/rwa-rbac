@@ -3,7 +3,7 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 use anchor_spl::token_2022::Token2022;
-use rbac_utils::{constants::ASSET_CONTROLLER_ID, UPDATE_METADATA_IX};
+use rbac_utils::{UPDATE_METADATA_IX, constants::ASSET_CONTROLLER_ID};
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
 
@@ -41,6 +41,7 @@ pub fn handler(ctx: Context<UpdateAssetMetadata>, cpi_data: Vec<u8>) -> Result<(
         &ctx.accounts.user.key(),
         &ctx.accounts.authorized_user_role,
         MediciFlags::UPDATE_ASSET_METADATA,
+        None,
     )?;
 
     // Verify instruction discriminator in cpi_data

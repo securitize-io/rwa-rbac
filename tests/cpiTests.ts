@@ -1,16 +1,9 @@
 import * as anchor from '@anchor-lang/core';
 import { BN } from '@anchor-lang/core';
-import {
-  ComputeBudgetProgram,
-  Connection,
-  Keypair,
-  PublicKey,
-  sendAndConfirmTransaction,
-  Transaction,
-} from '@solana/web3.js';
+import { ComputeBudgetProgram, Connection, Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import { assert } from 'chai';
-import { setupTests } from './utils';
-import { AdminFlags, deriveInvestorPda, MediciFlags, RwaRbacClient } from '../client/src/index';
+import { setupTests, expectFailure, sendGated, sendTransaction as directSend, gateAuthorityProof } from './utils';
+import { AdminFlags, deriveInvestorPda, IMR_PROGRAM, MediciFlags, RwaRbacClient } from '../client/src/index';
 import {
   getIdentityAccountFromOwner,
   getIdentityAccountPda,
@@ -37,6 +30,17 @@ describe('CPI End to End Tests', () => {
   let connection: Connection;
   let investorPda: string;
 
+  const sendAndConfirmTransaction: typeof directSend = async (connection, transaction, signers, options) => {
+    if (
+      transaction.instructions.some((ix) =>
+        ix.keys.some((key) => key.isSigner && key.pubkey.equals(setup.gate.authority))
+      )
+    ) {
+      return sendGated(connection, setup.gate, setup.signer1Kp, transaction.instructions, setup.payerKp);
+    }
+    return directSend(connection, transaction, signers, options);
+  };
+
   const INVESTOR_ID = 'd1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6';
   const PLACEHOLDER_HASH1 = 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6';
   const PLACEHOLDER_HASH2 = 'b1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6';
@@ -47,6 +51,27 @@ describe('CPI End to End Tests', () => {
     investorPda = deriveInvestorPda(INVESTOR_ID, getIdentityRegistryPda(mint)).toString();
     connection = setup.config.connection;
     rwaRbacClient = new RwaRbacClient(setup.config, provider);
+  });
+
+  it('Rejects controller creation by a signer outside the whitelist', async () => {
+    const ix = await rwaRbacClient.createAssetAccessControllerIxn({
+      payer: setup.payer,
+      admin: setup.signer2,
+      assetMint: setup.assetMint,
+      decimals: 2,
+      name: 'Unauthorized asset',
+      uri: 'https://example.com',
+      symbol: 'NO',
+    });
+    await expectFailure(
+      sendAndConfirmTransaction(
+        connection,
+        new Transaction().add(ComputeBudgetProgram.setComputeUnitLimit({ units: 300_000 }), ix),
+        [setup.payerKp, setup.signer2Kp, setup.assetMintKp]
+      ),
+      'UnauthorizedSigner'
+    );
+    assert.isNull(await connection.getAccountInfo(setup.assetAccessController));
   });
 
   it('Create AssetAccessController successfully', async () => {
@@ -79,19 +104,25 @@ describe('CPI End to End Tests', () => {
 
   it('Create UserRole 1 successfully', async () => {
     const name = 'Role1';
-    const allowedAdminIxs = AdminFlags.NONE;
+    const allowedAdminIxs = AdminFlags.ALL;
     const allowedMediciIxs = MediciFlags.ALL; // Allow All
 
     const ix = await rwaRbacClient.createUserRoleIxn({
       name,
       allowedAdminIxs,
       allowedMediciIxs,
+      isMasterRole: true,
+      newGateAuthority: setup.gate.authority,
+      newGateAuthorityProof: gateAuthorityProof(setup.gate),
+      gateAuthority: setup.gate.authority,
       payer: setup.payer,
       user: setup.signer1,
       assetAccessController: setup.assetAccessController,
     });
     const ix2 = await rwaRbacClient.assignUserRoleIxn({
       usersToAssign: [setup.signer1],
+      authorizedUserRole: setup.userRole1,
+      gateAuthority: setup.gate.authority,
       userRole: setup.userRole1,
       payer: setup.payer,
       user: setup.signer1,
@@ -157,7 +188,8 @@ describe('CPI End to End Tests', () => {
       },
       setup.signer1, // User Account
       setup.assetAccessController,
-      setup.userRole1
+      setup.userRole1,
+      setup.gate.authority
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [setup.payerKp, setup.signer1Kp]);
     const policyAccountData = await getPolicyEngineAccount(mint, rwaRbacClient.provider);
@@ -177,7 +209,8 @@ describe('CPI End to End Tests', () => {
         },
         setup.signer1, // User Account
         setup.assetAccessController,
-        setup.userRole1
+        setup.userRole1,
+        setup.gate.authority
       );
       await sendAndConfirmTransaction(connection, new Transaction().add(ix), [setup.payerKp, setup.signer1Kp]);
     }
@@ -210,9 +243,19 @@ describe('CPI End to End Tests', () => {
 
     const txLogs = await connection.getTransaction(sig, {
       commitment: 'confirmed',
+      maxSupportedTransactionVersion: 0,
     });
-    const innerIxs = txLogs.meta.innerInstructions[0].instructions;
-    const events = rwaRbacClient.identityMetadataRegistry.parseEvents(innerIxs);
+    const keys = [
+      ...txLogs.transaction.message.staticAccountKeys,
+      ...(txLogs.meta.loadedAddresses?.writable ?? []),
+      ...(txLogs.meta.loadedAddresses?.readonly ?? []),
+    ];
+    const innerIxs = txLogs.meta.innerInstructions
+      .flatMap((group) => group.instructions)
+      .filter((ix) => keys[ix.programIdIndex].equals(IMR_PROGRAM));
+    const events = rwaRbacClient.identityMetadataRegistry
+      .parseEvents(innerIxs)
+      .filter((event) => event.name === 'registerInvestorEvent');
 
     // Verify event logging.
     assert.equal(events.length, 1);
@@ -260,7 +303,8 @@ describe('CPI End to End Tests', () => {
     const ixReturn = await rwaRbacClient.identityRegistry.setupUserIxns(
       args,
       setup.assetAccessController,
-      setup.userRole1
+      setup.userRole1,
+      setup.gate.authority
     );
     const ix2 = await createAssociatedTokenAccountInstruction(
       setup.payer,
@@ -341,7 +385,8 @@ describe('CPI End to End Tests', () => {
     const ix = await rwaRbacClient.identityMetadataRegistry.removeLevels(
       args,
       setup.assetAccessController,
-      setup.userRole1
+      setup.userRole1,
+      setup.gate.authority
     );
     const cb = ComputeBudgetProgram.setComputeUnitLimit({ units: 300_000 });
     await sendAndConfirmTransaction(connection, new Transaction().add(cb, ix), [setup.payerKp, setup.signer1Kp], {
@@ -450,7 +495,8 @@ describe('CPI End to End Tests', () => {
     const ix = await rwaRbacClient.identityMetadataRegistry.changeCountry(
       args,
       setup.assetAccessController,
-      setup.userRole1
+      setup.userRole1,
+      setup.gate.authority
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [setup.payerKp, setup.signer1Kp]);
   });
@@ -502,7 +548,8 @@ describe('CPI End to End Tests', () => {
       args,
       setup.signer1,
       setup.assetAccessController,
-      setup.userRole1
+      setup.userRole1,
+      setup.gate.authority
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [setup.payerKp, setup.signer1Kp]);
   });
@@ -520,7 +567,8 @@ describe('CPI End to End Tests', () => {
     const issueTokenIxns = await rwaRbacClient.assetController.issueTokenIxns(
       issueArgs,
       setup.assetAccessController,
-      setup.userRole1
+      setup.userRole1,
+      setup.gate.authority
     );
     await sendAndConfirmTransaction(
       connection,
@@ -549,7 +597,8 @@ describe('CPI End to End Tests', () => {
       INVESTOR_ID,
       setup.signer1.toString(),
       setup.assetAccessController,
-      setup.userRole1
+      setup.userRole1,
+      setup.gate.authority
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [setup.payerKp, setup.signer1Kp]);
 
@@ -569,7 +618,8 @@ describe('CPI End to End Tests', () => {
       args,
       setup.signer1,
       setup.assetAccessController,
-      setup.userRole1
+      setup.userRole1,
+      setup.gate.authority
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [setup.payerKp, setup.signer1Kp]);
 
@@ -578,6 +628,24 @@ describe('CPI End to End Tests', () => {
   });
 
   it('CPI: Revoke Tokens from user2', async () => {
+    // Cleanup stays ungated, but the token program must reject a funded identity.
+    const cleanup = await rwaRbacClient.identityRegistry.removeUserIxn(
+      {
+        payer: setup.payer.toString(),
+        signer: setup.signer1.toString(),
+        owner: setup.user2.toString(),
+        assetMint: mint,
+        authority: setup.controllerAuthority.toString(),
+      },
+      setup.assetAccessController,
+      setup.userRole1
+    );
+    await expectFailure(
+      directSend(connection, new Transaction().add(cleanup), [setup.payerKp, setup.signer1Kp]),
+      'TrackerAccountNotEmpty'
+    );
+    assert.isNotNull(await connection.getAccountInfo(getIdentityAccountPda(mint, setup.user2)));
+
     const revokeIx = await rwaRbacClient.assetController.revokeTokenIxn(
       {
         owner: setup.user2,
@@ -590,7 +658,8 @@ describe('CPI End to End Tests', () => {
       setup.signer1, // User Account
       setup.assetAccessController,
       setup.userRole1,
-      null
+      null,
+      setup.gate.authority
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(revokeIx), [setup.payerKp, setup.signer1Kp], {
       skipPreflight: true,
@@ -633,7 +702,8 @@ describe('CPI End to End Tests', () => {
       args,
       setup.signer1,
       setup.assetAccessController,
-      setup.userRole1
+      setup.userRole1,
+      setup.gate.authority
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [setup.payerKp, setup.signer1Kp]);
   });
@@ -650,7 +720,8 @@ describe('CPI End to End Tests', () => {
       },
       setup.signer1,
       setup.assetAccessController,
-      setup.userRole1
+      setup.userRole1,
+      setup.gate.authority
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(changeMappingIx), [
       setup.payerKp,
@@ -686,7 +757,8 @@ describe('CPI End to End Tests', () => {
         assetMint: mint,
       },
       setup.assetAccessController,
-      setup.userRole1
+      setup.userRole1,
+      setup.gate.authority
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(thawIx), [setup.payerKp, setup.signer1Kp]);
   });
@@ -704,7 +776,8 @@ describe('CPI End to End Tests', () => {
       setup.signer1, // User Account
       setup.assetAccessController,
       setup.userRole1,
-      INVESTOR_ID
+      INVESTOR_ID,
+      setup.gate.authority
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(revokeIx), [setup.payerKp, setup.signer1Kp], {
       skipPreflight: true,
@@ -745,7 +818,8 @@ describe('CPI End to End Tests', () => {
       args,
       setup.signer1,
       setup.assetAccessController,
-      setup.userRole1
+      setup.userRole1,
+      setup.gate.authority
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [setup.payerKp, setup.signer1Kp]);
   });
@@ -775,6 +849,12 @@ describe('CPI End to End Tests', () => {
       setup.assetAccessController,
       setup.userRole1
     );
+    // A zero balance alone is insufficient while additional wallets remain attached.
+    await expectFailure(
+      directSend(connection, new Transaction().add(removeIx), [setup.payerKp, setup.signer1Kp]),
+      'ConstraintRaw'
+    );
+    assert.isNotNull(await connection.getAccountInfo(new PublicKey(investorPda)));
     const sig = await sendAndConfirmTransaction(
       connection,
       new Transaction().add(...[detachIx, removeIx]),
@@ -786,8 +866,17 @@ describe('CPI End to End Tests', () => {
 
     const txLogs = await connection.getTransaction(sig, {
       commitment: 'confirmed',
+      maxSupportedTransactionVersion: 0,
     });
-    const innerIxs = txLogs.meta.innerInstructions[1].instructions; // second ix in tx
+    // Collect IMR events across the direct detach and cleanup instructions.
+    const keys = [
+      ...txLogs.transaction.message.staticAccountKeys,
+      ...(txLogs.meta.loadedAddresses?.writable ?? []),
+      ...(txLogs.meta.loadedAddresses?.readonly ?? []),
+    ];
+    const innerIxs = txLogs.meta.innerInstructions
+      .flatMap((group) => group.instructions)
+      .filter((ix) => keys[ix.programIdIndex].equals(IMR_PROGRAM));
     const events = rwaRbacClient.identityMetadataRegistry.parseEvents(innerIxs);
 
     // Verify event logging.
@@ -822,7 +911,8 @@ describe('CPI End to End Tests', () => {
       args,
       setup.signer1,
       setup.assetAccessController,
-      setup.userRole1
+      setup.userRole1,
+      setup.gate.authority
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [setup.payerKp, setup.signer1Kp]);
 

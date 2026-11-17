@@ -2,7 +2,7 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
-use rbac_utils::{constants::POLICY_ENGINE_ID, ADD_LOCK_IX};
+use rbac_utils::{ADD_LOCK_IX, constants::POLICY_ENGINE_ID};
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
 
@@ -45,6 +45,7 @@ pub fn handler(ctx: Context<AddLock>, cpi_data: Vec<u8>) -> Result<()> {
         &ctx.accounts.user.key(),
         &ctx.accounts.authorized_user_role,
         MediciFlags::ADD_TOKEN_LOCK,
+        None,
     )?;
 
     // Verify instruction discriminator in cpi_data

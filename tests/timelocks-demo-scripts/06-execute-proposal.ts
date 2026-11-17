@@ -15,14 +15,11 @@ run(async () => {
       member,
       feePayer: admin,
     });
-    const controller = await client.rbacProgram.account.assetAccessController.fetch(
-      requireAddress(state, 'assetAccessController')
-    );
-    if (!controller.lutAddress.equals(requireAddress(state, 'lutAddress')))
-      throw new Error('LUT address was not updated');
+    const role = await client.rbacProgram.account.userRole.fetch(requireAddress(state, 'userRole'));
+    if (role.name !== state.proposedRoleName) throw new Error('Role name was not updated');
     print('Timelocked proposal executed successfully', {
       signature,
-      controller,
+      role,
       proposal: await multisig.accounts.Proposal.fromAccountAddress(connection, proposalPda),
     });
   } catch (error) {

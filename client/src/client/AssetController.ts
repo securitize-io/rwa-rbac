@@ -94,7 +94,8 @@ export class AssetController {
   async issueTokenIxns(
     args: IssueTokensArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole: PublicKey
+    authorizedUserRole: PublicKey,
+    gateAuthority?: PublicKey
   ): Promise<TransactionInstruction> {
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const controllerAuthority = deriveControllerAuthorityPda(assetAccessController);
@@ -126,6 +127,8 @@ export class AssetController {
     return await this.rbacProgram.methods
       .issueTokens(ixData)
       .accountsStrict({
+        gateAuthority: gateAuthority || null,
+
         payer: args.payer,
         user: args.signer,
         controllerAuthority: controllerAuthority,
@@ -205,7 +208,8 @@ export class AssetController {
   async thawTokenIxn(
     args: FreezeTokenArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole: PublicKey
+    authorizedUserRole: PublicKey,
+    gateAuthority?: PublicKey
   ): Promise<TransactionInstruction> {
     const thawIx = await getThawTokenIx(args, this.rwaClient.provider);
     const ixData = thawIx.data;
@@ -218,6 +222,8 @@ export class AssetController {
     return this.rbacProgram.methods
       .thawTokenAccount(ixData)
       .accountsStrict({
+        gateAuthority: gateAuthority || null,
+
         user: args.signer,
         controllerAuthority: args.authority,
         assetAccessController: assetAccessController,
@@ -245,7 +251,8 @@ export class AssetController {
     signer: PublicKey,
     assetAccessController: PublicKey,
     authorizedUserRole: PublicKey,
-    investorId?: string
+    investorId?: string,
+    gateAuthority?: PublicKey
   ): Promise<TransactionInstruction> {
     if (!args.wallet) {
       throw new Error('Use wallet arg for wallet to revoke tokens from.');
@@ -268,6 +275,8 @@ export class AssetController {
     return await this.rbacProgram.methods
       .revokeTokens(ixData)
       .accountsStrict({
+        gateAuthority: gateAuthority || null,
+
         user: signer,
         controllerAuthority: args.authority,
         assetAccessController: assetAccessController,
@@ -303,7 +312,8 @@ export class AssetController {
     investorId: string,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole: PublicKey
+    authorizedUserRole: PublicKey,
+    gateAuthority?: PublicKey
   ): Promise<TransactionInstruction> {
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const investorPda = deriveInvestorPda(investorId, identityRegistry);
@@ -314,6 +324,8 @@ export class AssetController {
     return this.rbacProgram.methods
       .seizeTokens(seizeIx.data)
       .accountsStrict({
+        gateAuthority: gateAuthority || null,
+
         user: signer,
         controllerAuthority: args.authority,
         assetAccessController: assetAccessController,

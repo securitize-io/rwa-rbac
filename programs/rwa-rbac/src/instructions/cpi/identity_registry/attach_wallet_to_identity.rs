@@ -2,7 +2,7 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
-use rbac_utils::{constants::IDENTITY_REGISTRY_ID, ATTACH_WALLET_TO_IDENTITY_IX};
+use rbac_utils::{ATTACH_WALLET_TO_IDENTITY_IX, constants::IDENTITY_REGISTRY_ID};
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
 
@@ -43,6 +43,7 @@ pub fn handler(ctx: Context<AttachWalletToIdentity>, cpi_data: Vec<u8>) -> Resul
         &ctx.accounts.user.key(),
         &ctx.accounts.authorized_user_role,
         MediciFlags::ATTACH_WALLET_TO_IDENTITY,
+        None,
     )?;
 
     // Verify instruction discriminator in cpi_data

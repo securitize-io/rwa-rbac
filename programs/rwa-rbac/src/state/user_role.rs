@@ -25,14 +25,26 @@ pub struct UserRole {
     /// List of users assigned with this role.
     pub users: Vec<Pubkey>,
 
-    /// External authority that must co-sign operations protected by gated flags.
-    pub multisig_authority: Option<Pubkey>,
+    /// External PDA authority that must co-sign gated operations.
+    /// Program provenance is verified on installation; no proof is stored here.
+    pub gate_authority: Option<Pubkey>,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Debug, PartialEq, Eq)]
-pub enum MultisigAuthorityUpdate {
+/// Instruction-only proof; neither the program ID nor seeds are stored in UserRole.
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
+pub struct GateAuthorityProof {
+    pub program_id: Pubkey,
+    /// Complete PDA seeds, including the bump seed, for create_program_address.
+    pub seeds: Vec<Vec<u8>>,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
+pub enum GateAuthorityUpdate {
     NoChange,
-    Set { authority: Pubkey },
+    Set {
+        authority: Pubkey,
+        proof: GateAuthorityProof,
+    },
     Clear,
 }
 
@@ -143,11 +155,32 @@ bitflags::bitflags! {
   }
 }
 
-/// Admin permissions that require both the role user and the role's multisig authority to sign.
-pub const GATED_ADMIN_FLAGS: AdminFlags = AdminFlags::SET_LUT_ADDRESS;
+/// Admin permissions that require both the role user and the role's gate authority to sign.
+pub const GATED_ADMIN_FLAGS: AdminFlags = AdminFlags::from_bits_retain(
+    AdminFlags::CREATE_OR_DELETE_USER_ROLE.bits()
+        | AdminFlags::MODIFY_USER_ROLE.bits()
+        | AdminFlags::ASSIGN_OR_REMOVE_ANY_USER_ROLE.bits()
+        | AdminFlags::ASSIGN_OR_REMOVE_CURRENT_USER_ROLE.bits()
+        | AdminFlags::WITHDRAW_EXCESS_RENT.bits(),
+);
 
-/// No Medici permissions are gated yet.
-pub const GATED_MEDICI_FLAGS: MediciFlags = MediciFlags::empty();
+/// Permissions requiring the role user and its external authority.
+pub const GATED_MEDICI_FLAGS: MediciFlags = MediciFlags::from_bits_retain(
+    MediciFlags::CHANGE_ISSUANCE_POLICIES.bits()
+        | MediciFlags::ATTACH_TO_POLICY_ACCOUNT.bits()
+        | MediciFlags::DETACH_FROM_POLICY_ACCOUNT.bits()
+        | MediciFlags::CHANGE_COUNTER_LIMITS.bits()
+        | MediciFlags::CHANGE_COUNTERS.bits()
+        | MediciFlags::CHANGE_MAPPING.bits()
+        | MediciFlags::ISSUE_TOKENS.bits()
+        | MediciFlags::SEIZE_TOKENS.bits()
+        | MediciFlags::REVOKE_TOKENS.bits()
+        | MediciFlags::THAW_TOKEN_ACCOUNT.bits()
+        | MediciFlags::REMOVE_TOKEN_LOCK.bits()
+        | MediciFlags::CREATE_IDENTITY_ACCOUNT.bits()
+        | MediciFlags::CHANGE_COUNTRY.bits()
+        | MediciFlags::REMOVE_LEVELS.bits(),
+);
 
 #[cfg(test)]
 mod tests {
@@ -163,7 +196,7 @@ mod tests {
             allowed_medici_ixs: 0,
             users: vec![],
             is_master_role: false,
-            multisig_authority: None,
+            gate_authority: None,
         };
 
         // Check that has_any_admin_flag returns true for each individual flag (since role allows all flags).
@@ -183,7 +216,7 @@ mod tests {
             allowed_medici_ixs: 0,
             users: vec![],
             is_master_role: false,
-            multisig_authority: None,
+            gate_authority: None,
         };
 
         let matching_flag = AdminFlags::ASSIGN_OR_REMOVE_ANY_USER_ROLE
@@ -203,7 +236,7 @@ mod tests {
             allowed_medici_ixs: MediciFlags::THAW_TOKEN_ACCOUNT.bits(),
             users: vec![],
             is_master_role: false,
-            multisig_authority: None,
+            gate_authority: None,
         };
         assert!(user_role.has_all_medici_flag(MediciFlags::THAW_TOKEN_ACCOUNT));
     }
@@ -219,7 +252,7 @@ mod tests {
                 | MediciFlags::FREEZE_TOKEN_ACCOUNT.bits()),
             users: vec![],
             is_master_role: false,
-            multisig_authority: None,
+            gate_authority: None,
         };
 
         assert!(user_role.has_all_medici_flag(MediciFlags::THAW_TOKEN_ACCOUNT));
@@ -237,7 +270,7 @@ mod tests {
                 | MediciFlags::FREEZE_TOKEN_ACCOUNT.bits()),
             users: vec![],
             is_master_role: false,
-            multisig_authority: None,
+            gate_authority: None,
         };
 
         // Testing for 3 flags while only having 2 should fail.

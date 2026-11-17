@@ -39,6 +39,7 @@ export class IdentityRegistry {
    * @param authority - RBAC AssetAccessController ControllerAuthority.
    * @param assetAccessController - RBAC AssetAccessController account.
    * @param authorizedUserRole - UserRole authorized to invoke instruction.
+   * @param gateAuthority - Configured role authority; must co-sign identity creation.
    * @returns A Promise that resolves to the instructions to setup a user.
    *
    * It is required for at least a single user to be setup before issuing tokens.
@@ -46,7 +47,8 @@ export class IdentityRegistry {
   async setupUserIxns(
     args: SetupUserArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole: PublicKey
+    authorizedUserRole: PublicKey,
+    gateAuthority?: PublicKey
   ): Promise<IxReturn> {
     const { ixs } = await this.rwaClient.identityRegistry.setupUserIxns(args);
     const returnIxs = [];
@@ -58,6 +60,7 @@ export class IdentityRegistry {
       await this.rbacProgram.methods
         .createIdentityAccount(identityAccountIx.data)
         .accountsStrict({
+          gateAuthority: gateAuthority || null,
           payer: args.payer,
           user: args.signer,
           controllerAuthority,

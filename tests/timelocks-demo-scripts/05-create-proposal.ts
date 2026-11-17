@@ -5,12 +5,18 @@ run(async () => {
   const { state, admin, member, connection, client } = context();
   const multisigPda = requireAddress(state, 'multisig');
   const vault = requireAddress(state, 'vault');
-  const instruction = await client.setLookuptableAddressIxn({
-    signer: member.publicKey.toBase58(),
-    multisigAuthority: vault,
+  const userRole = requireAddress(state, 'userRole');
+  const role = await client.rbacProgram.account.userRole.fetch(userRole);
+  state.proposedRoleName = 'Governance approved';
+  const instruction = await client.modifyUserRoleIxn({
+    user: member.publicKey,
+    gateAuthority: vault,
     assetAccessController: requireAddress(state, 'assetAccessController'),
-    authorizedUserRole: requireAddress(state, 'userRole'),
-    lutAddress: requireAddress(state, 'lutAddress'),
+    authorizedUserRole: userRole,
+    userRole,
+    name: state.proposedRoleName,
+    allowedAdminIxs: role.allowedAdminIxs.toNumber(),
+    allowedMediciIxs: role.allowedMediciIxs.toNumber(),
   });
   const transactionIndex = await createAndApproveProposal({
     connection,
@@ -26,7 +32,7 @@ run(async () => {
   print('Squads proposal created and approved', {
     multisig: multisigPda,
     transactionIndex,
-    lutAddress: state.lutAddress,
+    proposedRoleName: state.proposedRoleName,
     executeAfterSeconds: state.timeLock,
     account: await multisig.accounts.Proposal.fromAccountAddress(connection, proposalPda),
   });

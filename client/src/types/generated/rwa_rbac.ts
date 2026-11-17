@@ -196,6 +196,11 @@ export type RwaRbac = {
           "signer": true
         },
         {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "assetAccessController",
           "writable": true,
           "relations": [
@@ -252,6 +257,11 @@ export type RwaRbac = {
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controllerAuthority",
@@ -384,6 +394,11 @@ export type RwaRbac = {
           "signer": true
         },
         {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controllerAuthority",
           "relations": [
             "assetAccessController"
@@ -444,6 +459,11 @@ export type RwaRbac = {
           "signer": true
         },
         {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controllerAuthority",
           "relations": [
             "assetAccessController"
@@ -502,6 +522,11 @@ export type RwaRbac = {
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controllerAuthority",
@@ -584,6 +609,11 @@ export type RwaRbac = {
           "signer": true
         },
         {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controllerAuthority",
           "relations": [
             "assetAccessController"
@@ -638,6 +668,11 @@ export type RwaRbac = {
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controllerAuthority",
@@ -815,6 +850,11 @@ export type RwaRbac = {
           "signer": true
         },
         {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controllerAuthority",
           "relations": [
             "assetAccessController"
@@ -892,6 +932,19 @@ export type RwaRbac = {
           "signer": true
         },
         {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
+        },
+        {
+          "name": "newGateAuthority",
+          "docs": [
+            "Consent from the authority being installed (may equal gate_authority)."
+          ],
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "newUserRole",
           "writable": true
         },
@@ -929,9 +982,19 @@ export type RwaRbac = {
           "type": "bool"
         },
         {
-          "name": "multisigAuthority",
+          "name": "gateAuthority",
           "type": {
             "option": "pubkey"
+          }
+        },
+        {
+          "name": "gateAuthorityProof",
+          "type": {
+            "option": {
+              "defined": {
+                "name": "gateAuthorityProof"
+              }
+            }
           }
         }
       ]
@@ -956,6 +1019,11 @@ export type RwaRbac = {
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "assetAccessController",
@@ -996,6 +1064,11 @@ export type RwaRbac = {
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controllerAuthority",
@@ -1187,6 +1260,11 @@ export type RwaRbac = {
           "signer": true
         },
         {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controllerAuthority",
           "writable": true,
           "relations": [
@@ -1283,6 +1361,27 @@ export type RwaRbac = {
           "signer": true
         },
         {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
+        },
+        {
+          "name": "currentGateAuthority",
+          "docs": [
+            "The target role's existing authority must consent to its replacement or removal."
+          ],
+          "signer": true,
+          "optional": true
+        },
+        {
+          "name": "newGateAuthority",
+          "docs": [
+            "Consent from the proposed authority, in addition to the existing approvals."
+          ],
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "assetAccessController",
           "relations": [
             "userRole",
@@ -1312,10 +1411,10 @@ export type RwaRbac = {
           "type": "u64"
         },
         {
-          "name": "multisigAuthorityUpdate",
+          "name": "gateAuthorityUpdate",
           "type": {
             "defined": {
-              "name": "multisigAuthorityUpdate"
+              "name": "gateAuthorityUpdate"
             }
           }
         }
@@ -1588,6 +1687,11 @@ export type RwaRbac = {
           "signer": true
         },
         {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controllerAuthority",
           "relations": [
             "assetAccessController"
@@ -1672,6 +1776,11 @@ export type RwaRbac = {
           "signer": true
         },
         {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controllerAuthority",
           "relations": [
             "assetAccessController"
@@ -1740,6 +1849,11 @@ export type RwaRbac = {
           "signer": true
         },
         {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "assetAccessController",
           "relations": [
             "userRole",
@@ -1786,6 +1900,11 @@ export type RwaRbac = {
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controllerAuthority",
@@ -1879,6 +1998,11 @@ export type RwaRbac = {
           "signer": true
         },
         {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controllerAuthority",
           "writable": true,
           "relations": [
@@ -1950,6 +2074,11 @@ export type RwaRbac = {
           "signer": true
         },
         {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controllerAuthority",
           "relations": [
             "assetAccessController"
@@ -2001,10 +2130,6 @@ export type RwaRbac = {
           "signer": true
         },
         {
-          "name": "multisigAuthority",
-          "signer": true
-        },
-        {
           "name": "assetAccessController",
           "writable": true,
           "relations": [
@@ -2036,6 +2161,11 @@ export type RwaRbac = {
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controllerAuthority",
@@ -2168,8 +2298,19 @@ export type RwaRbac = {
           ]
         },
         {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "assetAccessController",
-          "writable": true
+          "writable": true,
+          "relations": [
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "authorizedUserRole"
         }
       ],
       "args": [
@@ -2199,6 +2340,11 @@ export type RwaRbac = {
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controllerAuthority",
@@ -2354,13 +2500,28 @@ export type RwaRbac = {
     },
     {
       "code": 6014,
-      "name": "missingMultisigAuthority",
-      "msg": "Missing multisig authority"
+      "name": "missingGateAuthority",
+      "msg": "Missing gate authority"
     },
     {
       "code": 6015,
-      "name": "invalidMultisigAuthority",
-      "msg": "Invalid multisig authority"
+      "name": "invalidGateAuthority",
+      "msg": "Invalid gate authority"
+    },
+    {
+      "code": 6016,
+      "name": "invalidGatingProgram",
+      "msg": "Gate authority derivation program is not allowed"
+    },
+    {
+      "code": 6017,
+      "name": "missingGateAuthorityProof",
+      "msg": "Missing gate authority derivation proof"
+    },
+    {
+      "code": 6018,
+      "name": "invalidGateAuthorityProof",
+      "msg": "Invalid gate authority derivation proof"
     }
   ],
   "types": [
@@ -2452,7 +2613,31 @@ export type RwaRbac = {
       }
     },
     {
-      "name": "multisigAuthorityUpdate",
+      "name": "gateAuthorityProof",
+      "docs": [
+        "Instruction-only proof; neither the program ID nor seeds are stored in UserRole."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "programId",
+            "type": "pubkey"
+          },
+          {
+            "name": "seeds",
+            "docs": [
+              "Complete PDA seeds, including the bump seed, for create_program_address."
+            ],
+            "type": {
+              "vec": "bytes"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "gateAuthorityUpdate",
       "type": {
         "kind": "enum",
         "variants": [
@@ -2465,6 +2650,14 @@ export type RwaRbac = {
               {
                 "name": "authority",
                 "type": "pubkey"
+              },
+              {
+                "name": "proof",
+                "type": {
+                  "defined": {
+                    "name": "gateAuthorityProof"
+                  }
+                }
               }
             ]
           },
@@ -2561,9 +2754,10 @@ export type RwaRbac = {
             }
           },
           {
-            "name": "multisigAuthority",
+            "name": "gateAuthority",
             "docs": [
-              "External authority that must co-sign operations protected by gated flags."
+              "External PDA authority that must co-sign gated operations.",
+              "Program provenance is verified on installation; no proof is stored here."
             ],
             "type": {
               "option": "pubkey"

@@ -26,7 +26,7 @@ export type DemoState = {
   adminSecret: number[];
   memberSecret: number[];
   assetMintSecret: number[];
-  lutAddress: string;
+  proposedRoleName?: string;
   timeLock: number;
   assetAccessController?: string;
   userRole?: string;
@@ -50,7 +50,6 @@ export function initializeState(): DemoState {
     adminSecret: Array.from(admin.secretKey),
     memberSecret: Array.from(member.secretKey),
     assetMintSecret: Array.from(assetMint.secretKey),
-    lutAddress: Keypair.generate().publicKey.toBase58(),
     timeLock: Number(process.env.TIMELOCK_SECONDS ?? 60),
   };
   saveState(state);

@@ -1,6 +1,7 @@
 #![allow(ambiguous_glob_reexports)]
 #![allow(unexpected_cfgs)]
 
+pub mod constants;
 pub mod error;
 pub mod events;
 pub mod helper;
@@ -44,7 +45,8 @@ pub mod rwa_rbac {
         allowed_admin_ixs: u64,
         allowed_medici_ixs: u64,
         is_master_role: bool,
-        multisig_authority: Option<Pubkey>,
+        gate_authority: Option<Pubkey>,
+        gate_authority_proof: Option<GateAuthorityProof>,
     ) -> Result<()> {
         instructions::create_user_role::handler(
             ctx,
@@ -52,7 +54,8 @@ pub mod rwa_rbac {
             allowed_admin_ixs,
             allowed_medici_ixs,
             is_master_role,
-            multisig_authority,
+            gate_authority,
+            gate_authority_proof,
         )
     }
 
@@ -61,14 +64,14 @@ pub mod rwa_rbac {
         name: String,
         allowed_admin_ixs: u64,
         allowed_medici_ixs: u64,
-        multisig_authority_update: MultisigAuthorityUpdate,
+        gate_authority_update: GateAuthorityUpdate,
     ) -> Result<()> {
         instructions::modify_user_role::handler(
             ctx,
             name,
             allowed_admin_ixs,
             allowed_medici_ixs,
-            multisig_authority_update,
+            gate_authority_update,
         )
     }
 

@@ -3,8 +3,8 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 use rbac_utils::{
-    constants::{IDENTITY_METADATA_REGISTRY_ID, IDENTITY_REGISTRY_ID, POLICY_ENGINE_ID},
     REMOVE_INVESTOR_IX,
+    constants::{IDENTITY_METADATA_REGISTRY_ID, IDENTITY_REGISTRY_ID, POLICY_ENGINE_ID},
 };
 
 use crate::{controller_seeds, state::*, verify_medici_signer};
@@ -59,6 +59,7 @@ pub fn handler(ctx: Context<RemoveInvestor>) -> Result<()> {
         &ctx.accounts.user.key(),
         &ctx.accounts.authorized_user_role,
         MediciFlags::REMOVE_INVESTOR,
+        None,
     )?;
 
     // Perform CPI to IdentityMetadataRegistry Program.
@@ -78,9 +79,17 @@ pub fn handler(ctx: Context<RemoveInvestor>) -> Result<()> {
                 AccountMeta::new(ctx.accounts.wallet_identity.key(), false),
                 AccountMeta::new_readonly(ctx.accounts.policy_engine_program.key(), false),
                 AccountMeta::new(ctx.accounts.tracker_account.key(), false),
-                AccountMeta::new_readonly(ctx.accounts.event_authority_identity_registry.key(), false), // For Event CPI
+                AccountMeta::new_readonly(
+                    ctx.accounts.event_authority_identity_registry.key(),
+                    false,
+                ), // For Event CPI
                 AccountMeta::new_readonly(ctx.accounts.asset_mint.key(), false),
-                AccountMeta::new_readonly(ctx.accounts.event_authority_identity_metadata_registry.key(), false), // For Event CPI
+                AccountMeta::new_readonly(
+                    ctx.accounts
+                        .event_authority_identity_metadata_registry
+                        .key(),
+                    false,
+                ), // For Event CPI
                 AccountMeta::new_readonly(
                     ctx.accounts.identity_metadata_registry_program.key(),
                     false,
@@ -98,8 +107,12 @@ pub fn handler(ctx: Context<RemoveInvestor>) -> Result<()> {
             ctx.accounts.wallet_identity.to_account_info(),
             ctx.accounts.policy_engine_program.to_account_info(),
             ctx.accounts.tracker_account.to_account_info(),
-            ctx.accounts.event_authority_identity_registry.to_account_info(),
-            ctx.accounts.event_authority_identity_metadata_registry.to_account_info(),
+            ctx.accounts
+                .event_authority_identity_registry
+                .to_account_info(),
+            ctx.accounts
+                .event_authority_identity_metadata_registry
+                .to_account_info(),
             ctx.accounts.asset_mint.to_account_info(),
             ctx.accounts
                 .identity_metadata_registry_program

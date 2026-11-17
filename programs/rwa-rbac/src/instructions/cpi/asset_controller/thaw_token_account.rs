@@ -3,13 +3,14 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 use anchor_spl::token_2022::Token2022;
-use rbac_utils::{constants::ASSET_CONTROLLER_ID, THAW_TOKEN_ACCOUNT_IX};
+use rbac_utils::{THAW_TOKEN_ACCOUNT_IX, constants::ASSET_CONTROLLER_ID};
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
 
 #[derive(Accounts)]
 pub struct ThawTokenAccount<'info> {
     pub user: Signer<'info>,
+    pub gate_authority: Option<Signer<'info>>,
     /// CHECK: Verified to match field in asset_access_controller.
     pub controller_authority: UncheckedAccount<'info>,
     #[account(has_one = controller_authority)]
@@ -38,6 +39,7 @@ pub fn handler(ctx: Context<ThawTokenAccount>, cpi_data: Vec<u8>) -> Result<()> 
         &ctx.accounts.user.key(),
         &ctx.accounts.authorized_user_role,
         MediciFlags::THAW_TOKEN_ACCOUNT,
+        ctx.accounts.gate_authority.as_ref(),
     )?;
 
     // Verify instruction discriminator in cpi_data

@@ -125,7 +125,10 @@ export class RwaRbacClient {
     return this.rbacProgram.methods
       .updateControllerAdmin(args.newAdmin)
       .accountsStrict({
+        gateAuthority: args.gateAuthority || null,
+
         admin: args.admin,
+        authorizedUserRole: args.authorizedUserRole,
         assetAccessController: args.assetAccessController,
       })
       .instruction();
@@ -146,9 +149,14 @@ export class RwaRbacClient {
         new BN(args.allowedAdminIxs),
         new BN(args.allowedMediciIxs),
         args.isMasterRole || false,
-        args.multisigAuthority || null
+        args.newGateAuthority || null,
+        args.newGateAuthorityProof
+          ? { ...args.newGateAuthorityProof, seeds: args.newGateAuthorityProof.seeds.map((seed) => Buffer.from(seed)) }
+          : null
       )
       .accountsStrict({
+        gateAuthority: args.gateAuthority || null,
+        newGateAuthority: args.newGateAuthority || null,
         payer: args.payer,
         user: args.user,
         newUserRole: deriveUserRolePda(controller.userRolesCount.addn(1), args.assetAccessController),
@@ -165,16 +173,32 @@ export class RwaRbacClient {
    * @returns A Promise that resolves to the instruction to modify UserRole.
    */
   async modifyUserRoleIxn(args: ModifyUserRoleArgs): Promise<TransactionInstruction> {
-    const multisigAuthorityUpdate: IdlTypes<RwaRbac>['multisigAuthorityUpdate'] =
-      args.multisigAuthority === undefined
+    if (args.newGateAuthority && !args.newGateAuthorityProof) {
+      throw new Error('newGateAuthorityProof is required when setting a gate authority');
+    }
+    const gateAuthorityUpdate: IdlTypes<RwaRbac>['gateAuthorityUpdate'] =
+      args.newGateAuthority === undefined
         ? { noChange: {} }
-        : args.multisigAuthority === null
+        : args.newGateAuthority === null
         ? { clear: {} }
-        : { set: { authority: args.multisigAuthority } };
+        : {
+            set: {
+              authority: args.newGateAuthority,
+              proof: {
+                ...args.newGateAuthorityProof!,
+                seeds: args.newGateAuthorityProof!.seeds.map((seed) => Buffer.from(seed)),
+              },
+            },
+          };
 
     return this.rbacProgram.methods
-      .modifyUserRole(args.name, new BN(args.allowedAdminIxs), new BN(args.allowedMediciIxs), multisigAuthorityUpdate)
+      .modifyUserRole(args.name, new BN(args.allowedAdminIxs), new BN(args.allowedMediciIxs), gateAuthorityUpdate)
       .accountsStrict({
+        gateAuthority: args.gateAuthority || null,
+
+        currentGateAuthority: args.currentGateAuthority || args.gateAuthority || null,
+        newGateAuthority: args.newGateAuthority || null,
+
         user: args.user,
         userRole: args.userRole,
         assetAccessController: args.assetAccessController,
@@ -192,6 +216,8 @@ export class RwaRbacClient {
     return this.rbacProgram.methods
       .deleteUserRole()
       .accountsStrict({
+        gateAuthority: args.gateAuthority || null,
+
         receiver: args.receiver,
         user: args.user,
         userRole: args.userRole,
@@ -210,6 +236,8 @@ export class RwaRbacClient {
     return this.rbacProgram.methods
       .assignUserRole(args.usersToAssign)
       .accountsStrict({
+        gateAuthority: args.gateAuthority || null,
+
         payer: args.payer,
         user: args.user,
         userRole: args.userRole,
@@ -231,6 +259,8 @@ export class RwaRbacClient {
     return this.rbacProgram.methods
       .removeUserRole(args.usersToRemove)
       .accountsStrict({
+        gateAuthority: args.gateAuthority || null,
+
         user: args.user,
         userRole: args.userRole,
         authorizedUserRole: args.authorizedUserRole || null,
@@ -250,6 +280,8 @@ export class RwaRbacClient {
     return this.rbacProgram.methods
       .withdrawExcessRent()
       .accountsStrict({
+        gateAuthority: args.gateAuthority || null,
+
         receiver: args.receiver,
         user: args.admin,
         controllerAuthority: args.controllerAuthority,
@@ -270,7 +302,6 @@ export class RwaRbacClient {
       .setLutAddress()
       .accountsStrict({
         user: args.signer,
-        multisigAuthority: args.multisigAuthority,
         assetAccessController: args.assetAccessController,
         authorizedUserRole: args.authorizedUserRole,
         lutAddress: args.lutAddress,

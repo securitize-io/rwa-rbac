@@ -190,6 +190,11 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "asset_access_controller",
           "writable": true,
           "relations": [
@@ -246,6 +251,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controller_authority",
@@ -378,6 +388,11 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controller_authority",
           "relations": [
             "asset_access_controller"
@@ -438,6 +453,11 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controller_authority",
           "relations": [
             "asset_access_controller"
@@ -496,6 +516,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controller_authority",
@@ -578,6 +603,11 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controller_authority",
           "relations": [
             "asset_access_controller"
@@ -632,6 +662,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controller_authority",
@@ -809,6 +844,11 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controller_authority",
           "relations": [
             "asset_access_controller"
@@ -886,6 +926,19 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
+          "name": "new_gate_authority",
+          "docs": [
+            "Consent from the authority being installed (may equal gate_authority)."
+          ],
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "new_user_role",
           "writable": true
         },
@@ -923,9 +976,19 @@
           "type": "bool"
         },
         {
-          "name": "multisig_authority",
+          "name": "gate_authority",
           "type": {
             "option": "pubkey"
+          }
+        },
+        {
+          "name": "gate_authority_proof",
+          "type": {
+            "option": {
+              "defined": {
+                "name": "GateAuthorityProof"
+              }
+            }
           }
         }
       ]
@@ -950,6 +1013,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "asset_access_controller",
@@ -990,6 +1058,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controller_authority",
@@ -1181,6 +1254,11 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controller_authority",
           "writable": true,
           "relations": [
@@ -1277,6 +1355,27 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
+          "name": "current_gate_authority",
+          "docs": [
+            "The target role's existing authority must consent to its replacement or removal."
+          ],
+          "signer": true,
+          "optional": true
+        },
+        {
+          "name": "new_gate_authority",
+          "docs": [
+            "Consent from the proposed authority, in addition to the existing approvals."
+          ],
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "asset_access_controller",
           "relations": [
             "user_role",
@@ -1306,10 +1405,10 @@
           "type": "u64"
         },
         {
-          "name": "multisig_authority_update",
+          "name": "gate_authority_update",
           "type": {
             "defined": {
-              "name": "MultisigAuthorityUpdate"
+              "name": "GateAuthorityUpdate"
             }
           }
         }
@@ -1582,6 +1681,11 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controller_authority",
           "relations": [
             "asset_access_controller"
@@ -1666,6 +1770,11 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controller_authority",
           "relations": [
             "asset_access_controller"
@@ -1734,6 +1843,11 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "asset_access_controller",
           "relations": [
             "user_role",
@@ -1780,6 +1894,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controller_authority",
@@ -1873,6 +1992,11 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controller_authority",
           "writable": true,
           "relations": [
@@ -1944,6 +2068,11 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controller_authority",
           "relations": [
             "asset_access_controller"
@@ -1995,10 +2124,6 @@
           "signer": true
         },
         {
-          "name": "multisig_authority",
-          "signer": true
-        },
-        {
           "name": "asset_access_controller",
           "writable": true,
           "relations": [
@@ -2030,6 +2155,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controller_authority",
@@ -2162,8 +2292,19 @@
           ]
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "asset_access_controller",
-          "writable": true
+          "writable": true,
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role"
         }
       ],
       "args": [
@@ -2193,6 +2334,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controller_authority",
@@ -2348,13 +2494,28 @@
     },
     {
       "code": 6014,
-      "name": "MissingMultisigAuthority",
-      "msg": "Missing multisig authority"
+      "name": "MissingGateAuthority",
+      "msg": "Missing gate authority"
     },
     {
       "code": 6015,
-      "name": "InvalidMultisigAuthority",
-      "msg": "Invalid multisig authority"
+      "name": "InvalidGateAuthority",
+      "msg": "Invalid gate authority"
+    },
+    {
+      "code": 6016,
+      "name": "InvalidGatingProgram",
+      "msg": "Gate authority derivation program is not allowed"
+    },
+    {
+      "code": 6017,
+      "name": "MissingGateAuthorityProof",
+      "msg": "Missing gate authority derivation proof"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidGateAuthorityProof",
+      "msg": "Invalid gate authority derivation proof"
     }
   ],
   "types": [
@@ -2446,7 +2607,31 @@
       }
     },
     {
-      "name": "MultisigAuthorityUpdate",
+      "name": "GateAuthorityProof",
+      "docs": [
+        "Instruction-only proof; neither the program ID nor seeds are stored in UserRole."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "program_id",
+            "type": "pubkey"
+          },
+          {
+            "name": "seeds",
+            "docs": [
+              "Complete PDA seeds, including the bump seed, for create_program_address."
+            ],
+            "type": {
+              "vec": "bytes"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GateAuthorityUpdate",
       "type": {
         "kind": "enum",
         "variants": [
@@ -2459,6 +2644,14 @@
               {
                 "name": "authority",
                 "type": "pubkey"
+              },
+              {
+                "name": "proof",
+                "type": {
+                  "defined": {
+                    "name": "GateAuthorityProof"
+                  }
+                }
               }
             ]
           },
@@ -2555,9 +2748,10 @@
             }
           },
           {
-            "name": "multisig_authority",
+            "name": "gate_authority",
             "docs": [
-              "External authority that must co-sign operations protected by gated flags."
+              "External PDA authority that must co-sign gated operations.",
+              "Program provenance is verified on installation; no proof is stored here."
             ],
             "type": {
               "option": "pubkey"

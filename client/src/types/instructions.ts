@@ -2,6 +2,13 @@ import { PublicKey } from '@solana/web3.js';
 import { BN } from '@anchor-lang/core';
 import { CommonArgs } from '@dstoken-solana/rwa-token-sdk';
 
+/** Instruction-only proof of derivation under an allowed gating program. */
+export type GateAuthorityProof = {
+  programId: PublicKey;
+  /** Complete PDA seeds, including the bump seed; at most 16 seeds of 32 bytes each. */
+  seeds: Uint8Array[];
+};
+
 /** Args used to setup a AssetAccessController  */
 export type CreateControllerArgs = {
   payer: PublicKey;
@@ -19,6 +26,9 @@ export type UpdateControllerAdminArgs = {
   admin: PublicKey;
   assetAccessController: PublicKey;
   newAdmin: PublicKey;
+  /** External co-signer for gated permissions. */
+  gateAuthority?: PublicKey;
+  authorizedUserRole: PublicKey;
 };
 
 /** Args used to setup a UserRole */
@@ -31,7 +41,11 @@ export type SetupUserRoleArgs = {
   allowedMediciIxs: number;
   authorizedUserRole?: PublicKey;
   isMasterRole?: boolean;
-  multisigAuthority?: PublicKey | null;
+  newGateAuthority?: PublicKey | null;
+  /** Required when newGateAuthority is set. The proposed authority must also sign. */
+  newGateAuthorityProof?: GateAuthorityProof;
+  /** External co-signer for gated permissions. */
+  gateAuthority?: PublicKey;
 };
 
 /** Args used to modify a UserRole */
@@ -44,7 +58,13 @@ export type ModifyUserRoleArgs = {
   allowedMediciIxs: number;
   authorizedUserRole?: PublicKey;
   /** Omit to preserve the current value; pass null to clear it. */
-  multisigAuthority?: PublicKey | null;
+  newGateAuthority?: PublicKey | null;
+  /** Required when newGateAuthority is set. The proposed authority must also sign. */
+  newGateAuthorityProof?: GateAuthorityProof;
+  /** External co-signer for gated permissions. */
+  gateAuthority?: PublicKey;
+  /** Target role authority before rotation; defaults to gateAuthority. */
+  currentGateAuthority?: PublicKey;
 };
 
 /** Args used to delete a UserRole */
@@ -54,6 +74,8 @@ export type DeleteUserRoleArgs = {
   assetAccessController: PublicKey;
   userRole: PublicKey;
   authorizedUserRole?: PublicKey;
+  /** External co-signer for gated permissions. */
+  gateAuthority?: PublicKey;
 };
 
 /** Args used to assign users to a UserRole  */
@@ -64,6 +86,8 @@ export type AssignUserRoleArgs = {
   usersToAssign: PublicKey[];
   assetAccessController: PublicKey;
   authorizedUserRole?: PublicKey;
+  /** External co-signer for gated permissions. */
+  gateAuthority?: PublicKey;
 };
 
 /** Args used to remove users from a UserRole  */
@@ -73,6 +97,8 @@ export type RemoveUserRoleArgs = {
   usersToRemove: PublicKey[];
   assetAccessController: PublicKey;
   authorizedUserRole?: PublicKey;
+  /** External co-signer for gated permissions. */
+  gateAuthority?: PublicKey;
 };
 
 /** Args used to withdraw excess rent from ControllerAuthority  */
@@ -82,6 +108,8 @@ export type WithdrawExcessRentArgs = {
   controllerAuthority: PublicKey;
   assetAccessController: PublicKey;
   authorizedUserRole?: PublicKey;
+  /** External co-signer for gated permissions. */
+  gateAuthority?: PublicKey;
 };
 
 /** Args used to seize tokens  */
@@ -261,5 +289,4 @@ export type SetLookuptableAddressArgs = {
   assetAccessController: PublicKey;
   lutAddress: PublicKey;
   authorizedUserRole: PublicKey;
-  multisigAuthority: PublicKey;
 };

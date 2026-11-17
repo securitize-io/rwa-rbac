@@ -18,7 +18,7 @@ cluster = "Localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test = "yarn exec ts-mocha -p ./tsconfig.json -t 120000 tests/admin.ts tests/cpiTests.ts tests/gating.ts"
 
 [[test.genesis]]
 address = "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
@@ -31,6 +31,16 @@ program = "./deps/identity_registry.so"
 [[test.genesis]]
 address = "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
 program = "./deps/policy_engine.so"
+
+# Surfpool lazily forks these existing Squads accounts from devnet.
+[test.validator]
+url = "https://api.devnet.solana.com"
+
+[[test.validator.clone]]
+address = "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
+
+[[test.validator.clone]]
+address = "BSTq9w3kZwNwpBXJEvTZz2G9ZTNyKBvoSeXMvwb4cNZr"
 
 [surfpool]
 startup_wait = 5000
