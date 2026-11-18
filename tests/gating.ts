@@ -23,6 +23,7 @@ import {
 
 anchor.setProvider(anchor.AnchorProvider.env());
 const permissions = [
+  ['updateAssetMetadata', MediciFlags.UPDATE_ASSET_METADATA],
   ['attachToPolicyEngine', MediciFlags.ATTACH_TO_POLICY_ACCOUNT],
   ['detachFromPolicyEngine', MediciFlags.DETACH_FROM_POLICY_ACCOUNT],
   ['changeCounterLimits', MediciFlags.CHANGE_COUNTER_LIMITS],
@@ -30,14 +31,7 @@ const permissions = [
   ['setCounters', MediciFlags.CHANGE_COUNTERS],
   ['changeMapping', MediciFlags.CHANGE_MAPPING],
   ['changeIssuancePolicies', MediciFlags.CHANGE_ISSUANCE_POLICIES],
-  ['issueTokens', MediciFlags.ISSUE_TOKENS],
-  ['seizeTokens', MediciFlags.SEIZE_TOKENS],
-  ['revokeTokens', MediciFlags.REVOKE_TOKENS],
-  ['thawTokenAccount', MediciFlags.THAW_TOKEN_ACCOUNT],
-  ['removeLock', MediciFlags.REMOVE_TOKEN_LOCK],
   ['createIdentityAccount', MediciFlags.CREATE_IDENTITY_ACCOUNT],
-  ['changeCountry', MediciFlags.CHANGE_COUNTRY],
-  ['removeLevels', MediciFlags.REMOVE_LEVELS],
 ] as const;
 
 // Invalid downstream bytes isolate authorization without reproducing every asset fixture.
@@ -99,32 +93,38 @@ describe('Permission gates', () => {
       await expectFailure(sendGated(f.connection, f.gate, f.admin, ix), 'InvalidUserRole');
     });
   }
-  for (const name of [
-    'freezeTokenAccount',
-    'addLock',
-    'updateAssetMetadata',
-    'addLevels',
-    'registerInvestor',
-    'removeIdentityAccount',
-  ]) {
-    it(`${name}: remains available without an extra authority`, async () => {
-      await storeRole(f, { gateAuthority: null });
-      await expectFailure(direct(await boundary(f, name, null)), 'UnknownInstruction');
-    });
-  }
-
   for (const [name, flag] of [
+    ['issueTokens', MediciFlags.ISSUE_TOKENS],
+    ['freezeTokenAccount', MediciFlags.FREEZE_TOKEN_ACCOUNT],
+    ['addLock', MediciFlags.ADD_TOKEN_LOCK],
+    ['seizeTokens', MediciFlags.SEIZE_TOKENS],
+    ['revokeTokens', MediciFlags.REVOKE_TOKENS],
+    ['thawTokenAccount', MediciFlags.THAW_TOKEN_ACCOUNT],
+    ['removeLock', MediciFlags.REMOVE_TOKEN_LOCK],
+    ['changeCountry', MediciFlags.CHANGE_COUNTRY],
+    ['removeLevels', MediciFlags.REMOVE_LEVELS],
+    ['addLevels', MediciFlags.ADD_LEVELS],
+    ['registerInvestor', MediciFlags.REGISTER_INVESTOR],
     ['removeIdentityAccount', MediciFlags.REMOVE_IDENTITY_ACCOUNT],
-    ['removeInvestor', MediciFlags.REMOVE_INVESTOR],
   ] as const) {
-    it(`${name}: ungated cleanup still requires permission and membership, including for the admin`, async () => {
+    it(`${name}: executes without a gate but still requires permission and membership`, async () => {
+      // Keep a configured gate: immediate operations must not inherit its delay.
       const ix = await boundary(f, name, null);
+      await expectFailure(direct(ix), 'UnknownInstruction');
       await storeRole(f, { allowedMediciIxs: new BN(MediciFlags.ALL & ~flag) });
       await expectFailure(direct(ix), 'InvalidUserRole');
       await storeRole(f, { allowedMediciIxs: new BN(MediciFlags.ALL), users: [] });
       await expectFailure(direct(ix), 'InvalidUserRole');
     });
   }
+
+  it('removeInvestor: ungated cleanup still requires permission and membership', async () => {
+    const ix = await boundary(f, 'removeInvestor', null);
+    await storeRole(f, { allowedMediciIxs: new BN(MediciFlags.ALL & ~MediciFlags.REMOVE_INVESTOR) });
+    await expectFailure(direct(ix), 'InvalidUserRole');
+    await storeRole(f, { allowedMediciIxs: new BN(MediciFlags.ALL), users: [] });
+    await expectFailure(direct(ix), 'InvalidUserRole');
+  });
 });
 
 describe('Squads timelock integration', () => {

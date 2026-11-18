@@ -10,7 +10,6 @@ use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
 #[derive(Accounts)]
 pub struct RevokeTokens<'info> {
     pub user: Signer<'info>,
-    pub gate_authority: Option<Signer<'info>>,
     /// CHECK: Verified to match field in asset_access_controller.
     #[account(mut)]
     pub controller_authority: UncheckedAccount<'info>,
@@ -58,7 +57,7 @@ pub fn handler<'info>(ctx: Context<'info, RevokeTokens<'info>>, cpi_data: Vec<u8
         &ctx.accounts.user.key(),
         &ctx.accounts.authorized_user_role,
         MediciFlags::REVOKE_TOKENS,
-        ctx.accounts.gate_authority.as_ref(),
+        None,
     )?;
 
     // Verify instruction discriminator in cpi_data

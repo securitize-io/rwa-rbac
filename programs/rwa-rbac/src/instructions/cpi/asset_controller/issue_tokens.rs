@@ -15,7 +15,6 @@ pub struct IssueTokens<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub user: Signer<'info>,
-    pub gate_authority: Option<Signer<'info>>,
     /// CHECK: Verified to match field in asset_access_controller.
     #[account(mut)]
     pub controller_authority: UncheckedAccount<'info>,
@@ -120,7 +119,7 @@ pub fn handler<'info>(ctx: Context<'info, IssueTokens<'info>>, cpi_data: Vec<u8>
         &ctx.accounts.user.key(),
         &ctx.accounts.authorized_user_role,
         MediciFlags::ISSUE_TOKENS,
-        ctx.accounts.gate_authority.as_ref(),
+        None,
     )?;
 
     require!(

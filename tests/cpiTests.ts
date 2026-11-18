@@ -156,7 +156,8 @@ describe('CPI End to End Tests', () => {
     const updateIx = await rwaRbacClient.assetController.updateAssetMetadata(
       updateAssetMetadataArgs,
       setup.assetAccessController,
-      setup.userRole1
+      setup.userRole1,
+      setup.gate.authority
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(updateIx), [setup.payerKp, setup.signer1Kp]);
   });
@@ -385,8 +386,7 @@ describe('CPI End to End Tests', () => {
     const ix = await rwaRbacClient.identityMetadataRegistry.removeLevels(
       args,
       setup.assetAccessController,
-      setup.userRole1,
-      setup.gate.authority
+      setup.userRole1
     );
     const cb = ComputeBudgetProgram.setComputeUnitLimit({ units: 300_000 });
     await sendAndConfirmTransaction(connection, new Transaction().add(cb, ix), [setup.payerKp, setup.signer1Kp], {
@@ -495,8 +495,7 @@ describe('CPI End to End Tests', () => {
     const ix = await rwaRbacClient.identityMetadataRegistry.changeCountry(
       args,
       setup.assetAccessController,
-      setup.userRole1,
-      setup.gate.authority
+      setup.userRole1
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [setup.payerKp, setup.signer1Kp]);
   });
@@ -567,8 +566,7 @@ describe('CPI End to End Tests', () => {
     const issueTokenIxns = await rwaRbacClient.assetController.issueTokenIxns(
       issueArgs,
       setup.assetAccessController,
-      setup.userRole1,
-      setup.gate.authority
+      setup.userRole1
     );
     await sendAndConfirmTransaction(
       connection,
@@ -597,8 +595,7 @@ describe('CPI End to End Tests', () => {
       INVESTOR_ID,
       setup.signer1.toString(),
       setup.assetAccessController,
-      setup.userRole1,
-      setup.gate.authority
+      setup.userRole1
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [setup.payerKp, setup.signer1Kp]);
 
@@ -658,8 +655,7 @@ describe('CPI End to End Tests', () => {
       setup.signer1, // User Account
       setup.assetAccessController,
       setup.userRole1,
-      null,
-      setup.gate.authority
+      null
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(revokeIx), [setup.payerKp, setup.signer1Kp], {
       skipPreflight: true,
@@ -757,8 +753,7 @@ describe('CPI End to End Tests', () => {
         assetMint: mint,
       },
       setup.assetAccessController,
-      setup.userRole1,
-      setup.gate.authority
+      setup.userRole1
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(thawIx), [setup.payerKp, setup.signer1Kp]);
   });
@@ -776,8 +771,7 @@ describe('CPI End to End Tests', () => {
       setup.signer1, // User Account
       setup.assetAccessController,
       setup.userRole1,
-      INVESTOR_ID,
-      setup.gate.authority
+      INVESTOR_ID
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(revokeIx), [setup.payerKp, setup.signer1Kp], {
       skipPreflight: true,
@@ -818,8 +812,7 @@ describe('CPI End to End Tests', () => {
       args,
       setup.signer1,
       setup.assetAccessController,
-      setup.userRole1,
-      setup.gate.authority
+      setup.userRole1
     );
     await sendAndConfirmTransaction(connection, new Transaction().add(ix), [setup.payerKp, setup.signer1Kp]);
   });

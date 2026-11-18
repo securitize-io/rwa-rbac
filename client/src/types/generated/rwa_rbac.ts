@@ -524,11 +524,6 @@ export type RwaRbac = {
           "signer": true
         },
         {
-          "name": "gateAuthority",
-          "signer": true,
-          "optional": true
-        },
-        {
           "name": "controllerAuthority",
           "relations": [
             "assetAccessController"
@@ -1260,11 +1255,6 @@ export type RwaRbac = {
           "signer": true
         },
         {
-          "name": "gateAuthority",
-          "signer": true,
-          "optional": true
-        },
-        {
           "name": "controllerAuthority",
           "writable": true,
           "relations": [
@@ -1813,11 +1803,6 @@ export type RwaRbac = {
           "signer": true
         },
         {
-          "name": "gateAuthority",
-          "signer": true,
-          "optional": true
-        },
-        {
           "name": "controllerAuthority",
           "relations": [
             "assetAccessController"
@@ -1900,11 +1885,6 @@ export type RwaRbac = {
         {
           "name": "user",
           "signer": true
-        },
-        {
-          "name": "gateAuthority",
-          "signer": true,
-          "optional": true
         },
         {
           "name": "controllerAuthority",
@@ -2028,11 +2008,6 @@ export type RwaRbac = {
           "signer": true
         },
         {
-          "name": "gateAuthority",
-          "signer": true,
-          "optional": true
-        },
-        {
           "name": "controllerAuthority",
           "writable": true,
           "relations": [
@@ -2122,11 +2097,6 @@ export type RwaRbac = {
         {
           "name": "user",
           "signer": true
-        },
-        {
-          "name": "gateAuthority",
-          "signer": true,
-          "optional": true
         },
         {
           "name": "controllerAuthority",
@@ -2289,11 +2259,6 @@ export type RwaRbac = {
           "signer": true
         },
         {
-          "name": "gateAuthority",
-          "signer": true,
-          "optional": true
-        },
-        {
           "name": "controllerAuthority",
           "relations": [
             "assetAccessController"
@@ -2356,6 +2321,11 @@ export type RwaRbac = {
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controllerAuthority",

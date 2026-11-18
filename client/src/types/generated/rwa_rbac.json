@@ -518,11 +518,6 @@
           "signer": true
         },
         {
-          "name": "gate_authority",
-          "signer": true,
-          "optional": true
-        },
-        {
           "name": "controller_authority",
           "relations": [
             "asset_access_controller"
@@ -1254,11 +1249,6 @@
           "signer": true
         },
         {
-          "name": "gate_authority",
-          "signer": true,
-          "optional": true
-        },
-        {
           "name": "controller_authority",
           "writable": true,
           "relations": [
@@ -1807,11 +1797,6 @@
           "signer": true
         },
         {
-          "name": "gate_authority",
-          "signer": true,
-          "optional": true
-        },
-        {
           "name": "controller_authority",
           "relations": [
             "asset_access_controller"
@@ -1894,11 +1879,6 @@
         {
           "name": "user",
           "signer": true
-        },
-        {
-          "name": "gate_authority",
-          "signer": true,
-          "optional": true
         },
         {
           "name": "controller_authority",
@@ -2022,11 +2002,6 @@
           "signer": true
         },
         {
-          "name": "gate_authority",
-          "signer": true,
-          "optional": true
-        },
-        {
           "name": "controller_authority",
           "writable": true,
           "relations": [
@@ -2116,11 +2091,6 @@
         {
           "name": "user",
           "signer": true
-        },
-        {
-          "name": "gate_authority",
-          "signer": true,
-          "optional": true
         },
         {
           "name": "controller_authority",
@@ -2283,11 +2253,6 @@
           "signer": true
         },
         {
-          "name": "gate_authority",
-          "signer": true,
-          "optional": true
-        },
-        {
           "name": "controller_authority",
           "relations": [
             "asset_access_controller"
@@ -2350,6 +2315,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controller_authority",

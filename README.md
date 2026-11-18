@@ -203,36 +203,44 @@ signer privilege and equality with the configured key. The external authority
 implements approvals, timelocks, cancellation, and any emergency policy; RBAC does
 not parse Squads accounts or enforce a particular delay.
 
-All admin flags except `SET_LUT_ADDRESS` are gated. The gated Medici flags are
-`CHANGE_ISSUANCE_POLICIES`, `ATTACH_TO_POLICY_ACCOUNT`,
-`DETACH_FROM_POLICY_ACCOUNT`, `CHANGE_COUNTER_LIMITS`, `CHANGE_COUNTERS`,
-`CHANGE_MAPPING`, `ISSUE_TOKENS`, `SEIZE_TOKENS`, `REVOKE_TOKENS`,
-`THAW_TOKEN_ACCOUNT`, `REMOVE_TOKEN_LOCK`, `CREATE_IDENTITY_ACCOUNT`,
-`CHANGE_COUNTRY`, and `REMOVE_LEVELS`. Both `change_counters` and `set_counters`
-use `CHANGE_COUNTERS`. Assignment and removal also share flags, so both require the
-external authority. Freeze and add-lock operations retain their existing direct
-role authorization.
+All admin flags except `SET_LUT_ADDRESS` are gated. The exposed gated Medici
+permissions are `UPDATE_ASSET_METADATA`, `CHANGE_ISSUANCE_POLICIES`,
+`ATTACH_TO_POLICY_ACCOUNT`, `DETACH_FROM_POLICY_ACCOUNT`, `CHANGE_COUNTER_LIMITS`,
+`CHANGE_COUNTERS`, `CHANGE_MAPPING`, and `CREATE_IDENTITY_ACCOUNT`.
+Both `change_counters` and `set_counters` use `CHANGE_COUNTERS`. Assignment and
+removal also share flags, so both require the external authority. The declared
+`UPDATE_INTEREST_BEARING_MINT_RATE` and `ADD_LEVEL_TO_IDENTITY_ACCOUNT` permissions
+are gated in preparation for future handlers.
 
-LUT updates and investor/identity cleanup require role membership and their
-permission but no gate signature. Cleanup remains subject to the token program's
-one-remaining-wallet and zero-tracked-balance constraints. Removing a gate does
-not introduce a controller-admin shortcut.
+Issuance, burn, seizure, freeze/thaw, adding/removing token locks, country changes, and
+level removal execute through role permissions without an additional gate.
+LUT updates, wallet attachment/detachment, and investor/identity cleanup are also
+direct role operations. Cleanup still obeys downstream wallet and balance checks.
+A configured authority on the role does not delay these immediate operations.
 
-Direct identity creation can assign initial privileged levels; country changes
-can shorten holding periods; removing levels can release an investor lock.
-Their broad permissions therefore require a gate. Investor registration and
-validated IMR level additions remain direct role operations. IMR is unchanged:
-its existing special-wallet validation for level additions does not apply to
-initial registration. Registration through
-Squads exceeded the five-level CPI limit in the tested runtime while creating its
-tracker account. Higher nesting depends on activation of
-[SIMD-0268](https://solana.com/docs/core/cpi) on the target runtime.
+Raw identity creation can assign privileged levels and remains a gated exception.
+Investor registration and validated IMR level additions remain direct. IMR is
+unchanged: its validation of level additions does not apply to initial
+registration. Initial special-level handling therefore remains a separate
+validation concern. Registration through Squads exceeded the five-level CPI limit
+in the tested runtime while creating its tracker account. Higher nesting depends
+on activation of [SIMD-0268](https://solana.com/docs/core/cpi) on the target runtime.
 
-Issuance and revocation retain their RBAC gates until token-native timelocks and
-caps are implemented and verified on every relevant path, including forced burns.
-Changing caps, delays, policy mappings, counters, or their limits must remain
-protected. `WITHDRAW_EXCESS_RENT` also remains gated because it transfers all
-controller-authority lamports to a caller-selected receiver.
+Deployment prerequisite: deploy this ungated issuance path only alongside a token
+program that enforces mint caps and the delayed over-cap path on every issuance
+route. RBAC does not enforce these limits. Ordinary within-cap issuance is direct;
+over-cap issuance must follow the token's native delay without another RBAC delay.
+Burn and seizure remain immediate emergency operations. Rent withdrawal stays
+gated because it transfers all controller-authority lamports to a caller-selected
+receiver.
+
+Gate delays are configured on the external authorities: Master governance covers
+metadata, role definitions, counter overrides, rent withdrawal, and admin rotation;
+Roles governance covers membership changes; Compliance governance covers ordinary
+policy changes, counter limits, and country mappings. RBAC does not enforce the
+48-hour or 24-hour delays. Configure role permissions and gate authorities
+accordingly. Dedicated immediate pause and Master-gated unpause paths, including
+guards on generic policy attachment/detachment, are a separate integration.
 
 Gated calls require the role user, its permission, and `gateAuthority` as an actual
 signer. There is no controller-admin bypass. Medici SDK builders accept

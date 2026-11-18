@@ -181,20 +181,17 @@ pub const GATED_ADMIN_FLAGS: AdminFlags = AdminFlags::from_bits_retain(
 
 /// Permissions requiring the role user and its external authority.
 pub const GATED_MEDICI_FLAGS: MediciFlags = MediciFlags::from_bits_retain(
-    MediciFlags::CHANGE_ISSUANCE_POLICIES.bits()
+    MediciFlags::UPDATE_ASSET_METADATA.bits()
+        | MediciFlags::CHANGE_ISSUANCE_POLICIES.bits()
         | MediciFlags::ATTACH_TO_POLICY_ACCOUNT.bits()
         | MediciFlags::DETACH_FROM_POLICY_ACCOUNT.bits()
         | MediciFlags::CHANGE_COUNTER_LIMITS.bits()
         | MediciFlags::CHANGE_COUNTERS.bits()
         | MediciFlags::CHANGE_MAPPING.bits()
-        | MediciFlags::ISSUE_TOKENS.bits()
-        | MediciFlags::SEIZE_TOKENS.bits()
-        | MediciFlags::REVOKE_TOKENS.bits()
-        | MediciFlags::THAW_TOKEN_ACCOUNT.bits()
-        | MediciFlags::REMOVE_TOKEN_LOCK.bits()
         | MediciFlags::CREATE_IDENTITY_ACCOUNT.bits()
-        | MediciFlags::CHANGE_COUNTRY.bits()
-        | MediciFlags::REMOVE_LEVELS.bits(),
+        // Gate these permissions before exposing their currently unimplemented handlers.
+        | MediciFlags::ADD_LEVEL_TO_IDENTITY_ACCOUNT.bits()
+        | MediciFlags::UPDATE_INTEREST_BEARING_MINT_RATE.bits(),
 );
 
 #[cfg(test)]

@@ -12,6 +12,7 @@ pub struct UpdateAssetMetadata<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub user: Signer<'info>,
+    pub gate_authority: Option<Signer<'info>>,
     /// CHECK: Verified to match field in asset_access_controller.
     #[account(mut)]
     pub controller_authority: UncheckedAccount<'info>,
@@ -41,7 +42,7 @@ pub fn handler(ctx: Context<UpdateAssetMetadata>, cpi_data: Vec<u8>) -> Result<(
         &ctx.accounts.user.key(),
         &ctx.accounts.authorized_user_role,
         MediciFlags::UPDATE_ASSET_METADATA,
-        None,
+        ctx.accounts.gate_authority.as_ref(),
     )?;
 
     // Verify instruction discriminator in cpi_data

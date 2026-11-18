@@ -305,16 +305,13 @@ export class PolicyEngine {
     args: RemoveLockArgs,
     signer: PublicKey,
     assetAccessController: PublicKey,
-    authorizedUserRole: PublicKey,
-    gateAuthority?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
     const policyIx = await this.rwaClient.policyEngine.removeLock(args);
     const ixData = policyIx.ixs[0].data;
     return this.rbacProgram.methods
       .removeLock(ixData)
       .accountsStrict({
-        gateAuthority: gateAuthority || null,
-
         payer: args.payer,
         user: signer,
         controllerAuthority: args.authority,

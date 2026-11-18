@@ -28,20 +28,29 @@ protect every handler using them: `CHANGE_COUNTERS` covers both counter handlers
 and the assignment/removal flags gate both directions. There is no ungated
 matching-flag exception and no controller-admin shortcut for any role permission.
 
-Freeze and add-lock permissions remain direct RBAC operations for containment.
-LUT updates and investor/identity cleanup are also direct role operations. Cleanup
-must still satisfy the downstream one-wallet and zero-tracked-balance constraints.
-Broad direct identity creation, country changes, and
-level removal require a gate because they can grant exemptions or release
-restrictions. Ordinary investor registration and level additions remain direct.
-IMR is unchanged. Its existing validation of level additions does not apply to
-initial registration; the initial-level behavior remains unchanged.
-Registration through Squads exceeds the five-level CPI limit in the tested runtime
-during tracker creation; deeper nesting depends on SIMD-0268 activation.
+Burn, seizure, freeze/thaw, and adding/removing token locks remain direct RBAC
+operations. Country changes, level removal, normal onboarding, validated level
+additions, and wallet attachment/detachment are also immediate. LUT updates and
+investor/identity cleanup require permissions but no gate; cleanup still obeys
+the downstream wallet and balance checks.
 
-Mint and forced-burn operations retain their gates pending verified token-native
-timelocks and caps. The current rent withdrawal remains gated because it transfers
-all controller-authority lamports to a caller-selected receiver.
+Raw identity creation remains gated because it can assign privileged initial
+levels. The declared raw-level-addition and interest-rate-update flags are also
+gated before their handlers are exposed. Metadata updates require a gate.
+IMR is unchanged. Its special-level validation applies to additions, not initial
+registration, so the latter remains a separate validation concern.
+
+Issuance has no RBAC gate. Deploy this change only alongside verified token-native
+mint caps and a delayed over-cap path covering every issuance route. RBAC does not
+provide these protections or add a second delay. Burn and seizure are immediate
+emergency operations. Rent withdrawal remains
+gated because it transfers all controller-authority lamports to a caller-selected
+receiver.
+
+The external governance authorities implement Master, Roles, and Compliance delay
+tiers through role configuration. RBAC checks signer provenance and permission;
+it does not store or enforce delay seconds. Dedicated pause/unpause paths and
+guards against generic policy-management bypasses are a separate integration.
 See the repository README for the full gated set and operational tradeoffs.
 
 ## Governance configuration

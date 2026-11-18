@@ -80,6 +80,10 @@ discriminator and wire layout unchanged. The controller layout and IMR are uncha
 
 ## SDK and program rollout
 
+This RBAC release makes issuance immediate. Deploy it only alongside a token
+program that enforces mint caps and the delayed over-cap path on every issuance
+route; RBAC does not provide those limits.
+
 The SDK supports both account layouts through `userRoles`, but its instruction
 builders target the upgraded program. The pre-gating SDK does not support the
 new instruction interface or V2 role layout.

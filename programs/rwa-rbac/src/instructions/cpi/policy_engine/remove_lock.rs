@@ -11,7 +11,6 @@ pub struct RemoveLock<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub user: Signer<'info>,
-    pub gate_authority: Option<Signer<'info>>,
     /// CHECK: Verified to match field in asset_access_controller.
     pub controller_authority: UncheckedAccount<'info>,
     #[account(has_one = controller_authority)]
@@ -46,7 +45,7 @@ pub fn handler(ctx: Context<RemoveLock>, cpi_data: Vec<u8>) -> Result<()> {
         &ctx.accounts.user.key(),
         &ctx.accounts.authorized_user_role,
         MediciFlags::REMOVE_TOKEN_LOCK,
-        ctx.accounts.gate_authority.as_ref(),
+        None,
     )?;
 
     // Verify instruction discriminator in cpi_data

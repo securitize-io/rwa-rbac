@@ -38,7 +38,18 @@ function legacyBytes(f: Fixture, id: number, master = false, users = [f.admin.pu
     u32(name.length),
     name,
     u64(master ? AdminFlags.ALL : 0),
-    u64(master ? MediciFlags.ALL : MediciFlags.FREEZE_TOKEN_ACCOUNT),
+    u64(
+      master
+        ? MediciFlags.ALL
+        : MediciFlags.FREEZE_TOKEN_ACCOUNT |
+            MediciFlags.ISSUE_TOKENS |
+            MediciFlags.REVOKE_TOKENS |
+            MediciFlags.SEIZE_TOKENS |
+            MediciFlags.THAW_TOKEN_ACCOUNT |
+            MediciFlags.REMOVE_TOKEN_LOCK |
+            MediciFlags.CHANGE_COUNTRY |
+            MediciFlags.REMOVE_LEVELS
+    ),
     Buffer.from([Number(master)]),
     u32(users.length),
     ...users.map((user) => user.toBuffer()),

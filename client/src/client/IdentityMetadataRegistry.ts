@@ -236,14 +236,12 @@ export class IdentityMetadataRegistry {
    * @param args - {@link ChangeCountryArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
    * @param authorizedUserRole - UserRole authorized to invoke instruction.
-   * @param gateAuthority - Configured role authority; must co-sign country changes.
    * @returns A Promise that resolves to the instructions to change the country.
    * */
   async changeCountry(
     args: ChangeCountryArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole: PublicKey,
-    gateAuthority?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
     const controllerAuthority = deriveControllerAuthorityPda(assetAccessController);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
@@ -271,7 +269,6 @@ export class IdentityMetadataRegistry {
     return this.rbacProgram.methods
       .changeCountry(ix.data)
       .accountsStrict({
-        gateAuthority: gateAuthority || null,
         payer: args.payer,
         user: args.signer,
         controllerAuthority,
@@ -296,14 +293,12 @@ export class IdentityMetadataRegistry {
    * @param args - {@link RemoveLevelsArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
    * @param authorizedUserRole - UserRole authorized to invoke instruction.
-   * @param gateAuthority - Configured role authority; must co-sign level removal.
    * @returns A Promise that resolves to the instructions to remove levels.
    * */
   async removeLevels(
     args: RemoveLevelsArgs,
     assetAccessController: PublicKey,
-    authorizedUserRole: PublicKey,
-    gateAuthority?: PublicKey
+    authorizedUserRole: PublicKey
   ): Promise<TransactionInstruction> {
     const controllerAuthority = deriveControllerAuthorityPda(assetAccessController);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
@@ -332,7 +327,6 @@ export class IdentityMetadataRegistry {
     return this.rbacProgram.methods
       .removeLevels(ix.data)
       .accountsStrict({
-        gateAuthority: gateAuthority || null,
         payer: args.payer,
         user: args.signer,
         controllerAuthority,
