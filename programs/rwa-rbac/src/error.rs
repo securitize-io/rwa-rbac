@@ -58,4 +58,7 @@ pub enum ErrorCode {
 
     #[msg("Invalid gate authority derivation proof")]
     InvalidGateAuthorityProof,
+
+    #[msg("Migrate the legacy role before changing its gate authority")]
+    MigrationRequired,
 }

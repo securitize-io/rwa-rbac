@@ -75,6 +75,14 @@ pub mod rwa_rbac {
         )
     }
 
+    pub fn migrate_user_role(
+        ctx: Context<MigrateUserRole>,
+        gate_authority: Option<Pubkey>,
+        gate_authority_proof: Option<GateAuthorityProof>,
+    ) -> Result<()> {
+        instructions::migrate_user_role::handler(ctx, gate_authority, gate_authority_proof)
+    }
+
     pub fn delete_user_role(ctx: Context<DeleteUserRole>) -> Result<()> {
         instructions::delete_user_role::handler(ctx)
     }

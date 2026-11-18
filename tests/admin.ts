@@ -312,6 +312,8 @@ describe('Gated admin instructions', () => {
         await f.client.assignUserRoleIxn({ ...args, usersToAssign: [f.outsider.publicKey, f.outsider.publicKey] })
       );
       assert.equal((await f.client.rbacProgram.account.userRole.fetch(f.child)).users.length, 2);
+      const grown = (await f.connection.getAccountInfo(f.child))!;
+      assert.equal(grown.data.length, 171 + 32 * 2);
       await expectFailure(
         direct(
           await f.client.removeUserRoleIxn({ ...args, usersToRemove: [f.outsider.publicKey], gateAuthority: undefined })
@@ -320,6 +322,9 @@ describe('Gated admin instructions', () => {
       );
       await send(await f.client.removeUserRoleIxn({ ...args, usersToRemove: [f.outsider.publicKey] }));
       assert.equal((await f.client.rbacProgram.account.userRole.fetch(f.child)).users.length, 1);
+      const removed = (await f.connection.getAccountInfo(f.child))!;
+      assert.equal(removed.data.length, grown.data.length);
+      assert.equal(removed.lamports, grown.lamports);
     });
   }
 

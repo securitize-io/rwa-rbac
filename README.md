@@ -195,6 +195,9 @@ uses actual downstream asset, investor, token, and policy state.
 
 ## External authority gates
 
+These rules apply to V2 roles. Legacy roles retain their existing authorization
+until explicitly converted, as described in the [SDK migration guide](client/docs/migrations/user-roles-v2.md).
+
 Governance configuration remains in `UserRole.gate_authority`. RBAC verifies
 signer privilege and equality with the configured key. The external authority
 implements approvals, timelocks, cancellation, and any emergency policy; RBAC does
@@ -262,10 +265,14 @@ atomically. Subsequent role creation and assignment use normal gated permissions
 The bootstrap path is unavailable after any role has been created. A master role
 is reserved at creation, including before any later user assignment.
 
-This change updates instruction account lists and the SDK/IDL together. It does
-not migrate legacy mainnet account layouts or configure existing role authorities.
-Existing deployments need an explicit account migration and governance cutover
-before activating these gates; missing authorities are not an admin recovery path.
+This change updates instruction account lists and the SDK/IDL together. Original
+mainnet roles remain usable until explicitly converted with `migrate_user_role`.
+Each conversion preserves the role PDA, users, and permissions and installs its
+validated gate authority. V2 roles enforce gates immediately; new roles always use
+V2. Controllers and IMR require no migration. Group conversions by controller and
+verify every role off-chain before resuming the asset's administrative activity.
+See the [SDK migration guide](client/docs/migrations/user-roles-v2.md) for compatibility reads, resumable
+instruction plans, authorization, and removal of legacy support after rollout.
 
 ### Gate authority provenance
 
@@ -274,7 +281,10 @@ instruction-only derivation proof against `ALLOWED_GATING_PROGRAMS` in
 `programs/rwa-rbac/src/constants.rs`. The initial list contains the Squads v4
 program. Extending the list requires a program upgrade. RBAC calls
 `Pubkey::create_program_address` with the supplied seeds and program ID, requires
-the result to match the proposed authority, and requires that authority to sign.
+the result to match the proposed authority. Role creation and authority updates
+also require the proposed authority to sign. Migration relies on existing
+controller/master governance and validates the incoming proof without requiring
+the incoming authority's account or signature.
 Ordinary keypair authorities, unapproved programs, malformed seeds, and mismatched
 addresses are rejected. A role may still be created without an authority;
 gated operations then fail closed until a proven authority is installed.
@@ -288,7 +298,7 @@ the tests demonstrate nested Squads executions for this approval flow.
 The proof is generic: RBAC does not interpret seeds, deserialize Squads accounts,
 or verify a specific vault type or timelock configuration. Account ownership is
 not checked because a standard Squads vault is not owned by Squads. Only the gate
-public key is persisted; the role layout and allocation remain unchanged.
+public key is persisted; the derivation proof adds no persistent fields.
 Subsequent gated calls check the configured key and signer without a proof.
 Existing authorities are not retroactively validated, and removing a program from
 the allowlist does not revoke authorities already installed under it; these must

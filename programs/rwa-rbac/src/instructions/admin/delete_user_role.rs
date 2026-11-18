@@ -24,6 +24,7 @@ pub fn handler(ctx: Context<DeleteUserRole>) -> Result<()> {
     // Verify role membership, permission and the authorizing role's gate.
     verify_admin_signer(
         ctx.accounts.user.key(),
+        &ctx.accounts.asset_access_controller,
         ctx.accounts.authorized_user_role.clone(),
         AdminFlags::CREATE_OR_DELETE_USER_ROLE,
         ctx.accounts.gate_authority.as_ref(),

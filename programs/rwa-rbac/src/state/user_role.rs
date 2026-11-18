@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 use crate::error::ErrorCode;
 
-#[account]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct UserRole {
     /// Controller that user role is designated for.
     pub asset_access_controller: Pubkey,
@@ -10,8 +10,8 @@ pub struct UserRole {
     /// ID of UserRole. Matches AssetAccessController.user_roles_count at time of creation.
     pub id: u64,
 
-    /// Name of this role.
-    pub name: String,
+    /// Wire version. Legacy accounts are normalized to V1 in memory only.
+    pub version: u8,
 
     /// Bitflag of allowed admin instructions.
     pub allowed_admin_ixs: u64,
@@ -22,12 +22,14 @@ pub struct UserRole {
     /// If true, this is the master role.
     pub is_master_role: bool,
 
+    /// External PDA authority; provenance is verified when installed.
+    pub gate_authority: Option<Pubkey>,
+
+    /// Name of this role.
+    pub name: String,
+
     /// List of users assigned with this role.
     pub users: Vec<Pubkey>,
-
-    /// External PDA authority that must co-sign gated operations.
-    /// Program provenance is verified on installation; no proof is stored here.
-    pub gate_authority: Option<Pubkey>,
 }
 
 /// Instruction-only proof; neither the program ID nor seeds are stored in UserRole.
@@ -50,7 +52,20 @@ pub enum GateAuthorityUpdate {
 
 impl UserRole {
     /// Maximum serialized size without entries in `users`, including the discriminator.
-    pub const BASE_SIZE: usize = 170;
+    pub const BASE_SIZE: usize = 171;
+    pub const VERSION: u8 = 2;
+
+    pub fn is_legacy(&self) -> bool {
+        self.version == 1
+    }
+
+    pub fn space_for_users(&self, users: usize) -> usize {
+        (if self.is_legacy() {
+            137
+        } else {
+            Self::BASE_SIZE
+        }) + 32 * users
+    }
 
     /// Returns true if the user role contains ANY of the admin flags.
     pub fn has_any_admin_flag(&self, flag: AdminFlags) -> bool {
@@ -190,6 +205,7 @@ mod tests {
         let admin_flags_length = AdminFlags::all().into_iter().count();
         let user_role_all_admin = UserRole {
             asset_access_controller: Pubkey::default(),
+            version: UserRole::VERSION,
             id: 0,
             name: String::from("test_name"),
             allowed_admin_ixs: (2u64).pow(admin_flags_length as u32) - 1, // Allow all flags
@@ -210,6 +226,7 @@ mod tests {
     fn test_any_admin_flag() {
         let user_role = UserRole {
             asset_access_controller: Pubkey::default(),
+            version: UserRole::VERSION,
             id: 0,
             name: String::from("test_name"),
             allowed_admin_ixs: AdminFlags::ASSIGN_OR_REMOVE_ANY_USER_ROLE.bits(),
@@ -230,6 +247,7 @@ mod tests {
     fn test_has_medici_flag_exact_match() {
         let user_role = UserRole {
             asset_access_controller: Pubkey::new_unique(),
+            version: UserRole::VERSION,
             id: 1,
             name: "MediciRole".to_string(),
             allowed_admin_ixs: 0,
@@ -245,6 +263,7 @@ mod tests {
     fn test_has_medici_flag_more_flags_than_needed() {
         let user_role = UserRole {
             asset_access_controller: Pubkey::new_unique(),
+            version: UserRole::VERSION,
             id: 1,
             name: "OverPrivilegedRole".to_string(),
             allowed_admin_ixs: 0,
@@ -263,6 +282,7 @@ mod tests {
     fn test_has_medici_flag_less_flags_than_needed() {
         let user_role = UserRole {
             asset_access_controller: Pubkey::new_unique(),
+            version: UserRole::VERSION,
             id: 1,
             name: "UnderPrivilegedRole".to_string(),
             allowed_admin_ixs: 0,

@@ -1,8 +1,8 @@
 use anchor_lang::prelude::*;
 
 use crate::{
-    AdminFlags, GATED_ADMIN_FLAGS, GATED_MEDICI_FLAGS, GateAuthorityProof, MediciFlags, UserRole,
-    constants::ALLOWED_GATING_PROGRAMS, error::ErrorCode,
+    AdminFlags, AssetAccessController, GATED_ADMIN_FLAGS, GATED_MEDICI_FLAGS, GateAuthorityProof,
+    MediciFlags, UserRole, constants::ALLOWED_GATING_PROGRAMS, error::ErrorCode,
 };
 
 /// Prove derivation under an allowed program without interpreting that program's state.
@@ -43,21 +43,27 @@ pub fn verify_gate_authority(role: &UserRole, authority: Option<&Signer<'_>>) ->
     Ok(())
 }
 
-/// Every admin permission requires role membership; selected permissions also require a gate.
+/// Preserve legacy admin authorization; V2 requires membership and selected gates.
 /// Callers constrain the role's controller with has_one before invoking this helper.
 pub fn verify_admin_signer(
     user: Pubkey,
+    controller: &AssetAccessController,
     user_role: Option<Account<UserRole>>,
     matching_flag: AdminFlags,
     gate_authority: Option<&Signer<'_>>,
 ) -> Result<()> {
     let gated = matching_flag.intersects(GATED_ADMIN_FLAGS);
     let role = user_role.ok_or(ErrorCode::InvalidUserRole)?;
+    // A legacy role from this controller witnesses the old authorization policy.
+    // Absence of a role never enables the former admin shortcut.
+    if role.is_legacy() && user == controller.admin {
+        return Ok(());
+    }
     require!(
         role.has_any_admin_flag(matching_flag) && role.users.contains(&user),
         ErrorCode::InvalidUserRole
     );
-    if gated {
+    if gated && !role.is_legacy() {
         verify_gate_authority(&role, gate_authority)?;
     }
     Ok(())
@@ -75,7 +81,7 @@ pub fn verify_medici_signer(
         user_role.has_all_medici_flag(matching_flag) && user_role.users.contains(user),
         ErrorCode::InvalidUserRole
     );
-    if gated {
+    if gated && !user_role.is_legacy() {
         verify_gate_authority(user_role, gate_authority)?;
     }
     Ok(())

@@ -30,6 +30,7 @@ import { Config } from '@dstoken-solana/rwa-token-sdk';
 import { IdentityMetadataRegistry } from './IdentityMetadataRegistry';
 import { RBAC_PROGRAM } from '../constants';
 import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
+import { UserRoles } from './UserRoles';
 
 export class RwaRbacClient {
   rbacProgram: Program<RwaRbac>;
@@ -39,11 +40,13 @@ export class RwaRbacClient {
   identityRegistry: IdentityRegistry;
   identityMetadataRegistry: IdentityMetadataRegistry;
   provider: Provider;
+  userRoles: UserRoles;
 
   constructor(config: Config, provider: Provider) {
     this.rwaClient = new RwaClient(config, provider);
     this.provider = provider;
     this.rbacProgram = new Program(rbacIDL as RwaRbac, this.provider);
+    this.userRoles = new UserRoles(this.rbacProgram);
     this.assetController = new AssetController(this.rwaClient, this.rbacProgram);
     this.policyEngine = new PolicyEngine(this.rwaClient, this.rbacProgram);
     this.identityRegistry = new IdentityRegistry(this.rwaClient, this.rbacProgram);

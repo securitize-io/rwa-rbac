@@ -38,6 +38,7 @@ pub fn handler(ctx: Context<AssignUserRole>, users_to_assign: Vec<Pubkey>) -> Re
     }
     verify_admin_signer(
         ctx.accounts.user.key(),
+        &ctx.accounts.asset_access_controller,
         ctx.accounts.authorized_user_role.clone(),
         matching_flag,
         ctx.accounts.gate_authority.as_ref(),
@@ -49,7 +50,7 @@ pub fn handler(ctx: Context<AssignUserRole>, users_to_assign: Vec<Pubkey>) -> Re
     // Assign users to role.
     user_role.assign_users(users_to_assign.clone());
 
-    let space_needed = UserRole::BASE_SIZE + user_role.users.len() * 32;
+    let space_needed = user_role.space_for_users(user_role.users.len());
     if space_needed > user_role_info.data_len() {
         // Increase account to size of spaced_needed.
         transfer_lamports_for_realloc(

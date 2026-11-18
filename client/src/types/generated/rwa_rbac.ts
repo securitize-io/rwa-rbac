@@ -1344,6 +1344,132 @@ export type RwaRbac = {
       ]
     },
     {
+      "name": "migrateUserRole",
+      "discriminator": [
+        219,
+        4,
+        62,
+        168,
+        104,
+        1,
+        164,
+        45
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "gateAuthority",
+          "signer": true,
+          "optional": true
+        },
+        {
+          "name": "assetAccessController",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "assetAccessController.assetMint",
+                "account": "assetAccessController"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  65,
+                  115,
+                  115,
+                  101,
+                  116,
+                  65,
+                  99,
+                  99,
+                  101,
+                  115,
+                  115,
+                  67,
+                  111,
+                  110,
+                  116,
+                  114,
+                  111,
+                  108,
+                  108,
+                  101,
+                  114
+                ]
+              }
+            ]
+          },
+          "relations": [
+            "userRole",
+            "authorizedUserRole"
+          ]
+        },
+        {
+          "name": "userRole",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "userRole.id"
+              },
+              {
+                "kind": "account",
+                "path": "assetAccessController"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  85,
+                  115,
+                  101,
+                  114,
+                  82,
+                  111,
+                  108,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authorizedUserRole",
+          "optional": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "gateAuthority",
+          "type": {
+            "option": "pubkey"
+          }
+        },
+        {
+          "name": "gateAuthorityProof",
+          "type": {
+            "option": {
+              "defined": {
+                "name": "gateAuthorityProof"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "modifyUserRole",
       "discriminator": [
         108,
@@ -2388,13 +2514,13 @@ export type RwaRbac = {
     {
       "name": "userRole",
       "discriminator": [
-        62,
-        252,
-        194,
-        137,
-        183,
-        165,
-        147,
+        125,
+        238,
+        187,
+        240,
+        33,
+        212,
+        164,
         28
       ]
     }
@@ -2522,6 +2648,11 @@ export type RwaRbac = {
       "code": 6018,
       "name": "invalidGateAuthorityProof",
       "msg": "Invalid gate authority derivation proof"
+    },
+    {
+      "code": 6019,
+      "name": "migrationRequired",
+      "msg": "Migrate the legacy role before changing its gate authority"
     }
   ],
   "types": [
@@ -2717,11 +2848,11 @@ export type RwaRbac = {
             "type": "u64"
           },
           {
-            "name": "name",
+            "name": "version",
             "docs": [
-              "Name of this role."
+              "Wire version. Legacy accounts are normalized to V1 in memory only."
             ],
-            "type": "string"
+            "type": "u8"
           },
           {
             "name": "allowedAdminIxs",
@@ -2745,22 +2876,28 @@ export type RwaRbac = {
             "type": "bool"
           },
           {
+            "name": "gateAuthority",
+            "docs": [
+              "External PDA authority; provenance is verified when installed."
+            ],
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "name",
+            "docs": [
+              "Name of this role."
+            ],
+            "type": "string"
+          },
+          {
             "name": "users",
             "docs": [
               "List of users assigned with this role."
             ],
             "type": {
               "vec": "pubkey"
-            }
-          },
-          {
-            "name": "gateAuthority",
-            "docs": [
-              "External PDA authority that must co-sign gated operations.",
-              "Program provenance is verified on installation; no proof is stored here."
-            ],
-            "type": {
-              "option": "pubkey"
             }
           }
         ]

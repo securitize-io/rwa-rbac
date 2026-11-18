@@ -534,7 +534,7 @@ export async function storeRole(
   const previous = await f.client.rbacProgram.account.userRole.fetch(address);
   const role = { ...previous, ...changes };
   const data = await f.client.rbacProgram.coder.accounts.encode('userRole', role);
-  const allocation = Buffer.alloc(170 + role.users.length * 32);
+  const allocation = Buffer.alloc(171 + role.users.length * 32);
   data.copy(allocation);
   await setAccount(f.connection, address, { owner: RBAC_PROGRAM, data: allocation, lamports: 10_000_000 });
 }

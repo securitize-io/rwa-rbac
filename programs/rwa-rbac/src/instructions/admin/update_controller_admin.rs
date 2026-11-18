@@ -16,11 +16,13 @@ pub fn handler(ctx: Context<UpdateControllerAdmin>, new_admin: Pubkey) -> Result
     // Admin rotation is intrinsically gated, without consuming a permission bit.
     // Both the current controller admin and its master role's authority must approve.
     let role = &ctx.accounts.authorized_user_role;
-    require!(
-        role.is_master_role && role.users.contains(&ctx.accounts.admin.key()),
-        ErrorCode::InvalidMasterRole
-    );
-    verify_gate_authority(role, ctx.accounts.gate_authority.as_ref())?;
+    if !role.is_legacy() {
+        require!(
+            role.is_master_role && role.users.contains(&ctx.accounts.admin.key()),
+            ErrorCode::InvalidMasterRole
+        );
+        verify_gate_authority(role, ctx.accounts.gate_authority.as_ref())?;
+    }
     let controller = &mut ctx.accounts.asset_access_controller;
 
     if !controller.has_master_role {

@@ -33,6 +33,7 @@ pub fn handler(ctx: Context<WithdrawExcessRent>) -> Result<()> {
     // verify that the user has the required role permission
     verify_admin_signer(
         ctx.accounts.user.key(),
+        &ctx.accounts.asset_access_controller,
         ctx.accounts.authorized_user_role.clone(),
         AdminFlags::WITHDRAW_EXCESS_RENT,
         ctx.accounts.gate_authority.as_ref(),

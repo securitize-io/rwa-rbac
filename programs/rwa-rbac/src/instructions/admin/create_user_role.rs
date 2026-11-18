@@ -56,6 +56,7 @@ pub fn handler(
     } else {
         verify_admin_signer(
             ctx.accounts.user.key(),
+            &ctx.accounts.asset_access_controller,
             ctx.accounts.authorized_user_role.clone(),
             AdminFlags::CREATE_OR_DELETE_USER_ROLE,
             ctx.accounts.gate_authority.as_ref(),
@@ -84,6 +85,7 @@ pub fn handler(
     // Initialize new user role.
     let new_user_role = &mut ctx.accounts.new_user_role;
     new_user_role.asset_access_controller = controller.key();
+    new_user_role.version = UserRole::VERSION;
     new_user_role.id = controller.user_roles_count + 1;
     new_user_role.update_fields(name, allowed_admin_ixs, allowed_medici_ixs)?;
     new_user_role.gate_authority = gate_authority;

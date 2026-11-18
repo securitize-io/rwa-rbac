@@ -1,6 +1,9 @@
 use anchor_lang::prelude::*;
 
-use crate::{state::*, verify_admin_signer, verify_gate_authority, verify_new_gate_authority};
+use crate::{
+    error::ErrorCode, state::*, verify_admin_signer, verify_gate_authority,
+    verify_new_gate_authority,
+};
 
 #[derive(Accounts)]
 pub struct ModifyUserRole<'info> {
@@ -30,10 +33,17 @@ pub fn handler(
     // Verify role membership, permission and the authorizing role's gate.
     verify_admin_signer(
         ctx.accounts.user.key(),
+        &ctx.accounts.asset_access_controller,
         ctx.accounts.authorized_user_role.clone(),
         AdminFlags::MODIFY_USER_ROLE,
         ctx.accounts.gate_authority.as_ref(),
     )?;
+
+    require!(
+        !ctx.accounts.user_role.is_legacy()
+            || matches!(gate_authority_update, GateAuthorityUpdate::NoChange),
+        ErrorCode::MigrationRequired
+    );
 
     // Authorize against pre-mutation state, including when another role grants MODIFY.
     if !matches!(gate_authority_update, GateAuthorityUpdate::NoChange)

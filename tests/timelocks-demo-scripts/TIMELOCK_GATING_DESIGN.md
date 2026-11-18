@@ -91,8 +91,16 @@ not a timelock policy.
 
 ## Migration
 
-The permission-gating change does not implement the separate legacy-role schema
-migration. Existing deployments must migrate/configure roles and coordinate the
-SDK/IDL upgrade before activation. There is no missing-authority recovery bypass.
-Existing authorities are not retroactively proof-checked. The allowlist applies
-at installation; removing a program from it does not revoke already stored keys.
+Original deployed roles remain usable through the temporary V1 compatibility
+codec. `migrate_user_role` converts one role in place and validates the authority
+being installed. V2 roles enforce gates immediately; missing authorities do not
+enable recovery bypasses. Governance groups and verifies every role for an asset
+off-chain. No controller activation state is introduced. See the
+[SDK migration guide](../../client/docs/migrations/user-roles-v2.md) for planning and cleanup.
+
+Migration validates the incoming authority's derivation proof without requiring
+its account or signature. Authorization through a V2 master still requires that
+master's configured gate signer.
+
+The allowlist applies at authority installation; removing a program from it does
+not revoke already stored keys.
