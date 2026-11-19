@@ -268,7 +268,8 @@ export type IssueTokensArgs = {
   payer: string;
   signer: string;
   wallet: string;
-  investorId: string;
+  /** Retained for compatibility; identity is resolved through the wallet link. */
+  investorId?: string;
   assetMint: string;
   amount: BN;
   issuanceTimestamp: BN;

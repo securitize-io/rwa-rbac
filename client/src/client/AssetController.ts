@@ -2,7 +2,7 @@ import { Program } from '@anchor-lang/core';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import { ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 
-import { IssueTokensArgs, IssueTokensWithLockArgs, UpdateInterestBearingMintRateArgs } from '../types/instructions';
+import { IssueTokensArgs } from '../types/instructions';
 import { RwaRbac } from '../types/generated/rwa_rbac';
 import {
   assetControllerProgramId,
@@ -22,6 +22,7 @@ import {
   getThawTokenIx,
   getTrackerAccountPda,
   getWalletIdentityAccountPda,
+  getWalletIdentityAccount,
   identityRegistryProgramId,
   policyEngineProgramId,
   RevokeTokensArgs,
@@ -31,6 +32,7 @@ import {
   UpdateAssetMetadataArgs,
 } from '@dstoken-solana/rwa-token-sdk';
 import { deriveControllerAuthorityPda, deriveInvestorPda } from '../pdas';
+import { MintControls } from './MintControls';
 
 /**
  * Represents the role-based access client for Asset Controller for an RWA.
@@ -38,10 +40,12 @@ import { deriveControllerAuthorityPda, deriveInvestorPda } from '../pdas';
 export class AssetController {
   rwaClient: RwaClient;
   rbacProgram: Program<RwaRbac>;
+  readonly mintControls: MintControls;
 
   constructor(rwaClient: RwaClient, rbacProgram: Program<RwaRbac>) {
     this.rwaClient = rwaClient;
     this.rbacProgram = rbacProgram;
+    this.mintControls = new MintControls(rwaClient, rbacProgram);
   }
 
   /**
@@ -89,7 +93,7 @@ export class AssetController {
 
   /**
    * Asynchronously generates instructions to issue tokens and lock tokens according to issuance policy.
-   * @param args - {@link IssueTokensWithLockArgs}
+   * @param args - {@link IssueTokensArgs}
    * @param assetAccessController - RBAC AssetAccessController account.
    * @param authorizedUserRole - UserRole authorized to invoke instruction.
    */
@@ -100,7 +104,6 @@ export class AssetController {
   ): Promise<TransactionInstruction> {
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
     const controllerAuthority = deriveControllerAuthorityPda(assetAccessController);
-    const investorPda = deriveInvestorPda(args.investorId, identityRegistry);
 
     const issueTokensIxs = await getIssueTokensIx(
       {
@@ -111,11 +114,19 @@ export class AssetController {
         amount: args.amount,
         timestamp: args.issuanceTimestamp,
         authority: controllerAuthority.toString(),
-        owner: investorPda.toString(),
+        owner: args.wallet,
       },
       this.rwaClient.provider
     );
-    const trackerAccount = getTrackerAccountPda(args.assetMint, investorPda.toString());
+    const walletLink = await getWalletIdentityAccount(
+      getWalletIdentityAccountPda(args.assetMint, args.wallet.toString()),
+      this.rwaClient.provider
+    );
+    if (!walletLink) throw new Error('Wallet is not registered for this asset');
+    const trackerAccount = PublicKey.findProgramAddressSync(
+      [new PublicKey(args.assetMint).toBuffer(), walletLink.identityAccount.toBuffer()],
+      policyEngineProgramId
+    )[0];
 
     const ixData = issueTokensIxs[0].data;
     const tokenAccount = getAssociatedTokenAddressSync(
@@ -140,7 +151,7 @@ export class AssetController {
         tokenAccount: tokenAccount,
         policyEngine: getPolicyEnginePda(args.assetMint),
         policyEngineProgram: policyEngineProgramId,
-        identityAccount: getIdentityAccountPda(args.assetMint, investorPda.toString()),
+        identityAccount: walletLink.identityAccount,
         trackerAccount,
         identityRegistry,
         tokenProgram: TOKEN_2022_PROGRAM_ID,
@@ -239,7 +250,7 @@ export class AssetController {
    * @param signer - User signer public key.
    * @param assetAccessController - RBAC AssetAccessController account.
    * @param authorizedUserRole - UserRole authorized to invoke instruction.
-   * @param investorId - Optional investorId. Required if user is not an investor.
+   * @param investorId - Retained for compatibility; the wallet link determines the identity.
    * @returns A Promise that resolves to the instructions to revoke.
    */
   async revokeTokenIxn(
@@ -252,12 +263,14 @@ export class AssetController {
     if (!args.wallet) {
       throw new Error('Use wallet arg for wallet to revoke tokens from.');
     }
-    // Set owner (even though it is InvestorPda) as wallet to generate ix data.
-    args.owner = args.wallet;
-
-    const revokeIx = await getRevokeTokensIx(args, this.rwaClient.provider);
+    // The wallet link supplies the current identity, including attached wallets.
+    const walletLink = await getWalletIdentityAccount(
+      getWalletIdentityAccountPda(args.assetMint, args.wallet.toString()),
+      this.rwaClient.provider
+    );
+    if (!walletLink) throw new Error('Wallet is not registered for this asset');
+    const revokeIx = await getRevokeTokensIx({ ...args, owner: args.wallet }, this.rwaClient.provider);
     const identityRegistry = getIdentityRegistryPda(args.assetMint);
-    const investorPda = investorId ? deriveInvestorPda(investorId, identityRegistry) : null;
     const ixData = revokeIx.data;
     const assetController = getAssetControllerPda(args.assetMint);
     const revokeTokenAccount = getAssociatedTokenAddressSync(
@@ -279,8 +292,11 @@ export class AssetController {
         assetController,
         revokeTokenAccount,
         identityRegistry,
-        identityAccount: getIdentityAccountPda(args.assetMint, investorId ? investorPda!.toString() : args.owner),
-        trackerAccount: getTrackerAccountPda(args.assetMint, investorId ? investorPda!.toString() : args.owner),
+        identityAccount: walletLink.identityAccount,
+        trackerAccount: PublicKey.findProgramAddressSync(
+          [new PublicKey(args.assetMint).toBuffer(), walletLink.identityAccount.toBuffer()],
+          policyEngineProgramId
+        )[0],
         policyEngineProgram: policyEngineProgramId,
         policyEngine: getPolicyEnginePda(args.assetMint),
         walletIdentityAccount: getWalletIdentityAccountPda(args.assetMint, args.wallet),

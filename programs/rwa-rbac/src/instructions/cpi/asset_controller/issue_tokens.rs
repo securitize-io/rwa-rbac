@@ -29,6 +29,7 @@ pub struct IssueTokens<'info> {
     #[account(mut)]
     pub asset_mint: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
+    #[account(mut)]
     pub asset_controller: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     pub to: UncheckedAccount<'info>,
@@ -71,7 +72,7 @@ impl<'info> IssueTokens<'info> {
                     AccountMeta::new(ctx.accounts.payer.key(), true),
                     AccountMeta::new(ctx.accounts.controller_authority.key(), true),
                     AccountMeta::new(ctx.accounts.asset_mint.key(), false),
-                    AccountMeta::new_readonly(ctx.accounts.asset_controller.key(), false),
+                    AccountMeta::new(ctx.accounts.asset_controller.key(), false),
                     AccountMeta::new_readonly(ctx.accounts.to.key(), false),
                     AccountMeta::new(ctx.accounts.token_account.key(), false),
                     AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),

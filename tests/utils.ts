@@ -21,9 +21,15 @@ import {
   deriveAssetAccessControllerPda,
   deriveUserRolePda,
   RBAC_PROGRAM,
+  IMR_PROGRAM,
   GateAuthorityProof,
 } from '../client/src';
-import { Config } from '@dstoken-solana/rwa-token-sdk';
+import {
+  Config,
+  assetControllerProgramId,
+  identityRegistryProgramId,
+  policyEngineProgramId,
+} from '@dstoken-solana/rwa-token-sdk';
 import { readFileSync } from 'fs';
 
 export type TestGate = { authority: PublicKey; account: PublicKey; vaultIndex: number };
@@ -44,21 +50,45 @@ export function gateAuthorityProof(gate: TestGate): GateAuthorityProof {
 }
 
 const offlineKeys = new Set<string>();
-/** Generated test addresses must not trigger pointless devnet lookups while forking Squads. */
-async function offlineAccounts(connection: Connection, addresses: PublicKey[]) {
+const offlineOwners = new Set<string>();
+/** Mark local-only addresses before SDK reads, account injection, or transaction submission. */
+export async function offlineAccounts(
+  connection: Connection,
+  addresses: PublicKey[],
+  { includeOwnedAccounts = false } = {}
+) {
+  const cacheKey = (key: PublicKey) => `${connection.rpcEndpoint}:${key.toBase58()}`;
   const fresh = [...new Map(addresses.map((key) => [key.toBase58(), key])).values()].filter(
-    (key) => !offlineKeys.has(key.toBase58())
+    (key) => !offlineKeys.has(cacheKey(key)) || (includeOwnedAccounts && !offlineOwners.has(cacheKey(key)))
   );
   await Promise.all(
     fresh.map(async (key) => {
       const result = await connection['_rpcRequest']('surfnet_offlineAccount', [
         key.toBase58(),
-        { includeOwnedAccounts: false },
+        { includeOwnedAccounts },
       ]);
       if (result.error) throw new Error(JSON.stringify(result.error));
-      offlineKeys.add(key.toBase58());
+      offlineKeys.add(cacheKey(key));
+      if (includeOwnedAccounts) offlineOwners.add(cacheKey(key));
     })
   );
+}
+
+const localPrograms = new Map<string, Promise<void>>();
+/** Mark local program state offline; keep Squads dependencies available for forking.
+ * Surfpool 1.5 still queries the datasource for getProgramAccounts (see README).
+ */
+async function initializeSurfpool(connection: Connection) {
+  let ready = localPrograms.get(connection.rpcEndpoint);
+  if (!ready) {
+    ready = offlineAccounts(
+      connection,
+      [RBAC_PROGRAM, IMR_PROGRAM, assetControllerProgramId, identityRegistryProgramId, policyEngineProgramId],
+      { includeOwnedAccounts: true }
+    );
+    localPrograms.set(connection.rpcEndpoint, ready);
+  }
+  await ready;
 }
 
 async function confirmTransaction(connection: Connection, signature: string) {
@@ -82,10 +112,11 @@ export async function sendTransaction(
   signers: Signer[],
   options?: ConfirmOptions
 ) {
-  await offlineAccounts(
-    connection,
-    transaction.instructions.flatMap((ix) => ix.keys.map((key) => key.pubkey))
-  );
+  await offlineAccounts(connection, [
+    ...signers.map((signer) => signer.publicKey),
+    ...(transaction.feePayer ? [transaction.feePayer] : []),
+    ...transaction.instructions.flatMap((ix) => [ix.programId, ...ix.keys.map((key) => key.pubkey)]),
+  ]);
   // Do not reuse web3.js's cached blockhash: fast local transactions and time
   // travel can age it out before the cache's wall-clock timeout expires.
   transaction.recentBlockhash = (await connection.getLatestBlockhash('confirmed')).blockhash;
@@ -263,25 +294,17 @@ export async function setupTests() {
   const user2Kp = new Keypair();
   const user3Kp = new Keypair();
   const provider = getProvider();
+  const connectionUrl = process.env.RPC_URL ?? process.env.ANCHOR_PROVIDER_URL ?? 'http://localhost:8899';
+  const connection = new Connection(connectionUrl, 'processed');
 
-  // airdrop to all users
-  const txns = await Promise.all([
-    provider.connection.requestAirdrop(payerKp.publicKey, LAMPORTS_PER_SOL),
-    provider.connection.requestAirdrop(signer1Kp.publicKey, LAMPORTS_PER_SOL),
-    provider.connection.requestAirdrop(signer2Kp.publicKey, LAMPORTS_PER_SOL),
-    provider.connection.requestAirdrop(signer3Kp.publicKey, LAMPORTS_PER_SOL),
-    provider.connection.requestAirdrop(user1Kp.publicKey, LAMPORTS_PER_SOL),
-    provider.connection.requestAirdrop(user2Kp.publicKey, LAMPORTS_PER_SOL),
-    provider.connection.requestAirdrop(user3Kp.publicKey, LAMPORTS_PER_SOL),
-  ]);
-
-  const blockhash = await provider.connection.getLatestBlockhash('processed');
+  await initializeSurfpool(connection);
+  // These are local fixture wallets, so funding needs no airdrop or WebSocket confirmation.
   await Promise.all(
-    txns.map((txn) =>
-      provider.connection.confirmTransaction({
-        signature: txn,
-        blockhash: blockhash.blockhash,
-        lastValidBlockHeight: blockhash.lastValidBlockHeight,
+    [payerKp, signer1Kp, signer2Kp, signer3Kp, user1Kp, user2Kp, user3Kp].map((keypair) =>
+      setAccount(connection, keypair.publicKey, {
+        owner: SystemProgram.programId,
+        data: Buffer.alloc(0),
+        lamports: LAMPORTS_PER_SOL,
       })
     )
   );
@@ -301,8 +324,7 @@ export async function setupTests() {
     RBAC_PROGRAM
   );
 
-  const connectionUrl = process.env.RPC_URL ?? process.env.ANCHOR_PROVIDER_URL ?? 'http://localhost:8899';
-  const connection = new Connection(connectionUrl, 'processed');
+  await offlineAccounts(connection, [assetMint, controller, controllerAuthority, userRole1, userRole2, userRole3]);
   const config: Config = {
     connection,
     rpcUrl: connectionUrl,
@@ -365,6 +387,7 @@ export async function setAccount(
     lamports?: number;
   }
 ) {
+  await offlineAccounts(connection, [address]);
   const result = await connection['_rpcRequest']('surfnet_setAccount', [
     address.toBase58(),
     {
@@ -429,6 +452,7 @@ export async function sendGated(
 
 export async function createGateContext(timeLock = 0, vaultIndex = 0, admin = Keypair.generate()) {
   const connection = new Connection(getProvider().connection.rpcEndpoint, 'confirmed');
+  await initializeSurfpool(connection);
   await setAccount(connection, admin.publicKey, {
     owner: SystemProgram.programId,
     data: Buffer.alloc(0),
@@ -460,6 +484,7 @@ export async function fixture(
   const master = deriveUserRolePda(new BN(1), controller);
   const child = deriveUserRolePda(new BN(2), controller);
   const outsider = Keypair.generate();
+  await offlineAccounts(connection, [mint, controller, controllerAuthority, master, child, outsider.publicKey]);
   await setAccount(connection, outsider.publicKey, {
     owner: SystemProgram.programId,
     data: Buffer.alloc(0),

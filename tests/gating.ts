@@ -74,9 +74,15 @@ describe('Permission gates', () => {
   let f: Awaited<ReturnType<typeof fixture>>;
   before(async () => {
     context = await createGateContext();
+    f = await fixture(context);
   });
   beforeEach(async () => {
-    f = await fixture(context);
+    // Every boundary call fails before CPI. Only the authorizing role changes between cases.
+    await storeRole(f, {
+      allowedMediciIxs: new BN(MediciFlags.ALL),
+      users: [f.admin.publicKey],
+      gateAuthority: f.gate.authority,
+    });
   });
   const direct = (ix: TransactionInstruction, signers = [f.admin]) =>
     sendTransaction(f.connection, new Transaction().add(ix), signers);
@@ -89,7 +95,7 @@ describe('Permission gates', () => {
       );
       const ix = await boundary(f, name, f.gate.authority);
       await expectFailure(sendGated(f.connection, f.gate, f.admin, ix), 'UnknownInstruction');
-      await storeRole(f, { allowedMediciIxs: new BN(MediciFlags.ALL & ~flag) });
+      await storeRole(f, { allowedMediciIxs: new BN((MediciFlags.ALL & ~flag) >>> 0) });
       await expectFailure(sendGated(f.connection, f.gate, f.admin, ix), 'InvalidUserRole');
     });
   }
@@ -111,7 +117,7 @@ describe('Permission gates', () => {
       // Keep a configured gate: immediate operations must not inherit its delay.
       const ix = await boundary(f, name, null);
       await expectFailure(direct(ix), 'UnknownInstruction');
-      await storeRole(f, { allowedMediciIxs: new BN(MediciFlags.ALL & ~flag) });
+      await storeRole(f, { allowedMediciIxs: new BN((MediciFlags.ALL & ~flag) >>> 0) });
       await expectFailure(direct(ix), 'InvalidUserRole');
       await storeRole(f, { allowedMediciIxs: new BN(MediciFlags.ALL), users: [] });
       await expectFailure(direct(ix), 'InvalidUserRole');
@@ -120,7 +126,7 @@ describe('Permission gates', () => {
 
   it('removeInvestor: ungated cleanup still requires permission and membership', async () => {
     const ix = await boundary(f, 'removeInvestor', null);
-    await storeRole(f, { allowedMediciIxs: new BN(MediciFlags.ALL & ~MediciFlags.REMOVE_INVESTOR) });
+    await storeRole(f, { allowedMediciIxs: new BN((MediciFlags.ALL & ~MediciFlags.REMOVE_INVESTOR) >>> 0) });
     await expectFailure(direct(ix), 'InvalidUserRole');
     await storeRole(f, { allowedMediciIxs: new BN(MediciFlags.ALL), users: [] });
     await expectFailure(direct(ix), 'InvalidUserRole');
@@ -172,7 +178,7 @@ describe('Squads timelock integration', () => {
     await expectFailure(execute(f.connection, f.gate, f.admin, index), 'InvalidProposalStatus');
   });
 
-  it('delays an actual issuance-policy change', async () => {
+  it('delays actual issuance-policy and mint-control changes', async () => {
     const policies = {
       disallowBackdating: true,
       maxSupply: new BN(123456),
@@ -192,15 +198,27 @@ describe('Squads timelock integration', () => {
       f.gate.authority
     );
     const before = await getPolicyEngineAccount(f.mint.toBase58(), f.client.provider);
-    const index = await propose(f.connection, f.gate, f.admin, ix);
+    const controls = f.client.assetController.mintControls;
+    const caps = { maxMintPerTx: new BN(123), maxBurnPerTx: new BN(456) };
+    const configIx = await controls.setCapsConfigIx({
+      assetMint: f.mint, user: f.admin.publicKey, assetAccessController: f.controller,
+      authorizedUserRole: f.master, gateAuthority: f.gate.authority, caps,
+    });
+    const index = await propose(f.connection, f.gate, f.admin, [ix, configIx]);
     await expectFailure(execute(f.connection, f.gate, f.admin, index), 'TimeLockNotReleased');
     assert(
       (await getPolicyEngineAccount(f.mint.toBase58(), f.client.provider)).issuancePolicies.maxSupply.eq(
         before.issuancePolicies.maxSupply
       )
     );
+    const beforeControls = await controls.getAssetController(f.mint);
+    assert(beforeControls.version === 2);
+    assert(beforeControls.caps.maxMintPerTx.isZero());
     await advanceSurfpoolClock(f.connection, 61);
     await execute(f.connection, f.gate, f.admin, index);
+    const afterControls = await controls.getAssetController(f.mint);
+    assert(afterControls.version === 2);
+    assert(afterControls.caps.maxMintPerTx.eq(caps.maxMintPerTx));
     assert(
       (await getPolicyEngineAccount(f.mint.toBase58(), f.client.provider)).issuancePolicies.maxSupply.eq(
         policies.maxSupply

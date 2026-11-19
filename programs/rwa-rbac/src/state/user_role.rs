@@ -167,6 +167,8 @@ bitflags::bitflags! {
       const CHANGE_MAPPING = 1 << 27;
       const CHANGE_ISSUANCE_POLICIES = 1 << 28;
       const REMOVE_IDENTITY_ACCOUNT = 1 << 29;
+      const MANAGE_MINT_CONTROLS = 1 << 30;
+      const CANCEL_PENDING_OPERATIONS = 1 << 31;
   }
 }
 
@@ -181,7 +183,8 @@ pub const GATED_ADMIN_FLAGS: AdminFlags = AdminFlags::from_bits_retain(
 
 /// Permissions requiring the role user and its external authority.
 pub const GATED_MEDICI_FLAGS: MediciFlags = MediciFlags::from_bits_retain(
-    MediciFlags::UPDATE_ASSET_METADATA.bits()
+    MediciFlags::MANAGE_MINT_CONTROLS.bits()
+        | MediciFlags::UPDATE_ASSET_METADATA.bits()
         | MediciFlags::CHANGE_ISSUANCE_POLICIES.bits()
         | MediciFlags::ATTACH_TO_POLICY_ACCOUNT.bits()
         | MediciFlags::DETACH_FROM_POLICY_ACCOUNT.bits()

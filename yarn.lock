@@ -92,15 +92,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@dstoken-solana/rwa-token-sdk@npm:0.4.2":
-  version: 0.4.2
-  resolution: "@dstoken-solana/rwa-token-sdk@npm:0.4.2"
+"@dstoken-solana/rwa-token-sdk@npm:0.4.3":
+  version: 0.4.3
+  resolution: "@dstoken-solana/rwa-token-sdk@npm:0.4.3"
   dependencies:
     "@coral-xyz/anchor": "npm:0.30.1"
     "@solana/spl-token": "npm:0.4.12"
     "@solana/web3.js": "npm:1.98.0"
     dotenv: "npm:16.4.7"
-  checksum: 10c0/555d8e83c0a72bb786bd6b415d5e2ffbb684f1e618e537593c3e74e5c0a2dfaee47e7a79880e6f32aa8f6102e4845d555e9aead2389b1e125e25d8ef1164ce2c
+  checksum: 10c0/b2978d2432d965f4ce7b9393d2df9152842186291039b171e8102bcb9e814735d32fbd45ff85de351bb7a1ad20eb7000e044726498b57d04d198a65c307d1af1
   languageName: node
   linkType: hard
 
@@ -2014,7 +2014,7 @@ __metadata:
   resolution: "root-workspace-0b6124@workspace:."
   dependencies:
     "@anchor-lang/core": "npm:1.1.2"
-    "@dstoken-solana/rwa-token-sdk": "npm:0.4.2"
+    "@dstoken-solana/rwa-token-sdk": "npm:0.4.3"
     "@solana/spl-token": "npm:0.4.14"
     "@solana/web3.js": "npm:1.98.0"
     "@sqds/multisig": "npm:2.1.4"

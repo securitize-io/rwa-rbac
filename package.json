@@ -14,7 +14,7 @@
     "@solana/web3.js": "1.98.0"
   },
   "devDependencies": {
-    "@dstoken-solana/rwa-token-sdk": "0.4.2",
+    "@dstoken-solana/rwa-token-sdk": "0.4.3",
     "@sqds/multisig": "2.1.4",
     "@types/bn.js": "^5.1.0",
     "@types/chai": "^4.3.0",

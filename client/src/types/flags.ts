@@ -41,5 +41,7 @@ export enum MediciFlags {
   CHANGE_MAPPING = 1 << 27,
   CHANGE_ISSUANCE_POLICIES = 1 << 28,
   REMOVE_IDENTITY_ACCOUNT = 1 << 29,
-  ALL = (1 << 30) - 1,
+  MANAGE_MINT_CONTROLS = 2 ** 30,
+  CANCEL_PENDING_OPERATIONS = 2 ** 31,
+  ALL = 2 ** 32 - 1,
 }

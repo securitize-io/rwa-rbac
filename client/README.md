@@ -23,6 +23,11 @@ It exposes:
 Gated operations require the role's configured authority to sign through its
 external governance workflow.
 
+## Feature guides
+
+- [Caps, throttling, and pending operations](docs/mint-controls.md): permissions,
+  SDK builders, and token controller migration.
+
 ## Migration guides
 
 - [User roles: V1 to V2](docs/migrations/user-roles-v2.md): compatibility,

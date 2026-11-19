@@ -108,6 +108,37 @@ pub mod rwa_rbac {
         instructions::issue_tokens::handler(ctx, cpi_data)
     }
 
+    pub fn set_caps_config(ctx: Context<ConfigureMintControls>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::mint_controls::set_caps(ctx, cpi_data)
+    }
+
+    pub fn set_throttle_config(
+        ctx: Context<ConfigureMintControls>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::mint_controls::set_throttle(ctx, cpi_data)
+    }
+
+    pub fn migrate_asset_controller(ctx: Context<MigrateTokenAssetController>) -> Result<()> {
+        instructions::mint_controls::migrate(ctx)
+    }
+
+    pub fn propose_mint(ctx: Context<ProposeTokenOperation>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::propose_tokens::propose_mint(ctx, cpi_data)
+    }
+
+    pub fn propose_burn(ctx: Context<ProposeTokenOperation>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::propose_tokens::propose_burn(ctx, cpi_data)
+    }
+
+    pub fn execute_pending(ctx: Context<ExecutePendingOperation>) -> Result<()> {
+        instructions::execute_pending::handler(ctx)
+    }
+
+    pub fn cancel_pending(ctx: Context<CancelPendingOperation>) -> Result<()> {
+        instructions::cancel_pending::handler(ctx)
+    }
+
     pub fn update_asset_metadata(
         ctx: Context<UpdateAssetMetadata>,
         cpi_data: Vec<u8>,

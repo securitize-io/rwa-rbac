@@ -1,0 +1,3317 @@
+{
+  "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP",
+  "metadata": {
+    "name": "asset_controller",
+    "version": "0.0.1",
+    "spec": "0.1.0",
+    "description": "The Asset Controller Program (ACP) enables core asset management functionality for newly issued assets, including transfer controls and transaction privacy."
+  },
+  "instructions": [
+    {
+      "name": "cancel_pending",
+      "discriminator": [
+        74,
+        87,
+        109,
+        242,
+        64,
+        192,
+        151,
+        71
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "asset_controller"
+          ]
+        },
+        {
+          "name": "asset_mint",
+          "relations": [
+            "asset_controller",
+            "pending_operation"
+          ]
+        },
+        {
+          "name": "asset_controller",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "rent_payer",
+          "writable": true
+        },
+        {
+          "name": "pending_operation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  101,
+                  110,
+                  100,
+                  105,
+                  110,
+                  103,
+                  95,
+                  111,
+                  112,
+                  101,
+                  114,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              },
+              {
+                "kind": "account",
+                "path": "pending_operation.id",
+                "account": "PendingOperation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_asset_controller",
+      "docs": [
+        "create an rwa asset"
+      ],
+      "discriminator": [
+        97,
+        185,
+        6,
+        250,
+        248,
+        242,
+        68,
+        105
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority"
+        },
+        {
+          "name": "asset_controller",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "asset_mint",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "extra_metas_account",
+          "writable": true
+        },
+        {
+          "name": "policy_engine_account",
+          "writable": true
+        },
+        {
+          "name": "identity_registry_account",
+          "writable": true
+        },
+        {
+          "name": "policy_engine",
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
+        },
+        {
+          "name": "identity_registry",
+          "address": "GZsnjqT3c5zbHqsctrJ4EG4rbEfo7ZXyyUG7aDJNmxfA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "CreateAssetControllerArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "disable_memo_transfer",
+      "docs": [
+        "memo transfer disable"
+      ],
+      "discriminator": [
+        68,
+        156,
+        197,
+        9,
+        43,
+        91,
+        114,
+        19
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "asset_mint"
+        },
+        {
+          "name": "asset_controller",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "enable_memo_transfer",
+      "docs": [
+        "memo transfer enable"
+      ],
+      "discriminator": [
+        186,
+        78,
+        97,
+        172,
+        71,
+        172,
+        99,
+        0
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "owner",
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "asset_mint"
+        },
+        {
+          "name": "asset_controller",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "execute_pending",
+      "discriminator": [
+        207,
+        36,
+        5,
+        220,
+        230,
+        106,
+        57,
+        181
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "asset_controller"
+          ]
+        },
+        {
+          "name": "asset_mint",
+          "writable": true,
+          "relations": [
+            "asset_controller",
+            "identity_registry",
+            "tracker_account",
+            "policy_engine"
+          ]
+        },
+        {
+          "name": "asset_controller",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "wallet"
+        },
+        {
+          "name": "token_account",
+          "writable": true
+        },
+        {
+          "name": "identity_registry",
+          "relations": [
+            "identity_account"
+          ]
+        },
+        {
+          "name": "identity_account",
+          "relations": [
+            "tracker_account",
+            "wallet_identity_account"
+          ]
+        },
+        {
+          "name": "tracker_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "policy_engine_program",
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
+        },
+        {
+          "name": "policy_engine",
+          "writable": true
+        },
+        {
+          "name": "wallet_identity_account"
+        },
+        {
+          "name": "rent_payer",
+          "writable": true
+        },
+        {
+          "name": "pending_operation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  101,
+                  110,
+                  100,
+                  105,
+                  110,
+                  103,
+                  95,
+                  111,
+                  112,
+                  101,
+                  114,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              },
+              {
+                "kind": "account",
+                "path": "pending_operation.id",
+                "account": "PendingOperation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "expire_pending",
+      "discriminator": [
+        70,
+        169,
+        9,
+        55,
+        182,
+        166,
+        196,
+        204
+      ],
+      "accounts": [
+        {
+          "name": "rent_payer",
+          "writable": true
+        },
+        {
+          "name": "pending_operation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  101,
+                  110,
+                  100,
+                  105,
+                  110,
+                  103,
+                  95,
+                  111,
+                  112,
+                  101,
+                  114,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pending_operation.asset_mint",
+                "account": "PendingOperation"
+              },
+              {
+                "kind": "account",
+                "path": "pending_operation.id",
+                "account": "PendingOperation"
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "freeze_token_account",
+      "docs": [
+        "freeze token account"
+      ],
+      "discriminator": [
+        138,
+        168,
+        178,
+        109,
+        205,
+        224,
+        209,
+        93
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "asset_mint",
+          "writable": true
+        },
+        {
+          "name": "asset_controller",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "issue_tokens",
+      "docs": [
+        "issue shares of the rwa asset"
+      ],
+      "discriminator": [
+        40,
+        207,
+        145,
+        106,
+        249,
+        54,
+        23,
+        179
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "asset_controller"
+          ]
+        },
+        {
+          "name": "asset_mint",
+          "writable": true,
+          "relations": [
+            "asset_controller",
+            "identity_registry",
+            "tracker_account",
+            "policy_engine"
+          ]
+        },
+        {
+          "name": "asset_controller",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "to"
+        },
+        {
+          "name": "token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "to"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "identity_registry",
+          "relations": [
+            "identity_account"
+          ]
+        },
+        {
+          "name": "identity_account",
+          "relations": [
+            "tracker_account",
+            "wallet_identity_account"
+          ]
+        },
+        {
+          "name": "tracker_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "policy_engine_program",
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
+        },
+        {
+          "name": "policy_engine",
+          "writable": true
+        },
+        {
+          "name": "wallet_identity_account"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "issuance_timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "migrate_asset_controller",
+      "discriminator": [
+        96,
+        118,
+        61,
+        174,
+        136,
+        235,
+        144,
+        68
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "asset_controller"
+          ]
+        },
+        {
+          "name": "asset_mint",
+          "relations": [
+            "asset_controller"
+          ]
+        },
+        {
+          "name": "asset_controller",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "propose_burn",
+      "discriminator": [
+        107,
+        126,
+        69,
+        98,
+        100,
+        37,
+        148,
+        192
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "asset_controller"
+          ]
+        },
+        {
+          "name": "asset_mint",
+          "relations": [
+            "asset_controller",
+            "identity_registry"
+          ]
+        },
+        {
+          "name": "asset_controller",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "wallet"
+        },
+        {
+          "name": "token_account"
+        },
+        {
+          "name": "identity_registry",
+          "relations": [
+            "identity_account"
+          ]
+        },
+        {
+          "name": "identity_account",
+          "relations": [
+            "wallet_identity_account"
+          ]
+        },
+        {
+          "name": "wallet_identity_account"
+        },
+        {
+          "name": "pending_operation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  101,
+                  110,
+                  100,
+                  105,
+                  110,
+                  103,
+                  95,
+                  111,
+                  112,
+                  101,
+                  114,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              },
+              {
+                "kind": "arg",
+                "path": "request.id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "request",
+          "type": {
+            "defined": {
+              "name": "BurnRequest"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "propose_mint",
+      "discriminator": [
+        57,
+        216,
+        81,
+        105,
+        92,
+        217,
+        84,
+        128
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "asset_controller"
+          ]
+        },
+        {
+          "name": "asset_mint",
+          "relations": [
+            "asset_controller",
+            "identity_registry"
+          ]
+        },
+        {
+          "name": "asset_controller",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "wallet"
+        },
+        {
+          "name": "token_account"
+        },
+        {
+          "name": "identity_registry",
+          "relations": [
+            "identity_account"
+          ]
+        },
+        {
+          "name": "identity_account",
+          "relations": [
+            "wallet_identity_account"
+          ]
+        },
+        {
+          "name": "wallet_identity_account"
+        },
+        {
+          "name": "pending_operation",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  101,
+                  110,
+                  100,
+                  105,
+                  110,
+                  103,
+                  95,
+                  111,
+                  112,
+                  101,
+                  114,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              },
+              {
+                "kind": "arg",
+                "path": "request.id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "request",
+          "type": {
+            "defined": {
+              "name": "MintRequest"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "revoke_tokens",
+      "docs": [
+        "revoke shares of the rwa asset"
+      ],
+      "discriminator": [
+        215,
+        42,
+        15,
+        134,
+        173,
+        80,
+        33,
+        21
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "asset_controller"
+          ]
+        },
+        {
+          "name": "asset_mint",
+          "writable": true,
+          "relations": [
+            "asset_controller",
+            "identity_registry",
+            "tracker_account"
+          ]
+        },
+        {
+          "name": "asset_controller",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "revoke_token_account",
+          "writable": true
+        },
+        {
+          "name": "identity_registry",
+          "relations": [
+            "identity_account"
+          ]
+        },
+        {
+          "name": "identity_account",
+          "relations": [
+            "tracker_account",
+            "wallet_identity_account"
+          ]
+        },
+        {
+          "name": "tracker_account",
+          "writable": true
+        },
+        {
+          "name": "policy_engine_program",
+          "address": "FsE8mCJyvgMzqJbfHbJQm3iuf3cRZC6n2vZi1Q8rQCy2"
+        },
+        {
+          "name": "policy_engine",
+          "writable": true
+        },
+        {
+          "name": "wallet_identity_account"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "reason",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "seize_tokens",
+      "docs": [
+        "seize shares of the rwa asset"
+      ],
+      "discriminator": [
+        79,
+        30,
+        69,
+        54,
+        78,
+        1,
+        16,
+        23
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "asset_mint"
+        },
+        {
+          "name": "asset_controller",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "destination_token_account",
+          "writable": true
+        },
+        {
+          "name": "source_token_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "reason",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "set_caps_config",
+      "discriminator": [
+        216,
+        4,
+        112,
+        211,
+        176,
+        17,
+        227,
+        229
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "asset_controller"
+          ]
+        },
+        {
+          "name": "asset_mint",
+          "relations": [
+            "asset_controller"
+          ]
+        },
+        {
+          "name": "asset_controller",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "caps",
+          "type": {
+            "defined": {
+              "name": "CapsConfig"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "set_throttle_config",
+      "discriminator": [
+        174,
+        119,
+        174,
+        249,
+        71,
+        43,
+        246,
+        174
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "asset_controller"
+          ]
+        },
+        {
+          "name": "asset_mint",
+          "relations": [
+            "asset_controller"
+          ]
+        },
+        {
+          "name": "asset_controller",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "throttle",
+          "type": {
+            "defined": {
+              "name": "ThrottleConfig"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "thaw_token_account",
+      "docs": [
+        "thaw token account"
+      ],
+      "discriminator": [
+        199,
+        172,
+        96,
+        93,
+        244,
+        252,
+        137,
+        171
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "asset_mint",
+          "writable": true
+        },
+        {
+          "name": "asset_controller",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_metadata",
+      "docs": [
+        "edit metadata of the rwa asset"
+      ],
+      "discriminator": [
+        170,
+        182,
+        43,
+        239,
+        97,
+        78,
+        225,
+        186
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "asset_mint",
+          "writable": true
+        },
+        {
+          "name": "asset_controller",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "UpdateAssetMetadataArgs"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "AssetControllerAccount",
+      "discriminator": [
+        70,
+        136,
+        149,
+        138,
+        12,
+        87,
+        52,
+        105
+      ]
+    },
+    {
+      "name": "PendingOperation",
+      "discriminator": [
+        124,
+        146,
+        84,
+        123,
+        121,
+        210,
+        217,
+        118
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AssetControllerMigrated",
+      "discriminator": [
+        98,
+        46,
+        167,
+        50,
+        30,
+        181,
+        16,
+        139
+      ]
+    },
+    {
+      "name": "AssetMetadataEvent",
+      "discriminator": [
+        90,
+        19,
+        200,
+        229,
+        103,
+        82,
+        218,
+        16
+      ]
+    },
+    {
+      "name": "BurnEvent",
+      "discriminator": [
+        33,
+        89,
+        47,
+        117,
+        82,
+        124,
+        238,
+        250
+      ]
+    },
+    {
+      "name": "CapsUpdated",
+      "discriminator": [
+        147,
+        181,
+        117,
+        249,
+        72,
+        147,
+        156,
+        255
+      ]
+    },
+    {
+      "name": "ExtensionMetadataEvent",
+      "discriminator": [
+        22,
+        198,
+        253,
+        69,
+        234,
+        122,
+        248,
+        117
+      ]
+    },
+    {
+      "name": "IssueEvent",
+      "discriminator": [
+        220,
+        74,
+        136,
+        189,
+        186,
+        247,
+        253,
+        140
+      ]
+    },
+    {
+      "name": "OperationCancelled",
+      "discriminator": [
+        35,
+        79,
+        124,
+        242,
+        195,
+        248,
+        114,
+        0
+      ]
+    },
+    {
+      "name": "OperationExecuted",
+      "discriminator": [
+        205,
+        223,
+        227,
+        106,
+        178,
+        86,
+        163,
+        162
+      ]
+    },
+    {
+      "name": "OperationExpired",
+      "discriminator": [
+        105,
+        3,
+        61,
+        154,
+        56,
+        106,
+        8,
+        244
+      ]
+    },
+    {
+      "name": "OperationProposed",
+      "discriminator": [
+        252,
+        68,
+        199,
+        155,
+        10,
+        17,
+        178,
+        206
+      ]
+    },
+    {
+      "name": "RevokeEvent",
+      "discriminator": [
+        87,
+        202,
+        67,
+        213,
+        43,
+        84,
+        177,
+        3
+      ]
+    },
+    {
+      "name": "SeizeEvent",
+      "discriminator": [
+        100,
+        186,
+        127,
+        43,
+        145,
+        98,
+        208,
+        78
+      ]
+    },
+    {
+      "name": "ThrottleUpdated",
+      "discriminator": [
+        210,
+        7,
+        158,
+        29,
+        147,
+        253,
+        143,
+        139
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "TransferMintNotApproved",
+      "msg": "Transfer hasnt been approved for the asset mint"
+    },
+    {
+      "code": 6001,
+      "name": "TransferFromNotApproved",
+      "msg": "Transfer hasnt been approved for from account"
+    },
+    {
+      "code": 6002,
+      "name": "TransferToNotApproved",
+      "msg": "Transfer hasnt been approved for to account"
+    },
+    {
+      "code": 6003,
+      "name": "TransferAmountNotApproved",
+      "msg": "Transfer hasnt been approved for the specified amount"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidPolicyAccount",
+      "msg": "Invalid policy account passed"
+    },
+    {
+      "code": 6005,
+      "name": "TransferSlotNotApproved",
+      "msg": "Invalid slot for approve account"
+    },
+    {
+      "code": 6006,
+      "name": "TransferHistoryFull",
+      "msg": "Transfer history is full"
+    },
+    {
+      "code": 6007,
+      "name": "Unauthorized",
+      "msg": "Unauthorized"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidPdaPassedIn",
+      "msg": "Pda passed in for transfer is wrong"
+    },
+    {
+      "code": 6009,
+      "name": "TokenAccountNotInitialized",
+      "msg": "Token account is not initialized"
+    },
+    {
+      "code": 6010,
+      "name": "TokenAccountAlreadyInitialized",
+      "msg": "Token account is already initialized"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidIdentityAccounts",
+      "msg": "Invalid identity accounts"
+    },
+    {
+      "code": 6012,
+      "name": "InvalidAuthority",
+      "msg": "Invalid authority"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidMintControlsConfig",
+      "msg": "Invalid mint controls configuration"
+    },
+    {
+      "code": 6014,
+      "name": "MintControlsUnchanged",
+      "msg": "Mint controls configuration is unchanged"
+    },
+    {
+      "code": 6015,
+      "name": "MintControlsDisabled",
+      "msg": "Mint controls are disabled"
+    },
+    {
+      "code": 6016,
+      "name": "OperationCapExceeded",
+      "msg": "Amount exceeds the single-operation ceiling"
+    },
+    {
+      "code": 6017,
+      "name": "WindowCapExceeded",
+      "msg": "Amount exceeds the cumulative window cap"
+    },
+    {
+      "code": 6018,
+      "name": "AmountRequiresTimelock",
+      "msg": "Operation amount requires a timelock"
+    },
+    {
+      "code": 6019,
+      "name": "AmountDoesNotRequireTimelock",
+      "msg": "Operation amount does not require a timelock"
+    },
+    {
+      "code": 6020,
+      "name": "InvalidOperationAmount",
+      "msg": "Pending operation amount must be positive"
+    },
+    {
+      "code": 6021,
+      "name": "MintControlsArithmeticOverflow",
+      "msg": "Mint controls arithmetic overflow"
+    },
+    {
+      "code": 6022,
+      "name": "PendingOperationNotEffective",
+      "msg": "Pending operation is not yet effective"
+    },
+    {
+      "code": 6023,
+      "name": "PendingOperationExpired",
+      "msg": "Pending operation has expired"
+    },
+    {
+      "code": 6024,
+      "name": "PendingOperationNotExpired",
+      "msg": "Pending operation has not expired"
+    },
+    {
+      "code": 6025,
+      "name": "InvalidPendingOperation",
+      "msg": "Pending operation does not match the requested operation"
+    },
+    {
+      "code": 6026,
+      "name": "InvalidLegacyAssetController",
+      "msg": "Invalid legacy asset controller"
+    },
+    {
+      "code": 6027,
+      "name": "BurnReasonTooLong",
+      "msg": "Burn reason exceeds 256 UTF-8 bytes"
+    },
+    {
+      "code": 6028,
+      "name": "AssetControllerMigrationRequired",
+      "msg": "Migrate the asset controller to V2 before using mint/burn controls"
+    }
+  ],
+  "types": [
+    {
+      "name": "AssetControllerAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "type": "u8"
+          },
+          {
+            "name": "asset_mint",
+            "docs": [
+              "mint pubkey"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "docs": [
+              "authority has the ability to seize, freeze token accounts, etc."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "caps",
+            "type": {
+              "defined": {
+                "name": "CapsConfig"
+              }
+            }
+          },
+          {
+            "name": "throttle",
+            "type": {
+              "defined": {
+                "name": "ThrottleConfig"
+              }
+            }
+          },
+          {
+            "name": "state",
+            "type": {
+              "defined": {
+                "name": "ThrottleState"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetControllerMigrated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "version",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetMetadataEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "symbol",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "uri",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "decimals",
+            "type": {
+              "option": "u8"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "BurnEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "reason",
+            "type": "string"
+          },
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BurnRequest",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "reason",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CapsConfig",
+      "docs": [
+        "Single-instruction ceilings in base units. Zero disables the corresponding cap."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "max_mint_per_tx",
+            "type": "u64"
+          },
+          {
+            "name": "max_burn_per_tx",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CapsUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "caps",
+            "type": {
+              "defined": {
+                "name": "CapsConfig"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Counter",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "value",
+            "type": "u64"
+          },
+          {
+            "name": "id",
+            "type": "u8"
+          },
+          {
+            "name": "identity_filter",
+            "type": {
+              "defined": {
+                "name": "IdentityFilter"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CounterLimit",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "HoldersLimit",
+            "fields": [
+              {
+                "name": "max",
+                "type": "u64"
+              },
+              {
+                "name": "min",
+                "type": "u64"
+              },
+              {
+                "name": "counter_id",
+                "type": "u8"
+              }
+            ]
+          },
+          {
+            "name": "GroupedHoldersLimit",
+            "fields": [
+              {
+                "name": "max",
+                "type": "u64"
+              },
+              {
+                "name": "min",
+                "type": "u64"
+              },
+              {
+                "name": "counters",
+                "type": "bytes"
+              }
+            ]
+          },
+          {
+            "name": "PercentageLimit",
+            "fields": [
+              {
+                "name": "higher_counter_id",
+                "type": "u8"
+              },
+              {
+                "name": "lower_counter_id",
+                "type": "u8"
+              },
+              {
+                "name": "min_percentage",
+                "type": "u8"
+              },
+              {
+                "name": "max_percentage",
+                "type": "u8"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreateAssetControllerArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "decimals",
+            "type": "u8"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExtensionMetadataEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "address",
+            "type": "string"
+          },
+          {
+            "name": "extension_type",
+            "type": "u8"
+          },
+          {
+            "name": "metadata",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FilterComparison",
+      "repr": {
+        "kind": "rust"
+      },
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Or"
+          },
+          {
+            "name": "And"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FilterData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "level",
+            "type": {
+              "defined": {
+                "name": "FilterLevel"
+              }
+            }
+          },
+          {
+            "name": "target",
+            "type": {
+              "defined": {
+                "name": "FilterTarget"
+              }
+            }
+          },
+          {
+            "name": "mode",
+            "type": {
+              "defined": {
+                "name": "FilterMode"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "FilterInner",
+      "repr": {
+        "kind": "rust"
+      },
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Single",
+            "fields": [
+              {
+                "defined": {
+                  "name": "FilterData"
+                }
+              }
+            ]
+          },
+          {
+            "name": "Tuple",
+            "fields": [
+              {
+                "defined": {
+                  "name": "FilterData"
+                }
+              },
+              {
+                "defined": {
+                  "name": "FilterComparison"
+                }
+              },
+              {
+                "defined": {
+                  "name": "FilterData"
+                }
+              }
+            ]
+          },
+          {
+            "name": "Multiple",
+            "fields": [
+              {
+                "defined": {
+                  "name": "FilterComparison"
+                }
+              },
+              {
+                "vec": {
+                  "defined": {
+                    "name": "FilterData"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "FilterLevel",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Level",
+            "fields": [
+              "u8"
+            ]
+          },
+          {
+            "name": "LevelMappingAny",
+            "fields": [
+              "u8"
+            ]
+          },
+          {
+            "name": "LevelMapping",
+            "fields": [
+              {
+                "name": "source",
+                "type": "u8"
+              },
+              {
+                "name": "target",
+                "type": "u8"
+              }
+            ]
+          },
+          {
+            "name": "Country",
+            "fields": [
+              "u8"
+            ]
+          },
+          {
+            "name": "CountryMapping",
+            "fields": [
+              "u8"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "FilterMode",
+      "repr": {
+        "kind": "rust"
+      },
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Include"
+          },
+          {
+            "name": "Exclude"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FilterTarget",
+      "repr": {
+        "kind": "rust"
+      },
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Sender"
+          },
+          {
+            "name": "Receiver"
+          },
+          {
+            "name": "BothAnd"
+          },
+          {
+            "name": "BothOr"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IdentityAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "docs": [
+              "version of the account"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "identity_registry",
+            "docs": [
+              "identity registry to which the account belongs"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "docs": [
+              "owner of the identity account"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "num_wallets",
+            "docs": [
+              "number of wallets attached to this identity account"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "country",
+            "docs": [
+              "country code of the user"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "levels",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "IdentityLevel"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "IdentityFilter",
+      "repr": {
+        "kind": "rust"
+      },
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Simple",
+            "fields": [
+              {
+                "defined": {
+                  "name": "FilterInner"
+                }
+              }
+            ]
+          },
+          {
+            "name": "IfThen",
+            "fields": [
+              {
+                "defined": {
+                  "name": "FilterInner"
+                }
+              },
+              {
+                "defined": {
+                  "name": "FilterInner"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "IdentityLevel",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "level",
+            "type": "u8"
+          },
+          {
+            "name": "expiry",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IdentityRegistryAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "asset_mint",
+            "docs": [
+              "corresponding asset mint"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "docs": [
+              "authority to manage the registry"
+            ],
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Issuance",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "issue_time",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IssuancePolicies",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "disallow_backdating",
+            "type": "bool"
+          },
+          {
+            "name": "max_supply",
+            "type": "u64"
+          },
+          {
+            "name": "us_lock_period",
+            "type": "i64"
+          },
+          {
+            "name": "non_us_lock_period",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IssueEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "issuance_timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Lock",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "release_time",
+            "type": "i64"
+          },
+          {
+            "name": "reason",
+            "type": "u64"
+          },
+          {
+            "name": "reason_string",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MintRequest",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "issuance_timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OperationCancelled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "operation_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "kind",
+            "type": {
+              "defined": {
+                "name": "OperationKind"
+              }
+            }
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OperationData",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Mint",
+            "fields": [
+              {
+                "name": "amount",
+                "type": "u64"
+              },
+              {
+                "name": "issuance_timestamp",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "Burn",
+            "fields": [
+              {
+                "name": "amount",
+                "type": "u64"
+              },
+              {
+                "name": "reason",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "OperationExecuted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "operation_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "kind",
+            "type": {
+              "defined": {
+                "name": "OperationKind"
+              }
+            }
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OperationExpired",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "operation_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "kind",
+            "type": {
+              "defined": {
+                "name": "OperationKind"
+              }
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OperationKind",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Mint"
+          },
+          {
+            "name": "Burn"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OperationProposed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "operation_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "identity_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "data",
+            "type": {
+              "defined": {
+                "name": "OperationData"
+              }
+            }
+          },
+          {
+            "name": "effective_at",
+            "type": "i64"
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PendingOperation",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "identity_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "data",
+            "type": {
+              "defined": {
+                "name": "OperationData"
+              }
+            }
+          },
+          {
+            "name": "proposer",
+            "docs": [
+              "Authorized signer; human role attribution belongs to RBAC."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "rent_payer",
+            "type": "pubkey"
+          },
+          {
+            "name": "effective_at",
+            "type": "i64"
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Policy",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "hash",
+            "type": "string"
+          },
+          {
+            "name": "identity_filter",
+            "type": {
+              "defined": {
+                "name": "IdentityFilter"
+              }
+            }
+          },
+          {
+            "name": "policy_type",
+            "type": {
+              "defined": {
+                "name": "PolicyType"
+              }
+            }
+          },
+          {
+            "name": "custom_error",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PolicyEngineAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "docs": [
+              "version"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "asset_mint",
+            "docs": [
+              "asset mint"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "docs": [
+              "authority of the registry"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "mapping",
+            "docs": [
+              "generic mapping for levels"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                256
+              ]
+            }
+          },
+          {
+            "name": "issuance_policies",
+            "docs": [
+              "policies to apply on issuance",
+              "these are partially for storage only"
+            ],
+            "type": {
+              "defined": {
+                "name": "IssuancePolicies"
+              }
+            }
+          },
+          {
+            "name": "policies",
+            "docs": [
+              "policies to check on transfers or balance changes"
+            ],
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "Policy"
+                }
+              }
+            }
+          },
+          {
+            "name": "counters",
+            "docs": [
+              "counters to track the number of holders depending on filters"
+            ],
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "Counter"
+                }
+              }
+            }
+          },
+          {
+            "name": "counter_limits",
+            "docs": [
+              "limits to apply on existing counters"
+            ],
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "CounterLimit"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "PolicyType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "IdentityApproval"
+          },
+          {
+            "name": "TransactionAmountLimit",
+            "fields": [
+              {
+                "name": "limit",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "MaxBalance",
+            "fields": [
+              {
+                "name": "limit",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "MinBalance",
+            "fields": [
+              {
+                "name": "limit",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "MinMaxBalance",
+            "fields": [
+              {
+                "name": "min",
+                "type": "u64"
+              },
+              {
+                "name": "max",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "TransferPause"
+          },
+          {
+            "name": "ForbiddenIdentityGroup"
+          },
+          {
+            "name": "ForceFullTransfer"
+          },
+          {
+            "name": "BlockFlowbackEndTime",
+            "fields": [
+              {
+                "name": "time",
+                "type": "i64"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "RevokeEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "reason",
+            "type": "string"
+          },
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SeizeEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "reason",
+            "type": "string"
+          },
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "to_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ThrottleConfig",
+      "docs": [
+        "Shared tumbling window, mint/burn timelock, and pending-operation expiry."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "enabled",
+            "type": "bool"
+          },
+          {
+            "name": "mint_window_cap",
+            "type": "u64"
+          },
+          {
+            "name": "burn_window_cap",
+            "type": "u64"
+          },
+          {
+            "name": "window_seconds",
+            "type": "i64"
+          },
+          {
+            "name": "large_amount_threshold",
+            "type": "u64"
+          },
+          {
+            "name": "large_amount_delay",
+            "type": "i64"
+          },
+          {
+            "name": "pending_operation_grace_period",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ThrottleState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "window_start",
+            "type": "i64"
+          },
+          {
+            "name": "minted_in_window",
+            "type": "u64"
+          },
+          {
+            "name": "burned_in_window",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ThrottleUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "throttle",
+            "type": {
+              "defined": {
+                "name": "ThrottleConfig"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "TrackerAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "type": "u8"
+          },
+          {
+            "name": "asset_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "identity_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "total_amount",
+            "type": "u64"
+          },
+          {
+            "name": "issuances",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "Issuance"
+                }
+              }
+            }
+          },
+          {
+            "name": "locks",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "Lock"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateAssetMetadataArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "symbol",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "uri",
+            "type": {
+              "option": "string"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "WalletIdentity",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "identity_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          }
+        ]
+      }
+    }
+  ]
+}

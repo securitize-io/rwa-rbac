@@ -24,6 +24,7 @@ pub struct RevokeTokens<'info> {
     #[account(mut)]
     pub asset_mint: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
+    #[account(mut)]
     pub asset_controller: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     #[account(mut)]
@@ -73,7 +74,7 @@ pub fn handler<'info>(ctx: Context<'info, RevokeTokens<'info>>, cpi_data: Vec<u8
     let account_metas = vec![
         AccountMeta::new(ctx.accounts.controller_authority.key(), true),
         AccountMeta::new(ctx.accounts.asset_mint.key(), false),
-        AccountMeta::new_readonly(ctx.accounts.asset_controller.key(), false),
+        AccountMeta::new(ctx.accounts.asset_controller.key(), false),
         AccountMeta::new(ctx.accounts.revoke_token_account.key(), false),
         AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
         AccountMeta::new_readonly(ctx.accounts.identity_account.key(), false),

@@ -188,10 +188,28 @@ configuration from devnet, so the first run requires RPC access.
 
 The tests share helpers in `tests/utils.ts`, use the Squads SDK to create, approve,
 and execute vault transactions, and use `surfnet_timeTravel` to advance past a
-configured delay. Generated local addresses are marked with `surfnet_offlineAccount`
-to avoid unnecessary devnet lookups and rate limits. Surfpool account injection is limited to isolated RBAC fixtures
-and deliberate changes used to test execution-time authorization. The CPI suite
-uses actual downstream asset, investor, token, and policy state.
+configured delay. Before setup, the local RBAC, IMR, asset-controller,
+identity-registry, and policy-engine programs are marked with
+`surfnet_offlineAccount(..., { includeOwnedAccounts: true })`. Fresh wallets,
+mints, role/controller PDAs, and transaction addresses are also marked offline
+before SDK reads, state injection, or submission. This avoids querying devnet
+for accounts that only exist in these tests. Local fixture wallets are funded
+with `surfnet_setAccount`, without airdrop confirmation delays.
+
+Squads code, program data, configuration, and its treasury remain remote-backed.
+Surfpool 1.5.0 still calls the datasource for `getProgramAccounts` even when the
+program is marked offline; owner offlining does not make the suite fully offline.
+This follows its [program-scan implementation](https://github.com/solana-foundation/surfpool/blob/v1.5.0/crates/core/src/surfnet/locker.rs#L2947).
+The SDK migration-listing tests retain those real RPC calls. Running entirely
+without a reference RPC would additionally require local Squads fixtures and
+an offline validator configuration.
+
+The permission-boundary suite bootstraps one real master role, then resets only
+that role between cases: every tested call fails before downstream CPI. Tests
+that change controller or downstream state retain independent fixtures. No
+instruction-authorization cases are dropped. The CPI suite uses actual asset,
+investor, token, and policy state; account injection supplies funding, isolated
+RBAC/legacy fixtures, and deliberate execution-time authorization changes.
 
 ## External authority gates
 
@@ -206,7 +224,8 @@ not parse Squads accounts or enforce a particular delay.
 All admin flags except `SET_LUT_ADDRESS` are gated. The exposed gated Medici
 permissions are `UPDATE_ASSET_METADATA`, `CHANGE_ISSUANCE_POLICIES`,
 `ATTACH_TO_POLICY_ACCOUNT`, `DETACH_FROM_POLICY_ACCOUNT`, `CHANGE_COUNTER_LIMITS`,
-`CHANGE_COUNTERS`, `CHANGE_MAPPING`, and `CREATE_IDENTITY_ACCOUNT`.
+`CHANGE_COUNTERS`, `CHANGE_MAPPING`, `CREATE_IDENTITY_ACCOUNT`, and
+`MANAGE_MINT_CONTROLS`.
 Both `change_counters` and `set_counters` use `CHANGE_COUNTERS`. Assignment and
 removal also share flags, so both require the external authority. The declared
 `UPDATE_INTEREST_BEARING_MINT_RATE` and `ADD_LEVEL_TO_IDENTITY_ACCOUNT` permissions
@@ -226,13 +245,15 @@ validation concern. Registration through Squads exceeded the five-level CPI limi
 in the tested runtime while creating its tracker account. Higher nesting depends
 on activation of [SIMD-0268](https://solana.com/docs/core/cpi) on the target runtime.
 
-Deployment prerequisite: deploy this ungated issuance path only alongside a token
-program that enforces mint caps and the delayed over-cap path on every issuance
-route. RBAC does not enforce these limits. Ordinary within-cap issuance is direct;
-over-cap issuance must follow the token's native delay without another RBAC delay.
-Burn and seizure remain immediate emergency operations. Rent withdrawal stays
-gated because it transfers all controller-authority lamports to a caller-selected
-receiver.
+Deploy the supply wrappers with the compatible token program. V2 controllers
+support native caps and delayed large mint/burn operations; RBAC does not enforce
+those limits or add another delay. Hard caps apply to immediate and delayed
+execution. V1 controllers remain operational without caps or throttling until
+explicit migration and configuration. Burn remains ungated in RBAC but is subject
+to the token program's configured limits and shared large-amount delay. Seizure
+remains immediate. Rent withdrawal stays gated because it transfers all
+controller-authority lamports to a caller-selected receiver. See the
+[caps and migration guide](client/docs/mint-controls.md) for the per-asset rollout.
 
 Gate delays are configured on the external authorities: Master governance covers
 metadata, role definitions, counter overrides, rent withdrawal, and admin rotation;
@@ -277,8 +298,10 @@ This change updates instruction account lists and the SDK/IDL together. Original
 mainnet roles remain usable until explicitly converted with `migrate_user_role`.
 Each conversion preserves the role PDA, users, and permissions and installs its
 validated gate authority. V2 roles enforce gates immediately; new roles always use
-V2. Controllers and IMR require no migration. Group conversions by controller and
-verify every role off-chain before resuming the asset's administrative activity.
+V2. RBAC `AssetAccessController` accounts and IMR require no migration. Token asset
+controllers have a separate [V1-to-V2 migration](client/docs/mint-controls.md#token-controller-v1-to-v2-rollout).
+Group role conversions by controller and verify every role off-chain before
+resuming the asset's administrative activity.
 See the [SDK migration guide](client/docs/migrations/user-roles-v2.md) for compatibility reads, resumable
 instruction plans, authorization, and removal of legacy support after rollout.
 
