@@ -1,5 +1,7 @@
 #![allow(ambiguous_glob_reexports)]
+#![allow(unexpected_cfgs)]
 
+pub mod constants;
 pub mod error;
 pub mod events;
 pub mod helper;
@@ -43,8 +45,18 @@ pub mod rwa_rbac {
         allowed_admin_ixs: u64,
         allowed_medici_ixs: u64,
         is_master_role: bool,
+        gate_authority: Option<Pubkey>,
+        gate_authority_proof: Option<GateAuthorityProof>,
     ) -> Result<()> {
-        instructions::create_user_role::handler(ctx, name, allowed_admin_ixs, allowed_medici_ixs, is_master_role)
+        instructions::create_user_role::handler(
+            ctx,
+            name,
+            allowed_admin_ixs,
+            allowed_medici_ixs,
+            is_master_role,
+            gate_authority,
+            gate_authority_proof,
+        )
     }
 
     pub fn modify_user_role(
@@ -52,8 +64,23 @@ pub mod rwa_rbac {
         name: String,
         allowed_admin_ixs: u64,
         allowed_medici_ixs: u64,
+        gate_authority_update: GateAuthorityUpdate,
     ) -> Result<()> {
-        instructions::modify_user_role::handler(ctx, name, allowed_admin_ixs, allowed_medici_ixs)
+        instructions::modify_user_role::handler(
+            ctx,
+            name,
+            allowed_admin_ixs,
+            allowed_medici_ixs,
+            gate_authority_update,
+        )
+    }
+
+    pub fn migrate_user_role(
+        ctx: Context<MigrateUserRole>,
+        gate_authority: Option<Pubkey>,
+        gate_authority_proof: Option<GateAuthorityProof>,
+    ) -> Result<()> {
+        instructions::migrate_user_role::handler(ctx, gate_authority, gate_authority_proof)
     }
 
     pub fn delete_user_role(ctx: Context<DeleteUserRole>) -> Result<()> {
@@ -75,10 +102,41 @@ pub mod rwa_rbac {
     }
 
     pub fn issue_tokens<'info>(
-        ctx: Context<'_, '_, '_, 'info, IssueTokens<'info>>,
+        ctx: Context<'info, IssueTokens<'info>>,
         cpi_data: Vec<u8>,
     ) -> Result<()> {
         instructions::issue_tokens::handler(ctx, cpi_data)
+    }
+
+    pub fn set_caps_config(ctx: Context<ConfigureMintControls>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::mint_controls::set_caps(ctx, cpi_data)
+    }
+
+    pub fn set_throttle_config(
+        ctx: Context<ConfigureMintControls>,
+        cpi_data: Vec<u8>,
+    ) -> Result<()> {
+        instructions::mint_controls::set_throttle(ctx, cpi_data)
+    }
+
+    pub fn migrate_asset_controller(ctx: Context<MigrateTokenAssetController>) -> Result<()> {
+        instructions::mint_controls::migrate(ctx)
+    }
+
+    pub fn propose_mint(ctx: Context<ProposeTokenOperation>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::propose_tokens::propose_mint(ctx, cpi_data)
+    }
+
+    pub fn propose_burn(ctx: Context<ProposeTokenOperation>, cpi_data: Vec<u8>) -> Result<()> {
+        instructions::propose_tokens::propose_burn(ctx, cpi_data)
+    }
+
+    pub fn execute_pending(ctx: Context<ExecutePendingOperation>) -> Result<()> {
+        instructions::execute_pending::handler(ctx)
+    }
+
+    pub fn cancel_pending(ctx: Context<CancelPendingOperation>) -> Result<()> {
+        instructions::cancel_pending::handler(ctx)
     }
 
     pub fn update_asset_metadata(
@@ -97,14 +155,14 @@ pub mod rwa_rbac {
     }
 
     pub fn seize_tokens<'info>(
-        ctx: Context<'_, '_, '_, 'info, SeizeTokens<'info>>,
+        ctx: Context<'info, SeizeTokens<'info>>,
         cpi_data: Vec<u8>,
     ) -> Result<()> {
         instructions::seize_tokens::handler(ctx, cpi_data)
     }
 
     pub fn revoke_tokens<'info>(
-        ctx: Context<'_, '_, '_, 'info, RevokeTokens<'info>>,
+        ctx: Context<'info, RevokeTokens<'info>>,
         cpi_data: Vec<u8>,
     ) -> Result<()> {
         instructions::revoke_tokens::handler(ctx, cpi_data)

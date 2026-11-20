@@ -170,11 +170,170 @@ yarn install
 
 ## Testing
 
-Integration tests are located in rwa-rbac/tests.
+Integration tests are located in `tests/`.
 
-Run tests with:
+Integration tests use Surfpool's local account and clock cheatcodes.
 
+Use the project's pinned Anchor 1.1.2 toolchain:
+
+```sh
 anchor test -- --features localnet
+```
+
+Anchor starts Surfpool by default, loads the RBAC/IMR programs and checked-in
+Medici binaries, runs the TypeScript suites, and stops the validator.
+`yarn test:surfpool` is an alias for this command; there is no custom launcher or test
+program. The test configuration forks the existing Squads program and its program
+configuration from devnet, so the first run requires RPC access.
+
+The tests share helpers in `tests/utils.ts`, use the Squads SDK to create, approve,
+and execute vault transactions, and use `surfnet_timeTravel` to advance past a
+configured delay. Before setup, the local RBAC, IMR, asset-controller,
+identity-registry, and policy-engine programs are marked with
+`surfnet_offlineAccount(..., { includeOwnedAccounts: true })`. Fresh wallets,
+mints, role/controller PDAs, and transaction addresses are also marked offline
+before SDK reads, state injection, or submission. This avoids querying devnet
+for accounts that only exist in these tests. Local fixture wallets are funded
+with `surfnet_setAccount`, without airdrop confirmation delays.
+
+Squads code, program data, configuration, and its treasury remain remote-backed.
+Surfpool 1.5.0 still calls the datasource for `getProgramAccounts` even when the
+program is marked offline; owner offlining does not make the suite fully offline.
+This follows its [program-scan implementation](https://github.com/solana-foundation/surfpool/blob/v1.5.0/crates/core/src/surfnet/locker.rs#L2947).
+The SDK migration-listing tests retain those real RPC calls. Running entirely
+without a reference RPC would additionally require local Squads fixtures and
+an offline validator configuration.
+
+The permission-boundary suite bootstraps one real master role, then resets only
+that role between cases: every tested call fails before downstream CPI. Tests
+that change controller or downstream state retain independent fixtures. No
+instruction-authorization cases are dropped. The CPI suite uses actual asset,
+investor, token, and policy state; account injection supplies funding, isolated
+RBAC/legacy fixtures, and deliberate execution-time authorization changes.
+
+## External authority gates
+
+These rules apply to V2 roles. Legacy roles retain their existing authorization
+until explicitly converted, as described in the [SDK migration guide](client/docs/migrations/user-roles-v2.md).
+
+Governance configuration remains in `UserRole.gate_authority`. RBAC verifies
+signer privilege and equality with the configured key. The external authority
+implements approvals, timelocks, cancellation, and any emergency policy; RBAC does
+not parse Squads accounts or enforce a particular delay.
+
+All admin flags except `SET_LUT_ADDRESS` are gated. The exposed gated Medici
+permissions are `UPDATE_ASSET_METADATA`, `CHANGE_ISSUANCE_POLICIES`,
+`ATTACH_TO_POLICY_ACCOUNT`, `DETACH_FROM_POLICY_ACCOUNT`, `CHANGE_COUNTER_LIMITS`,
+`CHANGE_COUNTERS`, `CHANGE_MAPPING`, `CREATE_IDENTITY_ACCOUNT`, and
+`MANAGE_MINT_CONTROLS`.
+Both `change_counters` and `set_counters` use `CHANGE_COUNTERS`. Assignment and
+removal also share flags, so both require the external authority. The declared
+`UPDATE_INTEREST_BEARING_MINT_RATE` and `ADD_LEVEL_TO_IDENTITY_ACCOUNT` permissions
+are gated in preparation for future handlers.
+
+Issuance, burn, seizure, freeze/thaw, adding/removing token locks, country changes, and
+level removal execute through role permissions without an additional gate.
+LUT updates, wallet attachment/detachment, and investor/identity cleanup are also
+direct role operations. Cleanup still obeys downstream wallet and balance checks.
+A configured authority on the role does not delay these immediate operations.
+
+Raw identity creation can assign privileged levels and remains a gated exception.
+Investor registration and validated IMR level additions remain direct. IMR is
+unchanged: its validation of level additions does not apply to initial
+registration. Initial special-level handling therefore remains a separate
+validation concern. Registration through Squads exceeded the five-level CPI limit
+in the tested runtime while creating its tracker account. Higher nesting depends
+on activation of [SIMD-0268](https://solana.com/docs/core/cpi) on the target runtime.
+
+Deploy the supply wrappers with the compatible token program. V2 controllers
+support native caps and delayed large mint/burn operations; RBAC does not enforce
+those limits or add another delay. Hard caps apply to immediate and delayed
+execution. V1 controllers remain operational without caps or throttling until
+explicit migration and configuration. Burn remains ungated in RBAC but is subject
+to the token program's configured limits and shared large-amount delay. Seizure
+remains immediate. Rent withdrawal stays gated because it transfers all
+controller-authority lamports to a caller-selected receiver. See the
+[caps and migration guide](client/docs/mint-controls.md) for the per-asset rollout.
+
+Gate delays are configured on the external authorities: Master governance covers
+metadata, role definitions, counter overrides, rent withdrawal, and admin rotation;
+Roles governance covers membership changes; Compliance governance covers ordinary
+policy changes, counter limits, and country mappings. RBAC does not enforce the
+48-hour or 24-hour delays. Configure role permissions and gate authorities
+accordingly. Dedicated immediate pause and Master-gated unpause paths, including
+guards on generic policy attachment/detachment, are a separate integration.
+
+Gated calls require the role user, its permission, and `gateAuthority` as an actual
+signer. There is no controller-admin bypass. Medici SDK builders accept
+`gateAuthority` as a final optional parameter, and admin builders accept it in
+their argument object. Creation/modification use `newGateAuthority` for the value
+to store, separately from the signing `gateAuthority`. When setting that value,
+provide `newGateAuthorityProof: { programId, seeds }`, with the complete PDA seeds
+including the bump. The proposed authority is also a required signer, distinct
+from any existing gate approvals. Omitting the signer for a
+gated call fails closed. Ungated builders do not accept a `gateAuthority` argument.
+
+`update_controller_admin` is always gated without a new permission bit: it requires
+the current controller admin, membership in the supplied controller's master role,
+and that role's authority. Add the incoming admin to the master role if it should
+be able to perform a subsequent admin rotation. The existing ability to void the
+controller admin remains available when a master role exists.
+
+Changing or clearing an existing role authority also requires the target role's
+current authority, in addition to authorization through a role with
+`MODIFY_USER_ROLE`. The SDK's `currentGateAuthority` defaults to `gateAuthority`;
+provide it explicitly when the authorizing and target roles use different keys.
+Authorization is evaluated against the role state at execution time.
+
+### First-role bootstrap
+
+For a newly created controller, the first role must be a master role with all
+admin and Medici permissions, a configured authority, and signatures from both
+the controller admin and that authority. Creation assigns the admin to the role
+atomically. Subsequent role creation and assignment use normal gated permissions.
+The bootstrap path is unavailable after any role has been created. A master role
+is reserved at creation, including before any later user assignment.
+
+This change updates instruction account lists and the SDK/IDL together. Original
+mainnet roles remain usable until explicitly converted with `migrate_user_role`.
+Each conversion preserves the role PDA, users, and permissions and installs its
+validated gate authority. V2 roles enforce gates immediately; new roles always use
+V2. RBAC `AssetAccessController` accounts and IMR require no migration. Token asset
+controllers have a separate [V1-to-V2 migration](client/docs/mint-controls.md#token-controller-v1-to-v2-rollout).
+Group role conversions by controller and verify every role off-chain before
+resuming the asset's administrative activity.
+See the [SDK migration guide](client/docs/migrations/user-roles-v2.md) for compatibility reads, resumable
+instruction plans, authorization, and removal of legacy support after rollout.
+
+### Gate authority provenance
+
+Every authority installation, including bootstrap and replacement, checks the
+instruction-only derivation proof against `ALLOWED_GATING_PROGRAMS` in
+`programs/rwa-rbac/src/constants.rs`. The initial list contains the Squads v4
+program. Extending the list requires a program upgrade. RBAC calls
+`Pubkey::create_program_address` with the supplied seeds and program ID, requires
+the result to match the proposed authority. Role creation and authority updates
+also require the proposed authority to sign. Migration relies on existing
+controller/master governance and validates the incoming proof without requiring
+the incoming authority's account or signature.
+Ordinary keypair authorities, unapproved programs, malformed seeds, and mismatched
+addresses are rejected. A role may still be created without an authority;
+gated operations then fail closed until a proven authority is installed.
+
+For Squads, the proof seeds are `"multisig"`, the multisig address bytes,
+`"vault"`, the one-byte vault index, and the one-byte bump returned by the SDK's
+`getVaultPda`. The multisig account need not be passed to RBAC or stored in the
+role. A rotation between different vaults requires both authorities' signatures;
+the tests demonstrate nested Squads executions for this approval flow.
+
+The proof is generic: RBAC does not interpret seeds, deserialize Squads accounts,
+or verify a specific vault type or timelock configuration. Account ownership is
+not checked because a standard Squads vault is not owned by Squads. Only the gate
+public key is persisted; the derivation proof adds no persistent fields.
+Subsequent gated calls check the configured key and signer without a proof.
+Existing authorities are not retroactively validated, and removing a program from
+the allowlist does not revoke authorities already installed under it; these must
+be handled explicitly during migration or authority rotation.
 
 ## Deployment
 

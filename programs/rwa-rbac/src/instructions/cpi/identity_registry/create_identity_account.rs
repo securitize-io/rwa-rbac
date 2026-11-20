@@ -2,7 +2,7 @@ use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
-use rbac_utils::{constants::IDENTITY_REGISTRY_ID, CREATE_IDENTITY_ACCOUNT_IX};
+use rbac_utils::{CREATE_IDENTITY_ACCOUNT_IX, constants::IDENTITY_REGISTRY_ID};
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
 
@@ -11,6 +11,7 @@ pub struct CreateIdentityAccount<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub user: Signer<'info>,
+    pub gate_authority: Option<Signer<'info>>,
     /// CHECK: Verified to match field in asset_access_controller.
     pub controller_authority: UncheckedAccount<'info>,
     #[account(has_one = controller_authority)]
@@ -48,6 +49,7 @@ pub fn handler(ctx: Context<CreateIdentityAccount>, cpi_data: Vec<u8>) -> Result
         &ctx.accounts.user.key(),
         &ctx.accounts.authorized_user_role,
         MediciFlags::CREATE_IDENTITY_ACCOUNT,
+        ctx.accounts.gate_authority.as_ref(),
     )?;
 
     // Verify instruction discriminator in cpi_data

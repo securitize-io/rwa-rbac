@@ -4,8 +4,8 @@ use anchor_lang::{
 };
 use anchor_spl::{associated_token::AssociatedToken, token_2022::Token2022};
 use rbac_utils::{
-    constants::{ASSET_CONTROLLER_ID, POLICY_ENGINE_ID},
     ISSUE_TOKENS_IX,
+    constants::{ASSET_CONTROLLER_ID, POLICY_ENGINE_ID},
 };
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
@@ -29,6 +29,7 @@ pub struct IssueTokens<'info> {
     #[account(mut)]
     pub asset_mint: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
+    #[account(mut)]
     pub asset_controller: UncheckedAccount<'info>,
     /// CHECK: Verified in CPI.
     pub to: UncheckedAccount<'info>,
@@ -60,11 +61,7 @@ pub struct IssueTokens<'info> {
 
 impl<'info> IssueTokens<'info> {
     /// Executes issue token CPI to AssetController Program.
-    fn issue_tokens(
-        &self,
-        ctx: &Context<'_, '_, '_, 'info, IssueTokens<'info>>,
-        data: Vec<u8>,
-    ) -> Result<()> {
+    fn issue_tokens(&self, ctx: &Context<'info, IssueTokens<'info>>, data: Vec<u8>) -> Result<()> {
         let seeds = controller_seeds!(&ctx.accounts.asset_access_controller);
         let signers_seeds = &[&seeds[..]];
 
@@ -75,7 +72,7 @@ impl<'info> IssueTokens<'info> {
                     AccountMeta::new(ctx.accounts.payer.key(), true),
                     AccountMeta::new(ctx.accounts.controller_authority.key(), true),
                     AccountMeta::new(ctx.accounts.asset_mint.key(), false),
-                    AccountMeta::new_readonly(ctx.accounts.asset_controller.key(), false),
+                    AccountMeta::new(ctx.accounts.asset_controller.key(), false),
                     AccountMeta::new_readonly(ctx.accounts.to.key(), false),
                     AccountMeta::new(ctx.accounts.token_account.key(), false),
                     AccountMeta::new_readonly(ctx.accounts.identity_registry.key(), false),
@@ -117,15 +114,13 @@ impl<'info> IssueTokens<'info> {
     }
 }
 
-pub fn handler<'info>(
-    ctx: Context<'_, '_, '_, 'info, IssueTokens<'info>>,
-    cpi_data: Vec<u8>,
-) -> Result<()> {
+pub fn handler<'info>(ctx: Context<'info, IssueTokens<'info>>, cpi_data: Vec<u8>) -> Result<()> {
     // Verify that signer has authorized user role.
     verify_medici_signer(
         &ctx.accounts.user.key(),
         &ctx.accounts.authorized_user_role,
         MediciFlags::ISSUE_TOKENS,
+        None,
     )?;
 
     require!(

@@ -9,6 +9,7 @@ pub struct AssignUserRole<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub user: Signer<'info>,
+    pub gate_authority: Option<Signer<'info>>,
     #[account(mut)]
     pub asset_access_controller: Account<'info, AssetAccessController>,
     #[account(
@@ -24,7 +25,7 @@ pub struct AssignUserRole<'info> {
 pub fn handler(ctx: Context<AssignUserRole>, users_to_assign: Vec<Pubkey>) -> Result<()> {
     let user_role = &mut ctx.accounts.user_role;
 
-    // Apply the following rules if signer is not the controller admin:
+    // Apply the following rules to the authorizing role:
     // If authorized_user_role is same as user_role, user_role needs to contain either
     // ASSIGN_OR_REMOVE_ANY_USER_ROLE or ASSIGN_OR_REMOVE_CURRENT_ROLE.
     // If authorized_user_role is not provided or is different from user_role, user_role must contain
@@ -40,6 +41,7 @@ pub fn handler(ctx: Context<AssignUserRole>, users_to_assign: Vec<Pubkey>) -> Re
         &ctx.accounts.asset_access_controller,
         ctx.accounts.authorized_user_role.clone(),
         matching_flag,
+        ctx.accounts.gate_authority.as_ref(),
     )?;
 
     // Check if there's sufficient space to add new users.
@@ -48,7 +50,7 @@ pub fn handler(ctx: Context<AssignUserRole>, users_to_assign: Vec<Pubkey>) -> Re
     // Assign users to role.
     user_role.assign_users(users_to_assign.clone());
 
-    let space_needed = UserRole::BASE_SIZE + user_role.users.len() * 32;
+    let space_needed = user_role.space_for_users(user_role.users.len());
     if space_needed > user_role_info.data_len() {
         // Increase account to size of spaced_needed.
         transfer_lamports_for_realloc(
@@ -56,7 +58,7 @@ pub fn handler(ctx: Context<AssignUserRole>, users_to_assign: Vec<Pubkey>) -> Re
             user_role_info.clone(),
             space_needed,
         )?;
-        user_role_info.realloc(space_needed, false)?;
+        user_role_info.resize(space_needed)?;
     }
 
     if user_role.is_master_role && user_role.users.len() > 0 {

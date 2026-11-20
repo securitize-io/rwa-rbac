@@ -11,6 +11,7 @@ pub struct WithdrawExcessRent<'info> {
     #[account(mut)]
     pub receiver: UncheckedAccount<'info>,
     pub user: Signer<'info>,
+    pub gate_authority: Option<Signer<'info>>,
     /// CHECK: Verified to match field in asset_access_controller.
     #[account(mut)]
     pub controller_authority: UncheckedAccount<'info>,
@@ -29,10 +30,14 @@ pub struct WithdrawExcessRent<'info> {
 }
 
 pub fn handler(ctx: Context<WithdrawExcessRent>) -> Result<()> {
-    let controller = &ctx.accounts.asset_access_controller;
-
     // verify that the user has the required role permission
-    verify_admin_signer(ctx.accounts.user.key(), controller, ctx.accounts.authorized_user_role.clone(), AdminFlags::WITHDRAW_EXCESS_RENT)?;
+    verify_admin_signer(
+        ctx.accounts.user.key(),
+        &ctx.accounts.asset_access_controller,
+        ctx.accounts.authorized_user_role.clone(),
+        AdminFlags::WITHDRAW_EXCESS_RENT,
+        ctx.accounts.gate_authority.as_ref(),
+    )?;
 
     let controller_authority = &ctx.accounts.controller_authority;
     let seeds = controller_seeds!(ctx.accounts.asset_access_controller);

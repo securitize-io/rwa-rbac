@@ -1,12 +1,20 @@
+pub mod cancel_pending;
+pub mod execute_pending;
 pub mod freeze_token_account;
 pub mod issue_tokens;
+pub mod mint_controls;
+pub mod propose_tokens;
 pub mod revoke_tokens;
 pub mod seize_tokens;
 pub mod thaw_token_account;
 pub mod update_asset_metadata;
 
+pub use cancel_pending::*;
+pub use execute_pending::*;
 pub use freeze_token_account::*;
 pub use issue_tokens::*;
+pub use mint_controls::*;
+pub use propose_tokens::*;
 pub use revoke_tokens::*;
 pub use seize_tokens::*;
 pub use thaw_token_account::*;

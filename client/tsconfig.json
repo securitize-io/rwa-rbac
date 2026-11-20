@@ -8,12 +8,12 @@
     "target": "es6",
     "noImplicitAny": true,
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "outDir": "dist",
     "typeRoots": ["node_modules/@types"],
     "rootDir": "src"
-  },
+  }
 }

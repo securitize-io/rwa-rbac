@@ -2,7 +2,7 @@
   "address": "3g6fUgMsJQhjPUYxNjEU5PyzGf8DerbDx8p5Qh4yMnRR",
   "metadata": {
     "name": "rwa_rbac",
-    "version": "0.1.0",
+    "version": "1.1.0",
     "spec": "0.1.0",
     "description": "Created with Anchor"
   },
@@ -190,6 +190,11 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "asset_access_controller",
           "writable": true,
           "relations": [
@@ -210,33 +215,7 @@
           "address": "11111111111111111111111111111111"
         },
         {
-          "name": "event_authority",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  95,
-                  95,
-                  101,
-                  118,
-                  101,
-                  110,
-                  116,
-                  95,
-                  97,
-                  117,
-                  116,
-                  104,
-                  111,
-                  114,
-                  105,
-                  116,
-                  121
-                ]
-              }
-            ]
-          }
+          "name": "event_authority"
         },
         {
           "name": "program"
@@ -272,6 +251,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controller_authority",
@@ -382,6 +366,66 @@
       ]
     },
     {
+      "name": "cancel_pending",
+      "discriminator": [
+        74,
+        87,
+        109,
+        242,
+        64,
+        192,
+        151,
+        71
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controller_authority",
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role"
+        },
+        {
+          "name": "asset_controller_program",
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
+        },
+        {
+          "name": "asset_mint"
+        },
+        {
+          "name": "asset_controller"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "rent_payer",
+          "writable": true
+        },
+        {
+          "name": "pending_operation",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "change_counter_limits",
       "discriminator": [
         200,
@@ -402,6 +446,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controller_authority",
@@ -462,6 +511,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controller_authority",
@@ -604,6 +658,11 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controller_authority",
           "relations": [
             "asset_access_controller"
@@ -658,6 +717,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controller_authority",
@@ -835,6 +899,11 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controller_authority",
           "relations": [
             "asset_access_controller"
@@ -912,6 +981,19 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
+          "name": "new_gate_authority",
+          "docs": [
+            "Consent from the authority being installed (may equal gate_authority)."
+          ],
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "new_user_role",
           "writable": true
         },
@@ -947,6 +1029,22 @@
         {
           "name": "is_master_role",
           "type": "bool"
+        },
+        {
+          "name": "gate_authority",
+          "type": {
+            "option": "pubkey"
+          }
+        },
+        {
+          "name": "gate_authority_proof",
+          "type": {
+            "option": {
+              "defined": {
+                "name": "GateAuthorityProof"
+              }
+            }
+          }
         }
       ]
     },
@@ -970,6 +1068,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "asset_access_controller",
@@ -1010,6 +1113,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controller_authority",
@@ -1120,6 +1228,104 @@
       ]
     },
     {
+      "name": "execute_pending",
+      "discriminator": [
+        207,
+        36,
+        5,
+        220,
+        230,
+        106,
+        57,
+        181
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controller_authority",
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role"
+        },
+        {
+          "name": "asset_controller_program",
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
+        },
+        {
+          "name": "asset_mint",
+          "writable": true
+        },
+        {
+          "name": "asset_controller",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "wallet"
+        },
+        {
+          "name": "token_account",
+          "writable": true
+        },
+        {
+          "name": "identity_registry"
+        },
+        {
+          "name": "identity_account"
+        },
+        {
+          "name": "tracker_account",
+          "writable": true
+        },
+        {
+          "name": "policy_engine",
+          "writable": true
+        },
+        {
+          "name": "wallet_identity_account"
+        },
+        {
+          "name": "rent_payer",
+          "writable": true
+        },
+        {
+          "name": "policy_engine_program"
+        },
+        {
+          "name": "pending_operation",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "freeze_token_account",
       "discriminator": [
         138,
@@ -1225,7 +1431,8 @@
           "writable": true
         },
         {
-          "name": "asset_controller"
+          "name": "asset_controller",
+          "writable": true
         },
         {
           "name": "to"
@@ -1280,6 +1487,199 @@
       ]
     },
     {
+      "name": "migrate_asset_controller",
+      "discriminator": [
+        96,
+        118,
+        61,
+        174,
+        136,
+        235,
+        144,
+        68
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
+          "name": "controller_authority",
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role"
+        },
+        {
+          "name": "asset_controller_program",
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
+        },
+        {
+          "name": "asset_mint"
+        },
+        {
+          "name": "asset_controller",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "migrate_user_role",
+      "discriminator": [
+        219,
+        4,
+        62,
+        168,
+        104,
+        1,
+        164,
+        45
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
+          "name": "asset_access_controller",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "asset_access_controller.asset_mint",
+                "account": "AssetAccessController"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  65,
+                  115,
+                  115,
+                  101,
+                  116,
+                  65,
+                  99,
+                  99,
+                  101,
+                  115,
+                  115,
+                  67,
+                  111,
+                  110,
+                  116,
+                  114,
+                  111,
+                  108,
+                  108,
+                  101,
+                  114
+                ]
+              }
+            ]
+          },
+          "relations": [
+            "user_role",
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "user_role",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "user_role.id"
+              },
+              {
+                "kind": "account",
+                "path": "asset_access_controller"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  85,
+                  115,
+                  101,
+                  114,
+                  82,
+                  111,
+                  108,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authorized_user_role",
+          "optional": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "gate_authority",
+          "type": {
+            "option": "pubkey"
+          }
+        },
+        {
+          "name": "gate_authority_proof",
+          "type": {
+            "option": {
+              "defined": {
+                "name": "GateAuthorityProof"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "modify_user_role",
       "discriminator": [
         108,
@@ -1295,6 +1695,27 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
+          "name": "current_gate_authority",
+          "docs": [
+            "The target role's existing authority must consent to its replacement or removal."
+          ],
+          "signer": true,
+          "optional": true
+        },
+        {
+          "name": "new_gate_authority",
+          "docs": [
+            "Consent from the proposed authority, in addition to the existing approvals."
+          ],
+          "signer": true,
+          "optional": true
         },
         {
           "name": "asset_access_controller",
@@ -1324,6 +1745,184 @@
         {
           "name": "allowed_medici_ixs",
           "type": "u64"
+        },
+        {
+          "name": "gate_authority_update",
+          "type": {
+            "defined": {
+              "name": "GateAuthorityUpdate"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "propose_burn",
+      "discriminator": [
+        107,
+        126,
+        69,
+        98,
+        100,
+        37,
+        148,
+        192
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controller_authority",
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role"
+        },
+        {
+          "name": "asset_controller_program",
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
+        },
+        {
+          "name": "asset_mint"
+        },
+        {
+          "name": "asset_controller"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "wallet"
+        },
+        {
+          "name": "token_account"
+        },
+        {
+          "name": "identity_registry"
+        },
+        {
+          "name": "identity_account"
+        },
+        {
+          "name": "wallet_identity_account"
+        },
+        {
+          "name": "pending_operation",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpi_data",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "propose_mint",
+      "discriminator": [
+        57,
+        216,
+        81,
+        105,
+        92,
+        217,
+        84,
+        128
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "controller_authority",
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role"
+        },
+        {
+          "name": "asset_controller_program",
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
+        },
+        {
+          "name": "asset_mint"
+        },
+        {
+          "name": "asset_controller"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "wallet"
+        },
+        {
+          "name": "token_account"
+        },
+        {
+          "name": "identity_registry"
+        },
+        {
+          "name": "identity_account"
+        },
+        {
+          "name": "wallet_identity_account"
+        },
+        {
+          "name": "pending_operation",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpi_data",
+          "type": "bytes"
         }
       ]
     },
@@ -1746,6 +2345,11 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "asset_access_controller",
           "relations": [
             "user_role",
@@ -1761,33 +2365,7 @@
           "optional": true
         },
         {
-          "name": "event_authority",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  95,
-                  95,
-                  101,
-                  118,
-                  101,
-                  110,
-                  116,
-                  95,
-                  97,
-                  117,
-                  116,
-                  104,
-                  111,
-                  114,
-                  105,
-                  116,
-                  121
-                ]
-              }
-            ]
-          }
+          "name": "event_authority"
         },
         {
           "name": "program"
@@ -1844,7 +2422,8 @@
           "writable": true
         },
         {
-          "name": "asset_controller"
+          "name": "asset_controller",
+          "writable": true
         },
         {
           "name": "revoke_token_account",
@@ -1960,6 +2539,69 @@
       ]
     },
     {
+      "name": "set_caps_config",
+      "discriminator": [
+        216,
+        4,
+        112,
+        211,
+        176,
+        17,
+        227,
+        229
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
+          "name": "controller_authority",
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role"
+        },
+        {
+          "name": "asset_controller_program",
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
+        },
+        {
+          "name": "asset_mint"
+        },
+        {
+          "name": "asset_controller",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "event_authority"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpi_data",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
       "name": "set_counters",
       "discriminator": [
         127,
@@ -1980,6 +2622,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controller_authority",
@@ -2040,14 +2687,76 @@
           ]
         },
         {
-          "name": "authorized_user_role",
-          "optional": true
+          "name": "authorized_user_role"
         },
         {
           "name": "lut_address"
         }
       ],
       "args": []
+    },
+    {
+      "name": "set_throttle_config",
+      "discriminator": [
+        174,
+        119,
+        174,
+        249,
+        71,
+        43,
+        246,
+        174
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
+          "name": "controller_authority",
+          "relations": [
+            "asset_access_controller"
+          ]
+        },
+        {
+          "name": "asset_access_controller",
+          "relations": [
+            "authorized_user_role"
+          ]
+        },
+        {
+          "name": "authorized_user_role"
+        },
+        {
+          "name": "asset_controller_program",
+          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
+        },
+        {
+          "name": "asset_mint"
+        },
+        {
+          "name": "asset_controller",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "event_authority"
+        }
+      ],
+      "args": [
+        {
+          "name": "cpi_data",
+          "type": "bytes"
+        }
+      ]
     },
     {
       "name": "thaw_token_account",
@@ -2131,6 +2840,11 @@
           "signer": true
         },
         {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
+        },
+        {
           "name": "controller_authority",
           "writable": true,
           "relations": [
@@ -2197,72 +2911,25 @@
           ]
         },
         {
-          "name": "asset_access_controller",
-          "writable": true
-        }
-      ],
-      "args": [
-        {
-          "name": "new_admin",
-          "type": "pubkey"
-        }
-      ]
-    },
-    {
-      "name": "update_interest_bearing_mint_rate",
-      "discriminator": [
-        29,
-        174,
-        109,
-        163,
-        227,
-        75,
-        2,
-        144
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "controller_authority",
-          "relations": [
-            "asset_access_controller"
-          ]
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "asset_access_controller",
+          "writable": true,
           "relations": [
             "authorized_user_role"
           ]
         },
         {
           "name": "authorized_user_role"
-        },
-        {
-          "name": "asset_controller_program",
-          "address": "7tXjmbkZVY3Gmg9kDBebcNXT1yC5pyoxxXVLwdbv9tvP"
-        },
-        {
-          "name": "asset_mint",
-          "writable": true
-        },
-        {
-          "name": "asset_controller"
-        },
-        {
-          "name": "event_authority"
-        },
-        {
-          "name": "token_program",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
         }
       ],
       "args": [
         {
-          "name": "cpi_data",
-          "type": "bytes"
+          "name": "new_admin",
+          "type": "pubkey"
         }
       ]
     },
@@ -2286,6 +2953,11 @@
         {
           "name": "user",
           "signer": true
+        },
+        {
+          "name": "gate_authority",
+          "signer": true,
+          "optional": true
         },
         {
           "name": "controller_authority",
@@ -2329,13 +3001,13 @@
     {
       "name": "UserRole",
       "discriminator": [
-        62,
-        252,
-        194,
-        137,
-        183,
-        165,
-        147,
+        125,
+        238,
+        187,
+        240,
+        33,
+        212,
+        164,
         28
       ]
     }
@@ -2365,6 +3037,45 @@
         89,
         226,
         140
+      ]
+    },
+    {
+      "name": "TokenOperationCancelled",
+      "discriminator": [
+        96,
+        192,
+        74,
+        61,
+        246,
+        205,
+        147,
+        169
+      ]
+    },
+    {
+      "name": "TokenOperationExecuted",
+      "discriminator": [
+        106,
+        185,
+        189,
+        192,
+        44,
+        1,
+        41,
+        192
+      ]
+    },
+    {
+      "name": "TokenOperationProposed",
+      "discriminator": [
+        65,
+        94,
+        165,
+        101,
+        75,
+        76,
+        225,
+        237
       ]
     }
   ],
@@ -2438,6 +3149,36 @@
       "code": 6013,
       "name": "UnauthorizedSigner",
       "msg": "Unauthorized admin signer"
+    },
+    {
+      "code": 6014,
+      "name": "MissingGateAuthority",
+      "msg": "Missing gate authority"
+    },
+    {
+      "code": 6015,
+      "name": "InvalidGateAuthority",
+      "msg": "Invalid gate authority"
+    },
+    {
+      "code": 6016,
+      "name": "InvalidGatingProgram",
+      "msg": "Gate authority derivation program is not allowed"
+    },
+    {
+      "code": 6017,
+      "name": "MissingGateAuthorityProof",
+      "msg": "Missing gate authority derivation proof"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidGateAuthorityProof",
+      "msg": "Invalid gate authority derivation proof"
+    },
+    {
+      "code": 6019,
+      "name": "MigrationRequired",
+      "msg": "Migrate the legacy role before using V2 governance"
     }
   ],
   "types": [
@@ -2529,6 +3270,61 @@
       }
     },
     {
+      "name": "GateAuthorityProof",
+      "docs": [
+        "Instruction-only proof; neither the program ID nor seeds are stored in UserRole."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "program_id",
+            "type": "pubkey"
+          },
+          {
+            "name": "seeds",
+            "docs": [
+              "Complete PDA seeds, including the bump seed, for create_program_address."
+            ],
+            "type": {
+              "vec": "bytes"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GateAuthorityUpdate",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NoChange"
+          },
+          {
+            "name": "Set",
+            "fields": [
+              {
+                "name": "authority",
+                "type": "pubkey"
+              },
+              {
+                "name": "proof",
+                "type": {
+                  "defined": {
+                    "name": "GateAuthorityProof"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "Clear"
+          }
+        ]
+      }
+    },
+    {
       "name": "RemoveUserRoleEvent",
       "type": {
         "kind": "struct",
@@ -2559,6 +3355,102 @@
       }
     },
     {
+      "name": "TokenOperationCancelled",
+      "docs": [
+        "Human authorization accompanying the token program's authoritative lifecycle event."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "role_id",
+            "type": "u64"
+          },
+          {
+            "name": "asset_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "operation_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "TokenOperationExecuted",
+      "docs": [
+        "Human authorization accompanying the token program's authoritative lifecycle event."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "role_id",
+            "type": "u64"
+          },
+          {
+            "name": "asset_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "operation_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "TokenOperationProposed",
+      "docs": [
+        "Human authorization accompanying the token program's authoritative lifecycle event."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "role_id",
+            "type": "u64"
+          },
+          {
+            "name": "asset_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "operation_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "UserRole",
       "type": {
         "kind": "struct",
@@ -2578,11 +3470,11 @@
             "type": "u64"
           },
           {
-            "name": "name",
+            "name": "version",
             "docs": [
-              "Name of this role."
+              "Wire version. Legacy accounts are normalized to V1 in memory only."
             ],
-            "type": "string"
+            "type": "u8"
           },
           {
             "name": "allowed_admin_ixs",
@@ -2604,6 +3496,22 @@
               "If true, this is the master role."
             ],
             "type": "bool"
+          },
+          {
+            "name": "gate_authority",
+            "docs": [
+              "External PDA authority; provenance is verified when installed."
+            ],
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "name",
+            "docs": [
+              "Name of this role."
+            ],
+            "type": "string"
           },
           {
             "name": "users",

@@ -34,7 +34,6 @@ const ALLOWED_SIGNERS: &[&str] = &[
 ];
 
 #[derive(Accounts)]
-#[instruction(unique_seed: Pubkey)]
 pub struct CreateAssetAccessController<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -57,7 +56,7 @@ pub struct CreateAssetAccessController<'info> {
         ],
         bump,
     )]
-    pub asset_access_controller_authority: AccountInfo<'info>,
+    pub asset_access_controller_authority: UncheckedAccount<'info>,
     /// CHECK: cpi checks
     #[account(mut)]
     pub asset_controller: UncheckedAccount<'info>,

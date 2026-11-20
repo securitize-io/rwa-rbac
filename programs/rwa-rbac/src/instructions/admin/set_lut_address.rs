@@ -10,20 +10,19 @@ pub struct SetLookuptableAddress<'info> {
     #[account(
         has_one = asset_access_controller,
     )]
-    pub authorized_user_role: Option<Account<'info, UserRole>>,
+    pub authorized_user_role: Account<'info, UserRole>,
     /// CHECK: LUT address, no impact on the protocol if an invalid address is provided.
     pub lut_address: UncheckedAccount<'info>,
 }
 
 pub fn handler(ctx: Context<SetLookuptableAddress>) -> Result<()> {
-    let controller = &ctx.accounts.asset_access_controller;
-
-    // Verify that signer is either a controller admin or has authorized user role.
+    // LUT updates require role membership and permission, without a gate signature.
     verify_admin_signer(
         ctx.accounts.user.key(),
-        controller,
-        ctx.accounts.authorized_user_role.clone(),
+        &ctx.accounts.asset_access_controller,
+        Some(ctx.accounts.authorized_user_role.clone()),
         AdminFlags::SET_LUT_ADDRESS,
+        None,
     )?;
 
     // Set lookup table address.

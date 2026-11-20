@@ -43,4 +43,22 @@ pub enum ErrorCode {
 
     #[msg("Unauthorized admin signer")]
     UnauthorizedSigner,
+
+    #[msg("Missing gate authority")]
+    MissingGateAuthority,
+
+    #[msg("Invalid gate authority")]
+    InvalidGateAuthority,
+
+    #[msg("Gate authority derivation program is not allowed")]
+    InvalidGatingProgram,
+
+    #[msg("Missing gate authority derivation proof")]
+    MissingGateAuthorityProof,
+
+    #[msg("Invalid gate authority derivation proof")]
+    InvalidGateAuthorityProof,
+
+    #[msg("Migrate the legacy role before using V2 governance")]
+    MigrationRequired,
 }

@@ -3,8 +3,8 @@ use anchor_lang::{
     solana_program::{instruction::Instruction, program::invoke_signed},
 };
 use rbac_utils::{
-    constants::{IDENTITY_METADATA_REGISTRY_ID, IDENTITY_REGISTRY_ID},
     CHANGE_COUNTRY_IX,
+    constants::{IDENTITY_METADATA_REGISTRY_ID, IDENTITY_REGISTRY_ID},
 };
 
 use crate::{controller_seeds, error::ErrorCode, state::*, verify_medici_signer};
@@ -55,6 +55,7 @@ pub fn handler(ctx: Context<ChangeCountry>, cpi_data: Vec<u8>) -> Result<()> {
         &ctx.accounts.user.key(),
         &ctx.accounts.authorized_user_role,
         MediciFlags::CHANGE_COUNTRY,
+        None,
     )?;
 
     // Verify instruction discriminator in cpi_data

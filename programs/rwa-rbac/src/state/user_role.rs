@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 use crate::error::ErrorCode;
 
-#[account]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct UserRole {
     /// Controller that user role is designated for.
     pub asset_access_controller: Pubkey,
@@ -10,8 +10,8 @@ pub struct UserRole {
     /// ID of UserRole. Matches AssetAccessController.user_roles_count at time of creation.
     pub id: u64,
 
-    /// Name of this role.
-    pub name: String,
+    /// Wire version. Legacy accounts are normalized to V1 in memory only.
+    pub version: u8,
 
     /// Bitflag of allowed admin instructions.
     pub allowed_admin_ixs: u64,
@@ -22,13 +22,50 @@ pub struct UserRole {
     /// If true, this is the master role.
     pub is_master_role: bool,
 
+    /// External PDA authority; provenance is verified when installed.
+    pub gate_authority: Option<Pubkey>,
+
+    /// Name of this role.
+    pub name: String,
+
     /// List of users assigned with this role.
     pub users: Vec<Pubkey>,
 }
 
+/// Instruction-only proof; neither the program ID nor seeds are stored in UserRole.
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
+pub struct GateAuthorityProof {
+    pub program_id: Pubkey,
+    /// Complete PDA seeds, including the bump seed, for create_program_address.
+    pub seeds: Vec<Vec<u8>>,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
+pub enum GateAuthorityUpdate {
+    NoChange,
+    Set {
+        authority: Pubkey,
+        proof: GateAuthorityProof,
+    },
+    Clear,
+}
+
 impl UserRole {
-    /// Assume name has max size of 64 bytes and includes 8 byte discriminator.
-    pub const BASE_SIZE: usize = 136;
+    /// Maximum serialized size without entries in `users`, including the discriminator.
+    pub const BASE_SIZE: usize = 171;
+    pub const VERSION: u8 = 2;
+
+    pub fn is_legacy(&self) -> bool {
+        self.version == 1
+    }
+
+    pub fn space_for_users(&self, users: usize) -> usize {
+        (if self.is_legacy() {
+            137
+        } else {
+            Self::BASE_SIZE
+        }) + 32 * users
+    }
 
     /// Returns true if the user role contains ANY of the admin flags.
     pub fn has_any_admin_flag(&self, flag: AdminFlags) -> bool {
@@ -130,8 +167,35 @@ bitflags::bitflags! {
       const CHANGE_MAPPING = 1 << 27;
       const CHANGE_ISSUANCE_POLICIES = 1 << 28;
       const REMOVE_IDENTITY_ACCOUNT = 1 << 29;
+      const MANAGE_MINT_CONTROLS = 1 << 30;
+      const CANCEL_PENDING_OPERATIONS = 1 << 31;
   }
 }
+
+/// Admin permissions that require both the role user and the role's gate authority to sign.
+pub const GATED_ADMIN_FLAGS: AdminFlags = AdminFlags::from_bits_retain(
+    AdminFlags::CREATE_OR_DELETE_USER_ROLE.bits()
+        | AdminFlags::MODIFY_USER_ROLE.bits()
+        | AdminFlags::ASSIGN_OR_REMOVE_ANY_USER_ROLE.bits()
+        | AdminFlags::ASSIGN_OR_REMOVE_CURRENT_USER_ROLE.bits()
+        | AdminFlags::WITHDRAW_EXCESS_RENT.bits(),
+);
+
+/// Permissions requiring the role user and its external authority.
+pub const GATED_MEDICI_FLAGS: MediciFlags = MediciFlags::from_bits_retain(
+    MediciFlags::MANAGE_MINT_CONTROLS.bits()
+        | MediciFlags::UPDATE_ASSET_METADATA.bits()
+        | MediciFlags::CHANGE_ISSUANCE_POLICIES.bits()
+        | MediciFlags::ATTACH_TO_POLICY_ACCOUNT.bits()
+        | MediciFlags::DETACH_FROM_POLICY_ACCOUNT.bits()
+        | MediciFlags::CHANGE_COUNTER_LIMITS.bits()
+        | MediciFlags::CHANGE_COUNTERS.bits()
+        | MediciFlags::CHANGE_MAPPING.bits()
+        | MediciFlags::CREATE_IDENTITY_ACCOUNT.bits()
+        // Gate these permissions before exposing their currently unimplemented handlers.
+        | MediciFlags::ADD_LEVEL_TO_IDENTITY_ACCOUNT.bits()
+        | MediciFlags::UPDATE_INTEREST_BEARING_MINT_RATE.bits(),
+);
 
 #[cfg(test)]
 mod tests {
@@ -141,12 +205,14 @@ mod tests {
         let admin_flags_length = AdminFlags::all().into_iter().count();
         let user_role_all_admin = UserRole {
             asset_access_controller: Pubkey::default(),
+            version: UserRole::VERSION,
             id: 0,
             name: String::from("test_name"),
             allowed_admin_ixs: (2u64).pow(admin_flags_length as u32) - 1, // Allow all flags
             allowed_medici_ixs: 0,
             users: vec![],
             is_master_role: false,
+            gate_authority: None,
         };
 
         // Check that has_any_admin_flag returns true for each individual flag (since role allows all flags).
@@ -160,12 +226,14 @@ mod tests {
     fn test_any_admin_flag() {
         let user_role = UserRole {
             asset_access_controller: Pubkey::default(),
+            version: UserRole::VERSION,
             id: 0,
             name: String::from("test_name"),
             allowed_admin_ixs: AdminFlags::ASSIGN_OR_REMOVE_ANY_USER_ROLE.bits(),
             allowed_medici_ixs: 0,
             users: vec![],
             is_master_role: false,
+            gate_authority: None,
         };
 
         let matching_flag = AdminFlags::ASSIGN_OR_REMOVE_ANY_USER_ROLE
@@ -179,12 +247,14 @@ mod tests {
     fn test_has_medici_flag_exact_match() {
         let user_role = UserRole {
             asset_access_controller: Pubkey::new_unique(),
+            version: UserRole::VERSION,
             id: 1,
             name: "MediciRole".to_string(),
             allowed_admin_ixs: 0,
             allowed_medici_ixs: MediciFlags::THAW_TOKEN_ACCOUNT.bits(),
             users: vec![],
             is_master_role: false,
+            gate_authority: None,
         };
         assert!(user_role.has_all_medici_flag(MediciFlags::THAW_TOKEN_ACCOUNT));
     }
@@ -193,6 +263,7 @@ mod tests {
     fn test_has_medici_flag_more_flags_than_needed() {
         let user_role = UserRole {
             asset_access_controller: Pubkey::new_unique(),
+            version: UserRole::VERSION,
             id: 1,
             name: "OverPrivilegedRole".to_string(),
             allowed_admin_ixs: 0,
@@ -200,6 +271,7 @@ mod tests {
                 | MediciFlags::FREEZE_TOKEN_ACCOUNT.bits()),
             users: vec![],
             is_master_role: false,
+            gate_authority: None,
         };
 
         assert!(user_role.has_all_medici_flag(MediciFlags::THAW_TOKEN_ACCOUNT));
@@ -210,6 +282,7 @@ mod tests {
     fn test_has_medici_flag_less_flags_than_needed() {
         let user_role = UserRole {
             asset_access_controller: Pubkey::new_unique(),
+            version: UserRole::VERSION,
             id: 1,
             name: "UnderPrivilegedRole".to_string(),
             allowed_admin_ixs: 0,
@@ -217,6 +290,7 @@ mod tests {
                 | MediciFlags::FREEZE_TOKEN_ACCOUNT.bits()),
             users: vec![],
             is_master_role: false,
+            gate_authority: None,
         };
 
         // Testing for 3 flags while only having 2 should fail.

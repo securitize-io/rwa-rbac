@@ -7,5 +7,5 @@ import { AdminFlags, MediciFlags } from "./types/flags";
 export const computeFlags = (
   ...flags: (MediciFlags | AdminFlags)[]
 ): number => {
-  return flags.reduce((accumulator, flag) => accumulator | flag, 0);
+  return flags.reduce((accumulator, flag) => (accumulator | flag) >>> 0, 0);
 };

@@ -1,11 +1,12 @@
 use anchor_lang::prelude::*;
 
-use crate::{events::RemoveUserRoleEvent, state::*, verify_admin_signer, error::ErrorCode};
+use crate::{error::ErrorCode, events::RemoveUserRoleEvent, state::*, verify_admin_signer};
 
 #[event_cpi]
 #[derive(Accounts)]
 pub struct RemoveUserRole<'info> {
     pub user: Signer<'info>,
+    pub gate_authority: Option<Signer<'info>>,
     pub asset_access_controller: Account<'info, AssetAccessController>,
     #[account(
         mut,
@@ -19,7 +20,7 @@ pub struct RemoveUserRole<'info> {
 pub fn handler(ctx: Context<RemoveUserRole>, users_to_remove: Vec<Pubkey>) -> Result<()> {
     let user_role = &mut ctx.accounts.user_role;
 
-    // Apply the following rules if signer is not the controller admin:
+    // Apply the following rules to the authorizing role:
     // If authorized_user_role is same as user_role, user_role needs to contain either
     // ASSIGN_OR_REMOVE_ANY_USER_ROLE or ASSIGN_OR_REMOVE_CURRENT_ROLE.
     // If authorized_user_role is not provided or is different from user_role, user_role must contain
@@ -35,6 +36,7 @@ pub fn handler(ctx: Context<RemoveUserRole>, users_to_remove: Vec<Pubkey>) -> Re
         &ctx.accounts.asset_access_controller,
         ctx.accounts.authorized_user_role.clone(),
         matching_flag,
+        ctx.accounts.gate_authority.as_ref(),
     )?;
 
     // Remove users from role.
